@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion';
 import type { PlayerView } from '../engine/types.ts';
-import { TRADE_INFO, TRADES, def } from '../lib/cards';
+import { TRADE_INFO, def } from '../lib/cards';
 import { Button, Crest } from './ui';
 
 export function Overlay({ children }: { children: React.ReactNode }) {
@@ -65,15 +65,3 @@ export function EndScreen({ view, onHome }: { view: PlayerView; onHome: () => vo
   );
 }
 
-export function AlmsModal({ onPick, onCancel }: { onPick: (trade: string) => void; onCancel: () => void }) {
-  return (
-    <Overlay>
-      <h2 className="font-display text-2xl text-gold">Alms for whom?</h2>
-      <p className="text-sm text-ink-2 mb-4">Name a trade. If it is last or second-to-last among the trades still in play when the card is revealed, it gains 5 gold.</p>
-      <div className="grid grid-cols-3 gap-2">
-        {TRADES.map((t) => <Button key={t} variant="ghost" onClick={() => onPick(t)}>{TRADE_INFO[t].emoji} {TRADE_INFO[t].name}</Button>)}
-      </div>
-      <div className="text-center mt-4"><Button variant="ghost" onClick={onCancel}>Never mind</Button></div>
-    </Overlay>
-  );
-}

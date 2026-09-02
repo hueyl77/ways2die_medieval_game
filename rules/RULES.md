@@ -25,7 +25,7 @@ The game is played in rounds. Each round, every player places one card face-down
   - 27 job cards (that trade's wares)
   - 2 Heal cards
   - 1 Protect card
-  - 1 Alms card (poor relief — see §8)
+  - 1 Alms card for that trade (poor relief — see §8)
   - 3 signature cards unique to the trade (see §8)
 - **The Mishap deck**: 60 Attack cards — 48 **Mishaps** (1 wound; two copies of each of 24 accidents) and 12 **Calamities** (2 wounds). See §15.
 - **Gold board** with 12 trade tracks and 12 gold markers
@@ -97,7 +97,7 @@ Resolve each flipped pile in this order:
 2. **Wounds.** Each surviving Attack card stays face-up in front of the pile's owner as a **wound**. A card that deals more than one wound (a Calamity, a Hunting Bow, a Sneak Attack, anything sharpened by a Grindstone) adds a wound token beside it for each extra wound.
 3. **Heals.** Each Heal removes one wound from the pile's owner — a token first, then a card (to the town square). Attacks and Heals in the same pile net out — a Heal can save you from a killing blow revealed alongside it. Heals beyond your wounds are wasted; you cannot bank health.
 4. **Death check.** If the owner's wounds now equal their death number, they die — finish resolving the pile, then hold the funeral (§9.1).
-5. **Gold.** Each job card banks 1 gold to its trade's track — *no matter whose pile it was in, and no matter who placed it.* Apply any bonuses (Trestle Market; Market Fair in the Turning Year variant). Resolve signature gold effects.
+5. **Gold.** Alms is judged first (see §8), on the board as it stood. Then each job card banks 1 gold to its trade's track — *no matter whose pile it was in, and no matter who placed it.* Apply any bonuses (Trestle Market; Market Fair in the Turning Year variant). Resolve signature gold effects.
 6. **Words.** Truth cards (Inquest, Appraisal, Tracks in the Snow) are answered immediately, out loud, **truthfully**. This is a binding rule of the game, not a suggestion.
 7. **Pending.** Cards with "next round" effects stay face-up on the pile as reminders, then discard when spent.
 
@@ -132,7 +132,7 @@ Resolve each flipped pile in this order:
 
 ## 8. The trades & their signature cards
 
-Every envelope also holds one **Alms** card: *name a trade when you play it (write it on the card's slate); if that trade is last or second-to-last among the trades still in play when it is revealed, it gains 5 gold.* Alms is the village's catch-up: it can be pity for yourself or a gift to someone you suspect is struggling.
+Every envelope also holds one **Alms** card: *printed for its own trade. Alms is judged first in the gold step, on the board as it stood before this round's wares: if that trade is clearly last or second-to-last among the trades still in play — ties do nothing, so at the start of the game nobody qualifies — it gains 5 gold.* Alms is the village's catch-up, and like a signature card it proves its trade is at the table.
 
 Every envelope holds three signature cards — the only copies in the game. Playing one is powerful, and it's also a confession: it proves your trade is at the table, though never which chair it sits in.
 

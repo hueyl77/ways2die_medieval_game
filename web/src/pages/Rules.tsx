@@ -70,7 +70,7 @@ export default function Rules() {
             <div className="text-center"><CardFace cardKey="job:carpenter" width={104} /><div className="text-xs mt-1 font-ui">Wares · most of your hand</div></div>
             <div className="text-center"><CardFace cardKey="heal" width={104} /><div className="text-xs mt-1 font-ui">Heal × 2</div></div>
             <div className="text-center"><CardFace cardKey="protect" width={104} /><div className="text-xs mt-1 font-ui">Protect × 1</div></div>
-            <div className="text-center"><CardFace cardKey="alms" width={104} /><div className="text-xs mt-1 font-ui">Alms × 1</div></div>
+            <div className="text-center"><CardFace cardKey="alms:carpenter" width={104} /><div className="text-xs mt-1 font-ui">Alms × 1 · for your trade</div></div>
             <div className="text-center"><CardFace cardKey="mishap:hidden-rake" width={104} /><div className="text-xs mt-1 font-ui">Mishap × 4 · 1 wound</div></div>
             <div className="text-center"><CardFace cardKey="calamity:trebuchet-practice" width={104} /><div className="text-xs mt-1 font-ui">Calamity × 1 · 2 wounds</div></div>
             <div className="text-center"><CardFace cardKey="sig:hearty-stew" width={104} /><div className="text-xs mt-1 font-ui">Signature × 3 · your trade's</div></div>
@@ -79,7 +79,7 @@ export default function Rules() {
             <li><b className="text-gold">Wares</b> bank 1 gold to your trade's track no matter which pile they land in — placing them in front of an enemy is perfectly safe.</li>
             <li><b className="text-gold">Attacks</b> (Mishaps and Calamities) wound whoever's pile they're in. Which accidents you drew is your secret; the table only knows everyone holds four small ones and one big one.</li>
             <li><b className="text-gold">Heal</b> removes a wound from the pile's owner; <b className="text-gold">Protect</b> voids every attack in its pile that round.</li>
-            <li><b className="text-gold">Alms</b> is the catch-up card: name a trade when you play it, and if that trade is last or second-to-last among the trades still in play when it's revealed, it gains 5 gold.</li>
+            <li><b className="text-gold">Alms</b> is the catch-up card, printed for your own trade. It is judged first, before the round's wares are counted: if your trade is clearly last or second-to-last among the trades still in play (ties — like everyone at 0 — do nothing), it gains 5 gold. Playing it also tells the table your trade is in the game.</li>
             <li><b className="text-gold">Signature cards</b> are unique to your trade — powerful, and a confession: revealing one proves your trade is at the table (though never which chair).</li>
           </ul>
         </Section>
@@ -100,7 +100,7 @@ export default function Rules() {
               ['Wounds', 'Each surviving attack stays in front of its victim as a wound (a second wound rides on a token).'],
               ['Heals', 'Each Heal removes one wound. Attacks and Heals in the same pile net out — a Heal can save you from a killing blow.'],
               ['Deaths', 'Reach your death number and you die at the end of the pile — funeral after the round.'],
-              ['Gold', 'Wares bank 1 each; Alms and signature gold effects follow.'],
+              ['Gold', 'Alms is judged first on the board as it stood; then wares bank 1 each; then signature gold effects.'],
               ['Words', 'Truth cards (Inquest, Appraisal, Tracks in the Snow) are answered by the game itself — no lying possible.'],
             ].map(([t, d], i) => <li key={t} className="bg-night-2 border border-night-3 rounded-md p-3 flex gap-3"><span className="font-display text-2xl text-gold w-6">{i + 1}</span><div><div className="font-display text-parchment">{t}</div><div className="text-sm text-parchment/85">{d}</div></div></li>)}
           </ol>

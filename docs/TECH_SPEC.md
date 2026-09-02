@@ -159,7 +159,7 @@ Choice cards create `pendingChoices` during resolve; resolution pauses at that s
 7. **Words**: Inquest / Appraisal / Tracks in the Snow computed from the true state (Townsfolk piles: no effect); Strong Ale → `revealHand(seat, 5s)` event.
 8. **Pending**: Grindstone, Curfew, Cloak, Trestle Market, Rotten Beam, Deep Forest, Slow Poison, Snare(persistent) recorded on the pile for next round; expired ones discarded.
 9. Locked tracks (dead trades) ignore all gold changes. Every living seat, bots included, is eligible to win.
-9b. **Alms** (one per envelope): the placer names a trade; at the gold step, if that trade is last or second-to-last among trades held by living seats, it gains 5.
+9b. **Alms** (one per envelope, printed for the envelope's trade: `alms:<trade>`): judged first in the gold step on the pre-income board — the trade gains 5 only if at most one other trade held by a living seat sits at or below it (ties do nothing).
 9c. Optional leader rules behind `settings.leaderRules` (off, no lobby toggle): the Reeve's tithe (each track pays floor(gold/8) after every round) and the Reckoning (the richest living trade is unmasked at the start of the final round).
 10. Season events (only when `settings.seasonRules` — the optional Turning Year variant — is on): Market Fair (+1 per wares in Harvest), Reeve's Tax at the end of Harvest, and the Hungry Winter (a Protect voids one Attack). Off by default: every round plays the same.
 

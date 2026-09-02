@@ -76,7 +76,7 @@ export function createGame(o: { id: string; code: string; hostUserId: string; se
   for (const seat of s.seats) {
     const jobs = seat.isTownsfolk ? 27 : calendar.jobsKept;
     for (let j = 0; j < jobs; j++) newCard(s, `job:${seat.trade}`, seat.index);
-    newCard(s, 'heal', seat.index); newCard(s, 'heal', seat.index); newCard(s, 'protect', seat.index); newCard(s, 'alms', seat.index);
+    newCard(s, 'heal', seat.index); newCard(s, 'heal', seat.index); newCard(s, 'protect', seat.index); newCard(s, `alms:${seat.trade}`, seat.index);
     for (const k of signatureKeys(seat.trade)) newCard(s, k, seat.index);
     for (let m = 0; m < 4; m++) newCard(s, mishaps.pop()!, seat.index);
     newCard(s, calamities.pop()!, seat.index);
@@ -102,7 +102,7 @@ export function startPlacement(s: GameState, now: number): void {
   s.placementsThisRound = {};
 }
 
-export function submitPlacement(s: GameState, seat: number, placements: Record<string, string>, haunt: { cardId: string; pileSeat: number } | null, now: number, targets: Record<string, Trade> = {}): void {
+export function submitPlacement(s: GameState, seat: number, placements: Record<string, string>, haunt: { cardId: string; pileSeat: number } | null, now: number): void {
   if (s.phase !== 'placement') throw new RuleError('wrong_phase');
   const st = s.seats[seat];
   if (st.isTownsfolk) throw new RuleError('not_a_player');
@@ -116,17 +116,15 @@ export function submitPlacement(s: GameState, seat: number, placements: Record<s
       if (ids.has(id)) throw new RuleError('invalid_placement', 'card used twice');
       const card = hand.find((c) => c.id === id);
       if (!card) throw new RuleError('invalid_placement', `card ${id} not in hand`);
-      if (card.key === 'alms' && !TRADES.includes(targets[id] as Trade)) throw new RuleError('alms_needs_target', 'name a trade for your Alms');
       ids.add(id);
     }
-    for (let p = 0; p < s.seatCount; p++) { const c = cardById(s, placements[String(p)])!; if (c.key === 'alms') c.meta.target = targets[c.id]; placeCard(s, c, seat, p); }
+    for (let p = 0; p < s.seatCount; p++) placeCard(s, cardById(s, placements[String(p)])!, seat, p);
   } else {
     if (haunt) {
       const card = gravePoolOf(s, seat).find((c) => c.id === haunt.cardId);
       if (!card) throw new RuleError('invalid_placement', 'card not in grave pool');
       const target = s.seats[haunt.pileSeat];
       if (!target || !target.alive) throw new RuleError('invalid_placement', 'haunt a living pile');
-      if (card.key === 'alms') card.meta.target = TRADES.includes(targets[card.id] as Trade) ? targets[card.id] : randomClaimedTrade(s);
       placeCard(s, card, seat, haunt.pileSeat);
     }
   }
@@ -144,7 +142,7 @@ export function autoPlace(s: GameState, seat: number): void {
   const st = s.seats[seat];
   if (!st.alive || st.locked) return;
   const hand = shuffle(s, handOf(s, seat));
-  for (let p = 0; p < s.seatCount; p++) { if (hand[p].key === 'alms') hand[p].meta.target = randomClaimedTrade(s); placeCard(s, hand[p], seat, p); }
+  for (let p = 0; p < s.seatCount; p++) placeCard(s, hand[p], seat, p);
   st.locked = true;
 }
 /** Trades held by living seats (what "still in play" means for Alms), lowest gold first. */
@@ -152,7 +150,6 @@ export function claimedTrades(s: GameState): Trade[] {
   const set = new Set<Trade>(); for (const st of s.seats) if (st.alive) set.add(st.trade);
   return [...set].filter((t) => unlocked(s, t)).sort((a, b) => s.gold[a] - s.gold[b]);
 }
-function randomClaimedTrade(s: GameState): Trade { const c = claimedTrades(s); return c.length ? pick(s, c) : pick(s, [...TRADES]); }
 
 // ---------------------------------------------------------------- resolution
 const isGrave = (s: GameState, p: number) => !s.seats[p].alive;
@@ -329,25 +326,27 @@ export function finishResolve(s: GameState, now: number, flags: { curfew: boolea
     if (!ch.answer) { ch.answer = ch.cardKey === 'sig:iron-strongbox' ? richest(s)[0] : poorest(s)[0]; log(s, { t: 'chosen', seat: ch.seat, cardKey: ch.cardKey, trade: ch.answer, auto: true }); }
     else log(s, { t: 'chosen', seat: ch.seat, cardKey: ch.cardKey, trade: ch.answer, auto: false });
   }
-  // 7. gold — jobs first
+  // 7. gold — Alms first, judged on the board as it stood before this round's income.
+  // The card's trade must be clearly last or second-to-last among trades held by living seats:
+  // at most one other such trade may sit at or below it. Ties (everyone at 0, a three-way tie for last…) do nothing.
+  const boardBefore: Record<string, number> = { ...s.gold };
+  for (let p = 0; p < s.seatCount; p++) {
+    if (isGrave(s, p) && s.seats[p].diedRound !== s.round) continue;
+    for (const c of revealedIn(s, p)) {
+      if (!c.key.startsWith('alms:') || !live(c)) continue;
+      const target = def(c.key).trade!;
+      const claimed = claimedTrades(s);
+      const rank = claimed.indexOf(target);
+      const atOrBelow = claimed.filter((t) => t !== target && boardBefore[t] <= boardBefore[target]).length;
+      const granted = rank >= 0 && atOrBelow <= 1;
+      log(s, { t: 'alms', pileSeat: p, trade: target, granted, rank });
+      if (granted) addGold(s, target, 5, 'alms', undefined, { pileSeat: p, cardId: c.id });
+    }
+  }
   const jobBonus = (season === 'harvest' && seasonal(s) ? 1 : 0) + (flags.trestle ? 1 : 0);
   for (let p = 0; p < s.seatCount; p++) {
     if (isGrave(s, p) && s.seats[p].diedRound !== s.round) continue;
     for (const c of revealedIn(s, p)) if (isJob(c.key) && live(c)) addGold(s, def(c.key).trade!, 1 + jobBonus, c.key, undefined, { pileSeat: p, cardId: c.id });
-  }
-  // Alms: the named trade gains 5 if it is last or second-to-last among trades still in play
-  for (let p = 0; p < s.seatCount; p++) {
-    if (isGrave(s, p) && s.seats[p].diedRound !== s.round) continue;
-    for (const c of revealedIn(s, p)) {
-      if (c.key !== 'alms' || !live(c)) continue;
-      const target = c.meta.target as Trade;
-      const claimed = claimedTrades(s);
-      const rank = claimed.indexOf(target);
-      const secondLowest = claimed.length ? s.gold[claimed[Math.min(1, claimed.length - 1)]] : 0;
-      const granted = rank >= 0 && s.gold[target] <= secondLowest;
-      log(s, { t: 'alms', pileSeat: p, trade: target, granted, rank });
-      if (granted) addGold(s, target, 5, 'alms', undefined, { pileSeat: p, cardId: c.id });
-    }
   }
   // then signature gold effects clockwise from the Crier
   for (let i = 0; i < s.seatCount; i++) {
