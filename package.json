@@ -5,7 +5,14 @@
   "scripts": {
     "test:engine": "node tests/sim.test.ts",
     "build:function": "esbuild functions/src/game.ts --bundle --format=esm --platform=neutral --target=es2022 --external:npm:* --outfile=functions/dist/game.js",
-    "deploy:function": "npm run build:function && npx -y @insforge/cli functions deploy game --file functions/dist/game.js --name 'Game engine'"
+    "deploy:function": "npm run build:function && npx -y @insforge/cli functions deploy game --file functions/dist/game.js --name 'Game engine'",
+    "video:record": "node scripts/record-demo.ts --seed 28 --seats 5 --out video/out/shots",
+    "video:cards": "node scripts/title-cards.ts video/out/cards",
+    "video:narrate": "python3 scripts/narrate.py video/scripts/tutorial.md video/out/narration",
+    "video:stitch": "python3 scripts/stitch.py video/out/narration video/out/shots video/out/first-cut.mp4"
   },
-  "devDependencies": { "esbuild": "^0.25.0" }
+  "devDependencies": {
+    "esbuild": "^0.25.0",
+    "playwright": "^1.62.1"
+  }
 }
