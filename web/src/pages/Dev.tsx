@@ -9,6 +9,9 @@ import { RevealPlayer, type GoldAnim } from '../components/RevealPlayer';
 import { GameLog } from '../components/GameLog';
 import { ChoiceModal, FuneralModal, EndScreen } from '../components/Modals';
 import { Button, Eyebrow } from '../components/ui';
+import { useCardDrag } from '../state/useCardDrag';
+import { createPortal } from 'react-dom';
+import { CardArt } from '../components/Card';
 import { TRADE_INFO, def } from '../lib/cards';
 
 const ME = 'u0';
@@ -69,13 +72,15 @@ export default function Dev() {
   const secondsLeft = view.phaseDeadline ? Math.max(0, Math.ceil((view.phaseDeadline - Date.now()) / 1000)) : null;
   const allAssigned = view.seats.every((x) => assignments[x.index]);
 
-  const onSeatClick = (seat: number) => {
+  const placeCardOnSeat = (cardId: string, seat: number) => {
     if (view.phase !== 'placement' || me.locked) return;
-    if (isGhost) { if (selected && view.seats[seat].alive) setHaunt({ cardId: selected, pileSeat: seat }); return; }
-    if (!selected) return;
-    setAssignments((a) => { const n = { ...a }; for (const k of Object.keys(n)) if (n[Number(k)] === selected) delete n[Number(k)]; n[seat] = selected; return n; });
+    if (isGhost) { if (view.seats[seat].alive) setHaunt({ cardId, pileSeat: seat }); setSelected(null); return; }
+    setAssignments((a) => { const n = { ...a }; for (const k of Object.keys(n)) if (n[Number(k)] === cardId) delete n[Number(k)]; n[seat] = cardId; return n; });
     setSelected(null);
   };
+  const onSeatClick = (seat: number) => { if (!selected) return; placeCardOnSeat(selected, seat); };
+  const dnd = useCardDrag((cardId, seat) => { if (seat !== null) placeCardOnSeat(cardId, seat); });
+  const canDrag = view.phase === 'placement' && !me.locked;
   const autoFill = () => { const used = new Set(Object.values(assignments)); const free = view.me.hand.filter((c) => !used.has(c.id)); const q = [...free.filter((c) => c.key.startsWith('job:')), ...free.filter((c) => !c.key.startsWith('job:'))]; const n = { ...assignments }; for (const x of view.seats) if (!n[x.index]) { const c = q.shift(); if (c) n[x.index] = c.id; } setAssignments(n); };
 
   return (
@@ -90,7 +95,8 @@ export default function Dev() {
         </div>
       </header>
       <main className="relative min-h-0 min-w-0 p-2">
-        <Table view={view} assignments={me.locked ? view.me.placements : assignments} hauntTarget={haunt?.pileSeat ?? null} onSeatClick={onSeatClick} selectable={view.phase === 'placement' && !me.locked} />
+        <Table view={view} assignments={me.locked ? view.me.placements : assignments} hauntTarget={haunt?.pileSeat ?? null} onSeatClick={onSeatClick} selectable={view.phase === 'placement' && !me.locked} dropSeat={dnd.hoverSeat} />
+        {dnd.drag && createPortal(<div className="fixed z-[95] pointer-events-none" style={{ left: dnd.drag.x - 55, top: dnd.drag.y - 75, transform: 'rotate(-4deg)' }}><CardArt cardKey={(view.me.hand.find((c) => c.id === dnd.drag!.cardId) ?? view.me.gravePool.find((c) => c.id === dnd.drag!.cardId))?.key ?? 'protect'} width={110} /></div>, document.body)}
         {showReveal && view.roundLog && <RevealPlayer log={view.roundLog} view={view} secondsLeft={secondsLeft} busy={false} onNext={() => { acknowledge(stateRef.current, me.index, now); settle(); }} onSkip={() => { revealSkip(stateRef.current, me.index, now); settle(); }} onGold={setGoldAnim} />}
         {view.phase === 'choice' && view.me.choices.length > 0 && <ChoiceModal view={view} busy={false} onChoose={(cid, t) => { answerChoice(stateRef.current, me.index, cid, t as never, now); settle(); }} />}
         {view.phase === 'funeral' && isGhost && !me.willSealed && view.succession.length > 0 && <FuneralModal view={view} busy={false} onSeal={(h) => { sealWill(stateRef.current, me.index, h, now); settle(); }} />}
@@ -109,7 +115,7 @@ export default function Dev() {
           {view.phase === 'placement' && isGhost && (<><Button disabled={me.locked || !haunt} onClick={() => { submitPlacement(stateRef.current, me.index, {}, haunt, now); setHaunt(null); settle(); }}>Haunt</Button><Button variant="ghost" disabled={me.locked} onClick={() => { submitPlacement(stateRef.current, me.index, {}, null, now); settle(); }}>Rest quietly</Button></>)}
           {view.phase === 'gossip' && me.alive === false && <Button onClick={settle}>Skip (dead)</Button>}
         </div>
-        <Hand view={view} cards={isGhost ? view.me.gravePool : view.me.hand} selected={selected ?? haunt?.cardId ?? null} assignments={me.locked ? view.me.placements : assignments} onSelect={(cid) => { if (view.phase === 'placement' && !me.locked) setSelected((x) => (x === cid ? null : cid)); }} />
+        <Hand view={view} cards={isGhost ? view.me.gravePool : view.me.hand} selected={selected ?? haunt?.cardId ?? null} assignments={me.locked ? view.me.placements : assignments} onSelect={(cid) => { if (canDrag && !dnd.justDropped()) setSelected((x) => (x === cid ? null : cid)); }} onDragStart={canDrag ? dnd.startDrag : undefined} />
       </footer>
     </div>
   );

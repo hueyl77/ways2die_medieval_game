@@ -151,13 +151,13 @@ Choice cards create `pendingChoices` during resolve; resolution pauses at that s
 
 ### 5.3 Resolution order (global, simultaneous)
 1. Every pile is shuffled (`rng`) and revealed.
-2. **Voids** across all piles: Broken Door (discard one Protect in its pile), Protect (all attacks in pile; Winter: one), Palisade, Snare (next attack), Night Patrol (one attack here + each neighbor), Curfew (pending from last round: every attack anywhere), Cloak of Plain Cloth (pending), Deep Forest (pending: everything in pile has no effect), Bad Batch (heals in pile), Rotten Beam (pending: protects in pile). Silver Dagger and Sneak Attack ignore Protect/Palisade only.
+2. **Voids** across all piles: Broken Door (discard one Protect in its pile), Protect and Palisade (all attacks in pile; Winter variant: one), Snare (next attack), Night Patrol (one attack here + each neighbor), Curfew (pending from last round: every attack anywhere), Cloak of Plain Cloth (pending), Deep Forest (pending: everything in pile has no effect), Bad Batch (heals in pile), Rotten Beam (pending: protects in pile). Silver Dagger and Sneak Attack ignore Protect/Palisade only.
 3. **Wounds**: each surviving attack → wound cards/tokens on the pile owner (Calamity 2, Hunting Bow 2, Sneak Attack 2, Grindstone +1 pending).
 4. **Heals**: Heal, Hearty Stew (2), Bumper Crop (1 + gold), Panacea (all), A Round on the House (everyone 1); Slow Poison antidote consumes a heal in that pile.
 5. **Deaths**: wounds ≥ threshold → mark dead (funeral after the round).
 6. **Gold**: job cards bank 1 (+Market Fair, +Trestle Market pending); then gold signatures clockwise from the Crier: Cutpurse, Paste Gems, Gleaning, Thumb on the Scale, King's Commission, Miller's Toll, Physician's Fee, Cordwood, Bumper Crop, False Colors (choice), Iron Strongbox (choice → shield), Snare bounty, Sunday Best/Blackmail → scoring cards on the owner. Iron Strongbox shields apply to every loss.
 7. **Words**: Inquest / Appraisal / Tracks in the Snow computed from the true state (Townsfolk piles: no effect); Strong Ale → `revealHand(seat, 5s)` event.
-8. **Pending**: Grindstone, Curfew, Cloak, Trestle Market, Rotten Beam, Deep Forest, Slow Poison, Palisade(next round), Snare(persistent) recorded on the pile for next round; expired ones discarded.
+8. **Pending**: Grindstone, Curfew, Cloak, Trestle Market, Rotten Beam, Deep Forest, Slow Poison, Snare(persistent) recorded on the pile for next round; expired ones discarded.
 9. Locked tracks (dead trades) ignore all gold changes. Townsfolk trades cannot win.
 10. Season events (only when `settings.seasonRules` — the optional Turning Year variant — is on): Market Fair (+1 per wares in Harvest), Reeve's Tax at the end of Harvest, and the Hungry Winter (a Protect voids one Attack). Off by default: every round plays the same.
 

@@ -109,7 +109,7 @@ const SIGNATURES: Record<Trade, SigSpec[]> = {
     { name: 'Inquest', text: "The pile's owner must truthfully answer: did you place any Attack this round?" },
   ],
   carpenter: [
-    { name: 'Palisade', text: 'Voids all Attacks in this pile this round and next round, even in Winter.' },
+    { name: 'Palisade', text: 'A second Protect: voids every Attack in this pile this round.' },
     { name: 'Trestle Market', text: 'Next round, every job card banks +1.' },
     { name: 'Rotten Beam', text: 'Next round, Protects revealed in this pile are voided.' },
   ],

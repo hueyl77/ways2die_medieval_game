@@ -3,6 +3,9 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../auth/AuthProvider';
 import { api } from '../lib/api';
 import { useGame } from '../state/useGame';
+import { useCardDrag } from '../state/useCardDrag';
+import { createPortal } from 'react-dom';
+import { CardArt } from '../components/Card';
 import { useChat } from '../state/useChat';
 import { Table } from '../components/Table';
 import { Hand } from '../components/Hand';
@@ -59,13 +62,19 @@ export default function Game() {
   const effective = useMemo<Record<number, string>>(() => (locked && view ? Object.fromEntries(Object.entries(view.me.placements).map(([k, v]) => [Number(k), v])) : assignments), [locked, view, assignments]);
   const allAssigned = !!view && view.seats.every((s) => effective[s.index]);
 
+  const placeCardOnSeat = useCallback((cardId: string, seat: number) => {
+    if (!view || view.phase !== 'placement' || locked) return;
+    if (isGhost) { if (view.seats[seat].alive) setHaunt({ cardId, pileSeat: seat }); setSelected(null); return; }
+    setAssignments((a) => { const next = { ...a }; for (const k of Object.keys(next)) if (next[Number(k)] === cardId) delete next[Number(k)]; next[seat] = cardId; return next; });
+    setSelected(null);
+  }, [view, locked, isGhost]);
   const onSeatClick = useCallback((seat: number) => {
     if (!view || view.phase !== 'placement' || locked) return;
-    if (isGhost) { if (selected && view.seats[seat].alive) setHaunt({ cardId: selected, pileSeat: seat }); return; }
-    if (!selected) { if (assignments[seat]) { setSelected(assignments[seat]); } return; }
-    setAssignments((a) => { const next = { ...a }; for (const k of Object.keys(next)) if (next[Number(k)] === selected) delete next[Number(k)]; next[seat] = selected; return next; });
-    setSelected(null);
-  }, [view, locked, isGhost, selected, assignments]);
+    if (!selected) { if (!isGhost && assignments[seat]) setSelected(assignments[seat]); return; }
+    placeCardOnSeat(selected, seat);
+  }, [view, locked, isGhost, selected, assignments, placeCardOnSeat]);
+  const dnd = useCardDrag((cardId, seat) => { if (seat !== null) placeCardOnSeat(cardId, seat); });
+  const canDrag = !!view && view.phase === 'placement' && !locked;
 
   const autoFill = () => {
     if (!view) return;
@@ -102,7 +111,8 @@ export default function Game() {
       </header>
 
       <main className="relative min-h-0 min-w-0 p-2">
-        <Table view={view} assignments={effective} hauntTarget={haunt?.pileSeat ?? null} onSeatClick={onSeatClick} selectable={view.phase === 'placement' && !locked} />
+        <Table view={view} assignments={effective} hauntTarget={haunt?.pileSeat ?? null} onSeatClick={onSeatClick} selectable={view.phase === 'placement' && !locked} dropSeat={dnd.hoverSeat} />
+        {dnd.drag && createPortal(<div className="fixed z-[95] pointer-events-none" style={{ left: dnd.drag.x - 55, top: dnd.drag.y - 75, transform: 'rotate(-4deg)' }}><CardArt cardKey={(view.me.hand.find((c) => c.id === dnd.drag!.cardId) ?? view.me.gravePool.find((c) => c.id === dnd.drag!.cardId))?.key ?? 'protect'} width={110} /></div>, document.body)}
         {showReveal && view.roundLog && <RevealPlayer log={view.roundLog} view={view} secondsLeft={secondsLeft} busy={busy} onNext={() => void act(() => api.acknowledge(view.id))} onSkip={() => void act(() => api.skip(view.id))} onGold={setGoldAnim} />}
         {view.phase === 'choice' && view.me.choices.length > 0 && <ChoiceModal view={view} busy={busy} onChoose={(cid, t) => void act(() => api.choose(view.id, cid, t))} />}
         {view.phase === 'funeral' && isGhost && !me?.willSealed && view.succession.length > 0 && <FuneralModal view={view} busy={busy} onSeal={(h) => void act(() => api.will(view.id, h))} />}
@@ -130,6 +140,7 @@ export default function Game() {
             {!locked && <Button variant="ghost" onClick={autoFill}>Fill the rest with wares</Button>}
             <span className="text-sm text-ink-2">{Object.keys(effective).length}/{view.seatCount} placed · {lockedCount}/{needed} locked</span>
             {selected && <span className="text-sm text-gold">Now click a seat for {def(view.me.hand.find((c) => c.id === selected)!.key).name}</span>}
+            {!selected && Object.keys(effective).length === 0 && <span className="text-sm text-ink-2">Drag a card onto a seat, or click a card and then a seat.</span>}
           </>)}
           {view.phase === 'placement' && isGhost && (<>
             <Button disabled={busy || locked || !haunt} onClick={() => void act(() => api.place(view.id, {}, haunt))}>{locked ? 'Haunted ✓' : 'Haunt'}</Button>
@@ -141,7 +152,7 @@ export default function Game() {
           {view.phase === 'funeral' && <span className="text-sm text-ink-2">{isGhost && !me?.willSealed ? 'Seal your will.' : 'The dead are sealing their wills…'}</span>}
           {error && <span className="text-sm text-blood ml-auto">{error}</span>}
         </div>
-        <Hand view={view} cards={isGhost ? view.me.gravePool : view.me.hand} selected={selected ?? haunt?.cardId ?? null} assignments={effective} onSelect={(cid) => { if (view.phase === 'placement' && !locked) setSelected((s) => (s === cid ? null : cid)); }} />
+        <Hand view={view} cards={isGhost ? view.me.gravePool : view.me.hand} selected={selected ?? haunt?.cardId ?? null} assignments={effective} onSelect={(cid) => { if (canDrag && !dnd.justDropped()) setSelected((s) => (s === cid ? null : cid)); }} onDragStart={canDrag ? dnd.startDrag : undefined} />
       </footer>
     </div>
   );
