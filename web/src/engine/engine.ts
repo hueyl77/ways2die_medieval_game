@@ -20,8 +20,8 @@ export function calendarFor(seatCount: number): Calendar {
   let rounds: number; let seasons: Season[]; let deathAt: number;
   if (seatCount <= 5) { rounds = 6; seasons = ['spring', 'spring', 'harvest', 'harvest', 'winter', 'winter']; deathAt = 3; }
   else { rounds = 4; seasons = ['harvest', 'harvest', 'winter', 'winter']; deathAt = 4; }   // 6–8 seats
-  // fixed cards per envelope: 4 Mishaps + 1 Calamity + 2 Heals + 1 Protect + 1 Alms + 1 Tax Collector + 3 signatures = 13
-  return { rounds, seasons, jobsKept: seatCount * rounds - 13, deathAt };
+  // fixed cards per envelope: 3 Mishaps + 1 Calamity + 2 Heals + 1 Protect + 1 Alms + 1 Tax Collector + 3 signatures = 12
+  return { rounds, seasons, jobsKept: seatCount * rounds - 12, deathAt };
 }
 
 export interface SeatSpec { userId: string | null; name: string; crest: string; isTownsfolk: boolean }
@@ -57,7 +57,7 @@ export function createGame(o: { id: string; code: string; hostUserId: string; se
     id: o.id, code: o.code, hostUserId: o.hostUserId, status: 'playing', seed: o.seed, rng: o.seed >>> 0,
     settings, seatCount, calendar, round: 1, phase: 'placement', phaseDeadline: o.now + settings.placementSeconds * 1000,
     crierSeat: 0, revealStep: 0, revealSteps: 0, seats: [], cards: [], gold: Object.fromEntries(TRADES.map((t) => [t, 0])),
-    lockedTrades: [], shieldedTrades: [], absentTrades: [], succession: [], choices: [], taxedPiles: [], roundLog: null, logs: [],
+    lockedTrades: [], shieldedTrades: [], absentTrades: [], succession: [], choices: [], taxedPiles: [], curfewVoids: 0, roundLog: null, logs: [],
     nextCardId: 1, winners: null, sharedBy: null, scoreRows: null, placementsThisRound: {},
   };
   const trades = shuffle(s, [...TRADES]);
@@ -70,14 +70,14 @@ export function createGame(o: { id: string; code: string; hostUserId: string; se
   });
   s.absentTrades = trades.slice(seatCount);
   s.crierSeat = randInt(s, seatCount);
-  const mishaps = shuffle(s, [...MISHAP_KEYS, ...MISHAP_KEYS]);   // two copies of each of the 24 mishaps
+  const mishaps = shuffle(s, [...MISHAP_KEYS]);   // 24 mishaps, one copy each — exactly enough for 8 seats × 3
   const calamities = shuffle(s, [...CALAMITY_KEYS]);
   for (const seat of s.seats) {
     const jobs = seat.isTownsfolk ? 27 : calendar.jobsKept;
     for (let j = 0; j < jobs; j++) newCard(s, `job:${seat.trade}`, seat.index);
     newCard(s, 'heal', seat.index); newCard(s, 'heal', seat.index); newCard(s, 'protect', seat.index); newCard(s, `alms:${seat.trade}`, seat.index); newCard(s, 'tax-collector', seat.index);
     for (const k of signatureKeys(seat.trade)) newCard(s, k, seat.index);
-    for (let m = 0; m < 4; m++) newCard(s, mishaps.pop()!, seat.index);
+    for (let m = 0; m < 3; m++) newCard(s, mishaps.pop()!, seat.index);
     newCard(s, calamities.pop()!, seat.index);
     if (isHuman(seat)) s.succession.push(seat.index);
   }
@@ -208,7 +208,7 @@ export function beginResolve(s: GameState, now: number): void {
     else if (isHuman(st)) st.afkRounds = 0;
   }
   const season = seasonOf(s);
-  s.taxedPiles = [];
+  s.taxedPiles = []; s.curfewVoids = 0;
   // 1. shuffle + reveal every pile
   for (let p = 0; p < s.seatCount; p++) {
     const pile = shuffle(s, s.cards.filter((c) => c.zone === 'placed' && c.pileSeat === p));
@@ -231,7 +231,7 @@ export function beginResolve(s: GameState, now: number): void {
     const attacks = () => pile.filter((c) => c.zone === 'revealed' && isAttack(c.key) && live(c));
     if (active('sig:deep-forest')) { for (const c of pile) if (c.zone === 'revealed') voidCard(s, c, 'sig:deep-forest'); continue; }
     if (pile.some((c) => c.key === 'tax-collector' && live(c))) s.taxedPiles.push(p);   // no gold is earned from this pile this round
-    if (curfew) for (const c of attacks()) voidCard(s, c, 'sig:curfew');
+    if (curfew) for (const c of attacks()) { voidCard(s, c, 'sig:curfew'); s.curfewVoids = (s.curfewVoids ?? 0) + 1; }
     if (active('sig:cloak-of-plain-cloth')) for (const c of attacks()) voidCard(s, c, 'sig:cloak-of-plain-cloth');
     const isProtect = (c: CardInst) => c.key === 'protect' || c.key === 'sig:palisade';   // Palisade is the Carpenter's second Protect
     if (active('sig:rotten-beam')) for (const c of pile) if (isProtect(c) && c.zone === 'revealed') voidCard(s, c, 'sig:rotten-beam');
@@ -246,8 +246,10 @@ export function beginResolve(s: GameState, now: number): void {
     if (snare) { const a = attacks()[0]; if (a) { voidCard(s, a, 'sig:snare'); discard(s, snare, 'sig:snare'); if (!s.taxedPiles.includes(p)) addGold(s, 'hunter', 1, 'sig:snare', undefined, { pileSeat: p }); } }
     // Night Patrol: one here, one in each neighbor
     if (pile.some((c) => c.key === 'sig:night-patrol' && live(c))) {
-      const a = attacks()[0]; if (a) voidCard(s, a, 'sig:night-patrol');
-      for (const n of neighbors(s, p)) { if (isGrave(s, n)) continue; const na = revealedIn(s, n).find((c) => isAttack(c.key) && live(c)); if (na) voidCard(s, na, 'sig:night-patrol'); }
+      let fines = 0;
+      for (const a of attacks().slice(0, 2)) { voidCard(s, a, 'sig:night-patrol'); fines++; }
+      for (const n of neighbors(s, p)) { if (isGrave(s, n)) continue; const na = revealedIn(s, n).find((c) => isAttack(c.key) && live(c)); if (na) { voidCard(s, na, 'sig:night-patrol'); fines++; } }
+      if (fines > 0 && !s.taxedPiles.includes(p)) addGold(s, 'city-guard', Math.min(2, fines), 'sig:night-patrol', undefined, { pileSeat: p });
     }
     if (pile.some((c) => c.key === 'sig:bad-batch' && live(c))) for (const c of pile) if (isHeal(c.key) && c.zone === 'revealed') voidCard(s, c, 'sig:bad-batch');
   }
@@ -263,7 +265,7 @@ export function beginResolve(s: GameState, now: number): void {
     const poison = pendingIn(s, p).find((c) => c.key === 'sig:slow-poison' && c.meta.untilRound === s.round);
     if (poison) {
       const antidote = revealedIn(s, p).find((c) => isHeal(c.key) && live(c) && !c.meta.consumed);
-      if (antidote) { antidote.meta.consumed = true; voidCard(s, antidote, 'antidote'); log(s, { t: 'banner', text: `${s.seats[p].name}'s poison was cured` }); }
+      if (antidote) { if (antidote.key !== 'sig:panacea') { antidote.meta.consumed = true; voidCard(s, antidote, 'antidote'); } log(s, { t: 'banner', text: `${s.seats[p].name}'s poison was cured` }); }
       else wound(s, p, 1, null, 'sig:slow-poison');
       discard(s, poison, 'sig:slow-poison');
     }
@@ -276,8 +278,8 @@ export function beginResolve(s: GameState, now: number): void {
       if (c.key === 'heal') heal(s, p, 1, c.key);
       else if (c.key === 'sig:hearty-stew') heal(s, p, 2, c.key);
       else if (c.key === 'sig:bumper-crop') heal(s, p, 1, c.key);
-      else if (c.key === 'sig:panacea') heal(s, p, 99, c.key);
-      else if (c.key === 'sig:a-round-on-the-house') for (const st of s.seats) if (st.alive) heal(s, st.index, 1, c.key);
+      else if (c.key === 'sig:panacea') heal(s, p, 2, c.key);
+      else if (c.key === 'sig:a-round-on-the-house') { let served = 0; for (const st of s.seats) if (st.alive && woundsOf(s, st.index) > 0) { heal(s, st.index, 1, c.key); served++; } c.meta.served = served; }
     }
   }
   // 5. deaths
@@ -342,11 +344,12 @@ export function finishResolve(s: GameState, now: number, flags: { curfew: boolea
       const atOrBelow = claimed.filter((t) => t !== target && boardBefore[t] <= boardBefore[target]).length;
       const granted = rank >= 0 && atOrBelow <= 1;
       log(s, { t: 'alms', pileSeat: p, trade: target, granted, rank });
-      if (granted) addGold(s, target, 5, 'alms', undefined, { pileSeat: p, cardId: c.id });
+      if (granted) addGold(s, target, 4, 'alms', undefined, { pileSeat: p, cardId: c.id });
     }
   }
+  if ((s.curfewVoids ?? 0) > 0) addGold(s, 'city-guard', Math.min(3, s.curfewVoids!), 'sig:curfew');   // the watch collects a fine per attack it stopped
   const jobBonus = (season === 'harvest' && seasonal(s) ? 1 : 0) + (flags.trestle ? 1 : 0);
-  const GAINS = new Set(['sig:bumper-crop', 'sig:gleaning', 'sig:cutpurse', 'sig:king-s-commission', 'sig:miller-s-toll', 'sig:physician-s-fee', 'sig:cordwood', 'sig:false-colors', 'sig:sunday-best']);
+  const GAINS = new Set(['sig:bumper-crop', 'sig:gleaning', 'sig:cutpurse', 'sig:king-s-commission', 'sig:miller-s-toll', 'sig:physician-s-fee', 'sig:cordwood', 'sig:false-colors', 'sig:sunday-best', 'sig:inquest', 'sig:a-round-on-the-house', 'sig:trestle-market']);
   for (let p = 0; p < s.seatCount; p++) {
     if (isGrave(s, p) && s.seats[p].diedRound !== s.round) continue;
     if (s.taxedPiles.includes(p)) {
@@ -370,10 +373,13 @@ export function finishResolve(s: GameState, now: number, flags: { curfew: boolea
         case 'sig:cutpurse': { const r = richest(s, ['thief'])[0]; if (r && unlocked(s, 'thief')) { const amt = Math.min(2, s.gold[r]); if (amt > 0 && addGold(s, r, -amt, c.key)) addGold(s, 'thief', amt, c.key, r); } break; }
         case 'sig:paste-gems': addGold(s, richest(s)[0], -2, c.key); break;
         case 'sig:king-s-commission': addGold(s, 'jeweler', 2, c.key); break;
-        case 'sig:miller-s-toll': addGold(s, 'miller', Math.min(3, Math.floor(pile.filter((x) => isJob(x.key)).length / 2)), c.key); break;
+        case 'sig:miller-s-toll': addGold(s, 'miller', Math.max(1, Math.min(3, Math.floor(pile.filter((x) => isJob(x.key)).length / 2))), c.key); break;
         case 'sig:thumb-on-the-scale': for (const t of TRADES) if (t !== 'miller' && unlocked(s, t) && s.gold[t] > s.gold['miller']) addGold(s, t, -1, c.key); break;
-        case 'sig:physician-s-fee': addGold(s, 'apothecary', Math.min(3, s.seats.filter((x) => x.alive).reduce((n, x) => n + woundsOf(s, x.index), 0)), c.key); break;
-        case 'sig:cordwood': addGold(s, 'woodsman', season === 'winter' ? 2 : 1, c.key); break;
+        case 'sig:physician-s-fee': addGold(s, 'apothecary', Math.min(2, s.seats.filter((x) => x.alive).reduce((n, x) => n + woundsOf(s, x.index), 0)), c.key); break;
+        case 'sig:cordwood': addGold(s, 'woodsman', 2, c.key); break;
+        case 'sig:inquest': addGold(s, 'city-guard', 1, c.key); break;
+        case 'sig:a-round-on-the-house': if ((c.meta.served as number) > 0) addGold(s, 'innkeeper', Math.min(3, c.meta.served as number), c.key); break;
+        case 'sig:trestle-market': addGold(s, 'carpenter', 2, c.key); break;
         case 'sig:false-colors': { const ch = s.choices.find((x) => x.cardId === c.id); if (ch?.answer) addGold(s, ch.answer, 1, c.key); break; }
         case 'sig:iron-strongbox': { const ch = s.choices.find((x) => x.cardId === c.id); if (ch?.answer && !s.shieldedTrades.includes(ch.answer)) { s.shieldedTrades.push(ch.answer); c.zone = 'shield'; c.pileSeat = null; c.meta.trade = ch.answer; log(s, { t: 'shield', trade: ch.answer, by: c.key }); } break; }
         case 'sig:sunday-best': addGold(s, 'tailor', 1, c.key); c.zone = 'scoring'; c.pileSeat = p; log(s, { t: 'scoring', seat: p, cardKey: c.key }); break;
