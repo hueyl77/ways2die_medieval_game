@@ -13,7 +13,7 @@ The physical edition will be printed later; this product is also the playtest en
 
 ## 2. Goals
 
-1. **Faithful:** implement rulebook 1.5 exactly, including all 12 trades, 36 signature cards, the 60-card mishap deck, seasons, wounds-cost-gold, Townsfolk, funerals, wills, and haunting.
+1. **Faithful:** implement rulebook 1.5 exactly, including all 8 trades, 24 signature cards, the 60-card mishap deck, seasons, wounds-cost-gold, Townsfolk, funerals, wills, and haunting.
 2. **Fun at a distance:** the gossip phase must feel like a table — voice/text chat, visible reactions, a shared reveal that everyone watches at the same moment.
 3. **Legible:** a first-time player can play without reading the rulebook; every card explains itself on hover and every effect is animated when it resolves.
 4. **Fair by construction:** hidden information (hands, roles, who-placed-what, heirs) never reaches a client that shouldn't have it. Anonymity is enforced by the server, not the UI.

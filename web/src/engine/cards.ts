@@ -6,6 +6,10 @@ export const TRADES = [
 ] as const;
 export type Trade = (typeof TRADES)[number];
 
+/** Trades dealt in the current game. The other four stay defined (cards, art, rules) but are set aside for a later expansion. */
+export const ACTIVE_TRADES: Trade[] = ['blacksmith', 'farmer', 'thief', 'innkeeper', 'city-guard', 'jeweler', 'apothecary', 'miller'];
+export const RESERVED_TRADES: Trade[] = ['hunter', 'woodsman', 'tailor', 'carpenter'];
+
 export const TRADE_INFO: Record<Trade, { name: string; verb: string; emoji: string }> = {
   blacksmith: { name: 'Blacksmith', verb: 'the arms dealer', emoji: '⚒' },
   farmer: { name: 'Farmer', verb: 'the provider', emoji: '🌾' },
@@ -100,17 +104,17 @@ const SIGNATURES: Record<Trade, SigSpec[]> = {
   ],
   innkeeper: [
     { name: 'Strong Ale', text: "The pile's owner is drunk: their entire hand is shown to everyone for five seconds." },
-    { name: 'A Round on the House', text: 'Every player heals 1.' },
+    { name: 'A Round on the House', text: 'Every wounded player heals 1; the Innkeeper track gains 1 per player served (max 3).' },
     { name: 'Bad Batch', text: 'All Heals revealed in this pile this round are voided.' },
   ],
   'city-guard': [
-    { name: 'Night Patrol', text: 'Void one Attack in this pile and one in each neighboring pile.' },
-    { name: 'Curfew', text: 'Next round, every Attack revealed anywhere is voided.' },
-    { name: 'Inquest', text: "The pile's owner must truthfully answer: did you place any Attack this round?" },
+    { name: 'Night Patrol', text: 'Void up to two Attacks in this pile and one in each neighboring pile; the City Guard track gains 1 per Attack voided (max 2).' },
+    { name: 'Curfew', text: 'Next round, every Attack revealed anywhere is voided; the City Guard track gains 1 per Attack stopped (max 3).' },
+    { name: 'Inquest', text: "The pile's owner must truthfully answer: did you place any Attack this round? The City Guard track gains 1 for the inquiry." },
   ],
   carpenter: [
     { name: 'Palisade', text: 'A second Protect: voids every Attack in this pile this round.' },
-    { name: 'Trestle Market', text: 'Next round, every job card banks +1.' },
+    { name: 'Trestle Market', text: 'The Carpenter track gains 2. Next round, every job card banks +1.' },
     { name: 'Rotten Beam', text: 'Next round, Protects revealed in this pile are voided.' },
   ],
   jeweler: [
@@ -124,9 +128,9 @@ const SIGNATURES: Record<Trade, SigSpec[]> = {
     { name: 'Sunday Best', text: "The Tailor track gains 1. Scoring card: the pile's owner's trade scores +1 at game end." },
   ],
   apothecary: [
-    { name: 'Panacea', text: "Remove every wound from the pile's owner." },
+    { name: 'Panacea', text: "The pile's owner heals 2, and it cures a Slow Poison on this pile without being spent." },
     { name: 'Slow Poison', text: 'At the end of next round the owner takes 1 wound — voided if any Heal is revealed in this pile first. Protects do not stop it.' },
-    { name: "Physician's Fee", text: 'The Apothecary track gains 1 per wound currently in play (max 3).' },
+    { name: "Physician's Fee", text: 'The Apothecary track gains 1 per wound currently in play (max 2).' },
   ],
   hunter: [
     { name: 'Hunting Bow', text: 'Attack dealing 2 wounds.', attack: 2 },
@@ -135,11 +139,11 @@ const SIGNATURES: Record<Trade, SigSpec[]> = {
   ],
   woodsman: [
     { name: 'Felling Axe', text: 'Attack; also discards every pending and persistent card on this pile.', attack: 1 },
-    { name: 'Cordwood', text: 'The Woodsman track gains 1 — or 2 during Winter.' },
+    { name: 'Cordwood', text: 'The Woodsman track gains 2.' },
     { name: 'Deep Forest', text: 'Next round, every card revealed in this pile has no effect, and job cards there bank nothing.' },
   ],
   miller: [
-    { name: "Miller's Toll", text: 'The Miller track gains 1 for every two job cards revealed in this pile (max 3).' },
+    { name: "Miller's Toll", text: 'The Miller track gains 1 for every two job cards revealed in this pile (at least 1, at most 3).' },
     { name: 'Thumb on the Scale', text: 'Every track richer than the Miller track loses 1.' },
     { name: 'Broken Door', text: 'Attack; before voids are applied, discard one Protect card from this pile.', attack: 1 },
   ],
@@ -151,7 +155,7 @@ function add(def: CardDef) { CARDS[def.key] = def; }
 add({ key: 'heal', name: 'Heal', type: 'heal', text: "Remove one wound from the pile's owner.", art: 'basic-heal' });
 add({ key: 'protect', name: 'Protect', type: 'protect', text: 'Void every Attack in this pile (Winter: one Attack).', art: 'basic-protect' });
 add({ key: 'tax-collector', name: 'Tax Collector', type: 'signature', text: 'The crown\'s man visits this pile: every coin that would be earned from the cards in it this round — wares, Alms, and gold-gaining signature cards — goes to the crown instead.', flavor: 'He counts faster than you can hide it.', art: 'basic-tax-collector' });
-for (const t of TRADES) add({ key: `alms:${t}`, name: `Alms for the ${TRADE_INFO[t].name}`, type: 'signature', trade: t, text: `Judged before this round's gold is counted: if the ${TRADE_INFO[t].name} is clearly last or second-to-last among the trades still in play (ties do nothing), it gains 5 gold.`, flavor: 'The poor box is emptied for whoever the village pities most.', art: 'basic-alms' });
+for (const t of TRADES) add({ key: `alms:${t}`, name: `Alms for the ${TRADE_INFO[t].name}`, type: 'signature', trade: t, text: `Judged before this round's gold is counted: if the ${TRADE_INFO[t].name} is clearly last or second-to-last among the trades still in play (ties do nothing), it gains 4 gold.`, flavor: 'The poor box is emptied for whoever the village pities most.', art: 'basic-alms' });
 for (const t of TRADES) {
   add({ key: `job:${t}`, name: `${TRADE_INFO[t].name}'s Wares`, type: 'job', trade: t, text: `Bank 1 gold to the ${TRADE_INFO[t].name} track.`, art: `wares-${slug(TRADE_INFO[t].name)}` });
   for (const s of SIGNATURES[t]) {

@@ -1,4 +1,4 @@
-export { CARDS, TRADES, TRADE_INFO, def, roleArt, CREST_COLORS } from '../engine/cards.ts';
+export { CARDS, TRADES, ACTIVE_TRADES, RESERVED_TRADES, TRADE_INFO, def, roleArt, CREST_COLORS } from '../engine/cards.ts';
 import { def } from '../engine/cards.ts';
 export const artUrl = (key: string) => `/cards/${def(key).art}.jpg`;
 export const CARD_BACK = '/cards/basic-card-back.jpg';
