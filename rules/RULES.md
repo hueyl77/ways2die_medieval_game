@@ -20,11 +20,12 @@ The game is played in rounds. Each round, every player places one card face-down
 
 ## 2. Components
 
-- **12 trade envelopes**, each containing 34 cards:
+- **12 trade envelopes**, each containing 35 cards:
   - 1 role card (role cards have a distinct back)
   - 27 job cards (that trade's wares)
   - 2 Heal cards
   - 1 Protect card
+  - 1 Alms card (poor relief — see §8)
   - 3 signature cards unique to the trade (see §8)
 - **The Mishap deck**: 60 Attack cards — 48 **Mishaps** (1 wound; two copies of each of 24 accidents) and 12 **Calamities** (2 wounds). See §15.
 - **Gold board** with 12 trade tracks and 12 gold markers
@@ -48,15 +49,15 @@ The twelve trades: **Blacksmith, Farmer, Thief, Innkeeper, City Guard, Carpenter
 
    | Seats | Rounds | Seasons | Job cards kept | Hand size | You die at |
    |:-:|:-:|:--|:-:|:-:|:-:|
-   | 4 | 6 | Spring · Harvest · Winter — 2 rounds each | 13 | 24 | 3 wounds |
-   | 5 | 6 | Spring · Harvest · Winter — 2 rounds each | 19 | 30 | 3 wounds |
-   | 6 | 4 | Harvest · Winter — 2 rounds each | 13 | 24 | 4 wounds |
-   | 7 | 4 | Harvest · Winter — 2 rounds each | 17 | 28 | 4 wounds |
-   | 8 | 4 | Harvest · Winter — 2 rounds each | 21 | 32 | 4 wounds |
-   | 9 | 3 | Spring · Harvest · Winter — 1 round each | 16 | 27 | 4 wounds |
-   | 10 | 3 | Spring · Harvest · Winter — 1 round each | 19 | 30 | 4 wounds |
-   | 11 | 3 | Spring · Harvest · Winter — 1 round each | 22 | 33 | 4 wounds |
-   | 12 | 3 | Spring · Harvest · Winter — 1 round each | 25 | 36 | 4 wounds |
+   | 4 | 6 | Spring · Harvest · Winter — 2 rounds each | 12 | 24 | 3 wounds |
+   | 5 | 6 | Spring · Harvest · Winter — 2 rounds each | 18 | 30 | 3 wounds |
+   | 6 | 4 | Harvest · Winter — 2 rounds each | 12 | 24 | 4 wounds |
+   | 7 | 4 | Harvest · Winter — 2 rounds each | 16 | 28 | 4 wounds |
+   | 8 | 4 | Harvest · Winter — 2 rounds each | 20 | 32 | 4 wounds |
+   | 9 | 3 | Spring · Harvest · Winter — 1 round each | 15 | 27 | 4 wounds |
+   | 10 | 3 | Spring · Harvest · Winter — 1 round each | 18 | 30 | 4 wounds |
+   | 11 | 3 | Spring · Harvest · Winter — 1 round each | 21 | 33 | 4 wounds |
+   | 12 | 3 | Spring · Harvest · Winter — 1 round each | 24 | 36 | 4 wounds |
 
 4. Shuffle all 12 envelopes and deal one to every seat, players and Townsfolk alike. **Return the rest to the box unopened** — nobody knows which trades are absent.
 5. Privately open your envelope. Memorize your role card and **return it to the envelope**; keep the envelope face-down in front of you for the whole game. Set aside job cards above your "job cards kept" number and return them to the box face-down. Take everything else into your hand. Then shuffle the Mishaps and deal four face-down to every seat, shuffle the Calamities and deal one to every seat, and return the rest to the box unseen; add yours to your hand. Prepare any Townsfolk seat as described in §10.
@@ -115,7 +116,7 @@ Resolve each flipped pile in this order:
 
 ---
 
-## 7. The calendar (and the optional Turning Year)
+## 7. The calendar (and the optional variants)
 
 **In the standard game every round plays the same.** The seasons are names on the calendar and nothing more. The rules below are an optional variant, *The Turning Year*, for tables that want the year to escalate; when it's on, season rules apply to every round of that season. Six-round games play the full year; four-round games start at Harvest; the three-round **short year** (9 seats or more) plays one round per season.
 
@@ -125,9 +126,13 @@ Resolve each flipped pile in this order:
 | **Harvest** | 3–4 | 1–2 | 2 | **Market Fair:** every job card banks +1 gold. At the season's end, the **Reeve's Tax**: every track tied for richest loses 2. |
 | **Winter** | 5–6 | 3–4 | 3 | **The Hungry Winter:** each Protect voids only one Attack. |
 
+**Two more optional leader rules**, also off by default, for tables that find the leader runs away: *the Reeve's tithe* — after every round each track pays 1 gold per 8 it holds (a strongboxed track pays nothing); and *the Reckoning* — at the start of the final round, every living seat holding the richest trade opens its envelope and plays the last round unmasked.
+
 ---
 
 ## 8. The trades & their signature cards
+
+Every envelope also holds one **Alms** card: *name a trade when you play it (write it on the card's slate); if that trade is last or second-to-last among the trades still in play when it is revealed, it gains 5 gold.* Alms is the village's catch-up: it can be pity for yourself or a gift to someone you suspect is struggling.
 
 Every envelope holds three signature cards — the only copies in the game. Playing one is powerful, and it's also a confession: it proves your trade is at the table, though never which chair it sits in.
 
@@ -230,7 +235,7 @@ A Townsfolk is a seat run by chance instead of a player — a stranger at the ta
 
 **Its death.** A Townsfolk that takes enough wounds dies like anyone: reveal its role, lock its track, and shuffle its remaining deck face-down onto its seat as a grave the living must still feed each round. It seals no will and does not haunt.
 
-**It cannot win.** At scoring, a Townsfolk's track is ignored — though its rising gold will have muddied the board all game, and nobody will have known whose it was.
+**It can win.** A Townsfolk competes like any other seat at the final count — if the stranger out-earns the village, the stranger takes the year.
 
 ---
 
@@ -240,7 +245,7 @@ After the last round of Winter:
 
 1. **The final reveal.** All living players open their envelopes and show their roles at once.
 2. **Settle accounts.** Apply each player's scoring cards (+/−) and −1 per wound to their own trade's track.
-3. **Crown the winner.** The living player whose trade's track is highest wins; Townsfolk tracks are ignored. Ties go to the fewest wounds; if still tied, the winners share it.
+3. **Crown the winner.** The living seat — player or bot — whose trade's track is highest wins. Ties go to the fewest wounds; if still tied, the winners share it.
 4. **Open the wills.** A ghost whose crest names the winner rises to share the win.
 
 If everyone dies, the village stands empty and nobody wins.
@@ -272,7 +277,7 @@ If everyone dies, the village stands empty and nobody wins.
 - **What does a drunk have to show?** Every card in their hand, face-up, for a slow count of five. The role card stays in the envelope; wounds and scoring cards are already public.
 - **What if a pile's count looks wrong before the flip?** Count it openly; a haunted pile legitimately runs one card heavy.
 - **Do the Townsfolk's cards count when I'm counting Attacks still at large?** Yes. Treat the stranger's deck as unknown: everything in it is possible until it's revealed.
-- **Can a Townsfolk's trade end up the richest track?** Yes — and until it dies, nobody can prove which track is the stranger's. It just can't win.
+- **Can a Townsfolk's trade end up the richest track?** Yes — and until it dies, nobody can prove which track is the stranger's. If it is still the richest at the final count, the stranger wins.
 
 ---
 

@@ -150,6 +150,7 @@ function add(def: CardDef) { CARDS[def.key] = def; }
 
 add({ key: 'heal', name: 'Heal', type: 'heal', text: "Remove one wound from the pile's owner.", art: 'basic-heal' });
 add({ key: 'protect', name: 'Protect', type: 'protect', text: 'Void every Attack in this pile (Winter: one Attack).', art: 'basic-protect' });
+add({ key: 'alms', name: 'Alms', type: 'signature', text: 'Name a trade when you play this. If that trade is last or second-to-last among the trades still in play when it is revealed, it gains 5 gold.', flavor: 'The poor box is emptied for whoever the village pities most.', art: 'basic-alms' });
 for (const t of TRADES) {
   add({ key: `job:${t}`, name: `${TRADE_INFO[t].name}'s Wares`, type: 'job', trade: t, text: `Bank 1 gold to the ${TRADE_INFO[t].name} track.`, art: `wares-${slug(TRADE_INFO[t].name)}` });
   for (const s of SIGNATURES[t]) {

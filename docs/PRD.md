@@ -71,7 +71,7 @@ Game end: the final reveal (all envelopes open at once), scoring (wounds −1 ea
 - Truth cards auto-resolve: Inquest, Appraisal, Tracks in the Snow announce the true answer; Strong Ale shows the drunk's hand to everyone for 5 seconds.
 - Choice cards (Iron Strongbox, Gleaning/Paste Gems ties, False Colors): the pile's owner gets a modal; timeout → default (own... first eligible track). Townsfolk choices → the Crier.
 - Funerals, wills (heir from the succession; unique crests), graves as mandatory piles, haunting, ghost chat.
-- Season events, final reveal, scoring, shared victories via wills, "nobody wins" if everyone dies.
+- Final reveal, scoring (bots compete on equal terms), shared victories via wills, "nobody wins" if everyone dies.
 - AFK rule: any player who fails to act by the deadline is auto-played (random legal placement / random heir); after two consecutive AFK rounds the seat converts to Townsfolk.
 
 ### 6.4 Table UI (P0)

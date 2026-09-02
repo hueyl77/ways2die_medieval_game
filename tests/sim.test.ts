@@ -27,7 +27,7 @@ function checkInvariants(s: GameState) {
     const json = JSON.stringify(pv);
     assert(!json.includes('"placedBy"'), 'placedBy leaked', s);
     assert(!json.includes('absentTrades'), 'absentTrades leaked', s);
-    for (const v of pv.seats) { assert(!('trade' in v) && !('heir' in v), 'seat secrets leaked', s); if (!v.isMe && v.alive) assert(v.revealedTrade === null || s.phase === 'ended', 'living trade revealed', s); }
+    for (const v of pv.seats) { assert(!('trade' in v) && !('heir' in v), 'seat secrets leaked', s); if (!v.isMe && v.alive) assert(v.revealedTrade === null || s.phase === 'ended' || s.round === s.calendar.rounds, 'living trade revealed', s); }
     assert(pv.me.trade === st.trade, 'own trade missing', s);
     if (st.alive) assert(pv.me.gravePool.length === 0, 'living player sees a grave pool', s);
   }
@@ -36,7 +36,7 @@ function checkInvariants(s: GameState) {
 function playGame(seatCount: number, humans: number, seed: number, verbose = false): GameState {
   const seats = Array.from({ length: seatCount }, (_, i) => ({ userId: i < humans ? `u${i}` : null, name: i < humans ? `P${i}` : `Townsfolk ${i}`, crest: `c${i}`, isTownsfolk: i >= humans }));
   const s = createGame({ id: `g${seed}`, code: `C${seed}`, hostUserId: 'u0', seats, seed, now: 0 });
-  for (const st of s.seats) { const h = handOf(s, st.index); assert(h.filter((c) => c.key.startsWith('mishap:')).length === 4 && h.filter((c) => c.key.startsWith('calamity:')).length === 1, 'kit is not 4 mishaps + 1 calamity', s); }
+  for (const st of s.seats) { const h = handOf(s, st.index); assert(h.filter((c) => c.key.startsWith('mishap:')).length === 4 && h.filter((c) => c.key.startsWith('calamity:')).length === 1 && h.filter((c) => c.key === 'alms').length === 1, 'kit is not 4 mishaps + 1 calamity + 1 alms', s); }
   const r = { rng: seed ^ 0x9e3779b9 };
   let now = 1000; let guard = 0;
   while (s.phase !== 'ended') {
@@ -54,8 +54,9 @@ function playGame(seatCount: number, humans: number, seed: number, verbose = fal
           if (randInt(r, 10) === 0) continue; // AFK sometimes → auto-place
           const hand = handOf(s, st.index).slice();
           const placements: Record<string, string> = {};
-          for (let p = 0; p < s.seatCount; p++) { const i = randInt(r, hand.length); placements[String(p)] = hand[i].id; hand.splice(i, 1); }
-          submitPlacement(s, st.index, placements, null, now);
+          const targets: Record<string, Trade> = {};
+          for (let p = 0; p < s.seatCount; p++) { const i = randInt(r, hand.length); placements[String(p)] = hand[i].id; if (hand[i].key === 'alms') targets[hand[i].id] = pick(r, [...TRADES]) as Trade; hand.splice(i, 1); }
+          submitPlacement(s, st.index, placements, null, now, targets);
         } else {
           const pool = gravePoolOf(s, st.index);
           const living = s.seats.filter((x) => x.alive);

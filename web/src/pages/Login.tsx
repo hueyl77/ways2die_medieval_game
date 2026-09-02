@@ -55,7 +55,7 @@ export default function Login() {
               : <>Already a villager? <button type="button" className="text-gold underline" onClick={() => setMode('signin')}>Sign in</button></>}
           </p>
         </form>
-        <p className="text-center mt-4 text-xs text-ink-2"><a className="underline" href="/rules">Read the rules</a></p>
+        <p className="text-center mt-4 text-xs text-ink-2"><a className="underline" href="/rules" target="_blank" rel="noopener">Read the rules</a></p>
       </div>
     </div>
   );
