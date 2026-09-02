@@ -1,6 +1,6 @@
 // Balance harness: plays many games with simple policies and reports per-trade and per-card statistics.
 // Usage: node scripts/balance.ts [games=100] [seats=5] [policy=random|sensible|both]
-import { createGame, submitPlacement, answerChoice, acknowledge, sealWill, tick, handOf, gravePoolOf, heirOptions, isAttack, TRADES, TRADE_INFO, CARDS, type GameState } from '../web/src/engine/index.ts';
+import { createGame, submitPlacement, answerChoice, acknowledge, sealWill, tick, handOf, gravePoolOf, heirOptions, isAttack, ACTIVE_TRADES as TRADES, TRADE_INFO, CARDS, type GameState } from '../web/src/engine/index.ts';
 import { seedFrom, randInt, pick } from '../web/src/engine/rng.ts';
 import type { Trade } from '../web/src/engine/cards.ts';
 

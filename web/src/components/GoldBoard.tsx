@@ -1,5 +1,5 @@
 import { AnimatePresence, motion } from 'framer-motion';
-import { TRADES, TRADE_INFO } from '../lib/cards';
+import { ACTIVE_TRADES, TRADE_INFO } from '../lib/cards';
 import type { PlayerView } from '../engine/types.ts';
 import { Eyebrow } from './ui';
 
@@ -11,7 +11,7 @@ export function GoldBoard({ view, override, flash }: { view: PlayerView; overrid
     <div>
       <Eyebrow>Gold board</Eyebrow>
       <ul className="mt-2 space-y-1">
-        {TRADES.map((t) => {
+        {ACTIVE_TRADES.map((t) => {
           const g = gold[t] ?? 0; const locked = view.lockedTrades.includes(t); const shielded = view.shieldedTrades.includes(t);
           const hit = flash && flash.trade === t ? flash : null;
           const mine = view.me.trade === t;

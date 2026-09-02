@@ -175,6 +175,8 @@ Never: other hands, `placed_by_seat`, absent trades, other heirs.
 
 ## 6. Card catalog (keys)
 
+Twelve trades are defined in code; `ACTIVE_TRADES` (8: blacksmith, farmer, thief, innkeeper, city-guard, jeweler, apothecary, miller) are dealt, ranked and shown on the board and are the only ones in the rulebook; `RESERVED_TRADES` (hunter, woodsman, tailor, carpenter) remain in the catalog only, for a possible later expansion.
+
 Basics: `heal`, `protect`, `job:<trade>`; mishaps `mishap:<slug>` (24, 1 wound), `calamity:<slug>` (12, 2 wounds); signatures `sig:<slug>` (36). The catalog carries `name`, `type`, `wounds`, `text`, `art` (image id) and an `effect` handler key. Adding a card = one catalog entry + one handler.
 
 ## 7. Client

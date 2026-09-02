@@ -6,6 +6,10 @@ export const TRADES = [
 ] as const;
 export type Trade = (typeof TRADES)[number];
 
+/** Trades dealt in the current game. The other four stay defined (cards, art, rules) but are set aside for a later expansion. */
+export const ACTIVE_TRADES: Trade[] = ['blacksmith', 'farmer', 'thief', 'innkeeper', 'city-guard', 'jeweler', 'apothecary', 'miller'];
+export const RESERVED_TRADES: Trade[] = ['hunter', 'woodsman', 'tailor', 'carpenter'];
+
 export const TRADE_INFO: Record<Trade, { name: string; verb: string; emoji: string }> = {
   blacksmith: { name: 'Blacksmith', verb: 'the arms dealer', emoji: '⚒' },
   farmer: { name: 'Farmer', verb: 'the provider', emoji: '🌾' },

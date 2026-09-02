@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import { CardArt, CardFace } from '../components/Card';
-import { TRADES, TRADE_INFO, roleArt, signatureKeys, def } from '../engine/cards.ts';
+import { TRADES, ACTIVE_TRADES, TRADE_INFO, roleArt, signatureKeys, def } from '../engine/cards.ts';
 import { calendarPreview } from './Room';
 
 function Section({ id, eyebrow, title, children }: { id: string; eyebrow: string; title: string; children: ReactNode }) {
@@ -57,7 +57,7 @@ export default function Rules() {
       <main className="max-w-5xl mx-auto px-6 pb-20">
         <Section id="idea" eyebrow="The idea" title="Get rich. Stay alive. Stay unknown.">
           <div className="grid md:grid-cols-3 gap-4">
-            <div className="bg-night-2 border border-night-3 rounded-md p-4 flex gap-3"><Portrait trade="thief" width={90} /><div><div className="font-display text-gold text-lg">A secret trade</div><p className="text-sm">At the start you open an envelope and become one of twelve trades. Nobody else knows which. Keep it that way.</p></div></div>
+            <div className="bg-night-2 border border-night-3 rounded-md p-4 flex gap-3"><Portrait trade="thief" width={90} /><div><div className="font-display text-gold text-lg">A secret trade</div><p className="text-sm">At the start you open an envelope and become one of eight trades. Nobody else knows which. Keep it that way.</p></div></div>
             <div className="bg-night-2 border border-night-3 rounded-md p-4 flex gap-3"><CardFace cardKey="job:jeweler" width={90} preview={false} /><div><div className="font-display text-gold text-lg">Gold for your trade</div><p className="text-sm">Gold is earned by <em>trades</em>, not players, on a public board. Selling wares fills your track — and tells the table something about who you are.</p></div></div>
             <div className="bg-night-2 border border-night-3 rounded-md p-4 flex gap-3"><CardFace cardKey="mishap:bee-swarm" width={90} preview={false} /><div><div className="font-display text-gold text-lg">Accidents happen</div><p className="text-sm">Every card you play is placed face-down and shuffled before it's revealed. Nobody can prove who arranged the goose.</p></div></div>
           </div>
@@ -67,10 +67,10 @@ export default function Rules() {
         <Section id="envelope" eyebrow="Your envelope" title="What you hold">
           <p className="max-w-2xl mb-4">Every seat holds the same shape of hand: enough cards to place one in front of every seat every round. Hover any card to read it large.</p>
           <div className="flex flex-wrap gap-3 items-end">
-            <div className="text-center"><CardFace cardKey="job:carpenter" width={104} /><div className="text-xs mt-1 font-ui">Wares · most of your hand</div></div>
+            <div className="text-center"><CardFace cardKey="job:miller" width={104} /><div className="text-xs mt-1 font-ui">Wares · most of your hand</div></div>
             <div className="text-center"><CardFace cardKey="heal" width={104} /><div className="text-xs mt-1 font-ui">Heal × 2</div></div>
             <div className="text-center"><CardFace cardKey="protect" width={104} /><div className="text-xs mt-1 font-ui">Protect × 1</div></div>
-            <div className="text-center"><CardFace cardKey="alms:carpenter" width={104} /><div className="text-xs mt-1 font-ui">Alms × 1 · for your trade</div></div>
+            <div className="text-center"><CardFace cardKey="alms:miller" width={104} /><div className="text-xs mt-1 font-ui">Alms × 1 · for your trade</div></div>
             <div className="text-center"><CardFace cardKey="tax-collector" width={104} /><div className="text-xs mt-1 font-ui">Tax Collector × 1</div></div>
             <div className="text-center"><CardFace cardKey="mishap:hidden-rake" width={104} /><div className="text-xs mt-1 font-ui">Mishap × 3 · 1 wound</div></div>
             <div className="text-center"><CardFace cardKey="calamity:trebuchet-practice" width={104} /><div className="text-xs mt-1 font-ui">Calamity × 1 · 2 wounds</div></div>
@@ -103,7 +103,7 @@ export default function Rules() {
               ['Heals', 'Each Heal removes one wound. Attacks and Heals in the same pile net out — a Heal can save you from a killing blow.'],
               ['Deaths', 'Reach your death number and you die at the end of the pile — funeral after the round.'],
               ['Gold', 'Alms is judged first on the board as it stood; then wares bank 1 each; then signature gold effects.'],
-              ['Words', 'Truth cards (Inquest, Appraisal, Tracks in the Snow) are answered by the game itself — no lying possible.'],
+              ['Words', 'Truth cards (Inquest, Appraisal) are answered by the game itself — no lying possible.'],
             ].map(([t, d], i) => <li key={t} className="bg-night-2 border border-night-3 rounded-md p-3 flex gap-3"><span className="font-display text-2xl text-gold w-6">{i + 1}</span><div><div className="font-display text-parchment">{t}</div><div className="text-sm text-parchment/85">{d}</div></div></li>)}
           </ol>
         </Section>
@@ -123,9 +123,9 @@ export default function Rules() {
           </div>
         </Section>
 
-        <Section id="trades" eyebrow="The twelve trades" title="Every trade has a verb — and three signature cards">
+        <Section id="trades" eyebrow="The eight trades" title="Every trade has a verb — and three signature cards">
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {TRADES.map((t) => (
+            {ACTIVE_TRADES.map((t) => (
               <div key={t} className="bg-night-2 border border-night-3 rounded-md p-3 flex gap-3">
                 <Portrait trade={t} width={110} />
                 <ul className="text-xs space-y-1.5 min-w-0">

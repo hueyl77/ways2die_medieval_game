@@ -1,4 +1,4 @@
-import { CARDS, TRADES, def, isAttack, isJob, isHeal, MISHAP_KEYS, CALAMITY_KEYS, signatureKeys, type Trade } from './cards.ts';
+import { CARDS, TRADES, ACTIVE_TRADES, def, isAttack, isJob, isHeal, MISHAP_KEYS, CALAMITY_KEYS, signatureKeys, type Trade } from './cards.ts';
 import { randInt, shuffle, pick } from './rng.ts';
 import { sceneCount } from './scenes.ts';
 import type { GameState, Seat, CardInst, Settings, Calendar, Season, LogEvent, ScoreRow } from './types.ts';
@@ -51,7 +51,7 @@ function newCard(s: GameState, key: string, ownerSeat: number, zone: CardInst['z
 export function createGame(o: { id: string; code: string; hostUserId: string; seats: SeatSpec[]; settings?: Partial<Settings>; seed: number; now: number }): GameState {
   const settings = { ...DEFAULT_SETTINGS, ...(o.settings ?? {}) };
   const seatCount = o.seats.length;
-  if (seatCount < 4 || seatCount > 8) throw new RuleError('bad_seat_count');
+  if (seatCount < 4 || seatCount > Math.min(8, ACTIVE_TRADES.length)) throw new RuleError('bad_seat_count');
   const calendar = calendarFor(seatCount);
   const s: GameState = {
     id: o.id, code: o.code, hostUserId: o.hostUserId, status: 'playing', seed: o.seed, rng: o.seed >>> 0,
@@ -60,7 +60,7 @@ export function createGame(o: { id: string; code: string; hostUserId: string; se
     lockedTrades: [], shieldedTrades: [], absentTrades: [], succession: [], choices: [], taxedPiles: [], curfewVoids: 0, roundLog: null, logs: [],
     nextCardId: 1, winners: null, sharedBy: null, scoreRows: null, placementsThisRound: {},
   };
-  const trades = shuffle(s, [...TRADES]);
+  const trades = shuffle(s, [...ACTIVE_TRADES]);
   o.seats.forEach((spec, i) => {
     s.seats.push({
       index: i, userId: spec.userId, name: spec.name, crest: spec.crest, isTownsfolk: spec.isTownsfolk, alive: true,
@@ -169,12 +169,12 @@ function addGold(s: GameState, t: Trade, delta: number, by: string, from?: Trade
   return applied !== 0;
 }
 function richest(s: GameState, exclude: Trade[] = []): Trade[] {
-  const cands = TRADES.filter((t) => unlocked(s, t) && !exclude.includes(t));
+  const cands = ACTIVE_TRADES.filter((t) => unlocked(s, t) && !exclude.includes(t));
   const max = Math.max(...cands.map((t) => s.gold[t]));
   return cands.filter((t) => s.gold[t] === max);
 }
 function poorest(s: GameState): Trade[] {
-  const cands = TRADES.filter((t) => unlocked(s, t));
+  const cands = ACTIVE_TRADES.filter((t) => unlocked(s, t));
   const min = Math.min(...cands.map((t) => s.gold[t]));
   return cands.filter((t) => s.gold[t] === min);
 }
@@ -299,7 +299,7 @@ export function beginResolve(s: GameState, now: number): void {
       const owner = s.seats[p];
       const answerer = owner.alive && isHuman(owner) ? p : crierHuman(s);
       if (answerer === null) continue;
-      s.choices.push({ id: `${s.round}-${c.id}`, seat: answerer, cardId: c.id, cardKey: c.key, kind: 'track', options: TRADES.filter((t) => unlocked(s, t)), answer: null });
+      s.choices.push({ id: `${s.round}-${c.id}`, seat: answerer, cardId: c.id, cardKey: c.key, kind: 'track', options: ACTIVE_TRADES.filter((t) => unlocked(s, t)), answer: null });
       log(s, { t: 'choice_wait', seat: answerer, cardKey: c.key });
     }
   }
@@ -374,7 +374,7 @@ export function finishResolve(s: GameState, now: number, flags: { curfew: boolea
         case 'sig:paste-gems': addGold(s, richest(s)[0], -2, c.key); break;
         case 'sig:king-s-commission': addGold(s, 'jeweler', 2, c.key); break;
         case 'sig:miller-s-toll': addGold(s, 'miller', Math.max(1, Math.min(3, Math.floor(pile.filter((x) => isJob(x.key)).length / 2))), c.key); break;
-        case 'sig:thumb-on-the-scale': for (const t of TRADES) if (t !== 'miller' && unlocked(s, t) && s.gold[t] > s.gold['miller']) addGold(s, t, -1, c.key); break;
+        case 'sig:thumb-on-the-scale': for (const t of ACTIVE_TRADES) if (t !== 'miller' && unlocked(s, t) && s.gold[t] > s.gold['miller']) addGold(s, t, -1, c.key); break;
         case 'sig:physician-s-fee': addGold(s, 'apothecary', Math.min(2, s.seats.filter((x) => x.alive).reduce((n, x) => n + woundsOf(s, x.index), 0)), c.key); break;
         case 'sig:cordwood': addGold(s, 'woodsman', 2, c.key); break;
         case 'sig:inquest': addGold(s, 'city-guard', 1, c.key); break;
@@ -421,7 +421,7 @@ export function finishResolve(s: GameState, now: number, flags: { curfew: boolea
     for (const t of r) addGold(s, t, -2, 'reeves-tax');
   }
   // Optional leader rule (settings.leaderRules): the Reeve's tithe — each track pays 1 gold per 8 it holds
-  if (s.settings.leaderRules) for (const t of TRADES) {
+  if (s.settings.leaderRules) for (const t of ACTIVE_TRADES) {
     if (!unlocked(s, t)) continue;
     const due = Math.floor(s.gold[t] / 8);
     if (due > 0) addGold(s, t, -due, 'tithe');
