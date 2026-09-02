@@ -29,7 +29,8 @@ export interface Seat {
   revealedTrade: Trade | null;
   locked: boolean;
   ready: boolean;
-  ack: boolean;
+  ack: boolean;                // clicked Next for the current reveal scene
+  skipReveal: boolean;         // skipped the rest of this reveal
   afkRounds: number;
   attacksPlaced: number;
   // secrets
@@ -49,9 +50,12 @@ export interface Settings {
   gossipSeconds: number;
   placementSeconds: number;
   choiceSeconds: number;
-  revealSeconds: number;
+  revealSeconds: number;         // legacy, unused
+  revealStepSeconds: number;     // timer per reveal scene
   funeralSeconds: number;
-  extraTownsfolk: number;
+  extraTownsfolk: number;        // legacy, unused
+  tableSize: number;             // 4–12 seats; empty seats become bots
+  seasonRules: boolean;          // optional variant: Market Fair, Reeve's Tax, Hungry Winter (off = every round plays the same)
   revealPlacementsAtEnd: boolean;
 }
 
@@ -64,7 +68,7 @@ export type LogEvent =
   | { t: 'heal'; seat: number; amount: number; cardKey: string; total: number }
   | { t: 'poison_set'; seat: number }
   | { t: 'death'; seat: number; trade: Trade; name: string }
-  | { t: 'gold'; trade: Trade; delta: number; by: string; from?: Trade; absorbed?: boolean }
+  | { t: 'gold'; trade: Trade; delta: number; by: string; from?: Trade; absorbed?: boolean; pileSeat?: number; cardId?: string }
   | { t: 'shield'; trade: Trade; by: string }
   | { t: 'scoring'; seat: number; cardKey: string }
   | { t: 'pending'; pileSeat: number; cardKey: string; untilRound: number | null }
@@ -107,6 +111,8 @@ export interface GameState extends Record<string, unknown> {
   phase: Phase;
   phaseDeadline: number | null;   // epoch ms
   crierSeat: number;
+  revealStep: number;          // current reveal scene index
+  revealSteps: number;         // total scenes in this reveal
   seats: Seat[];
   cards: CardInst[];
   gold: Record<string, number>;
@@ -130,7 +136,7 @@ export interface CardView { id: string; key: string; meta: Record<string, number
 export interface SeatView {
   index: number; userId: string | null; name: string; crest: string; isTownsfolk: boolean; alive: boolean;
   wounds: number; woundCards: CardView[]; woundTokens: number; diedRound: number | null;
-  revealedTrade: Trade | null; locked: boolean; ready: boolean; ack: boolean;
+  revealedTrade: Trade | null; locked: boolean; ready: boolean; ack: boolean; skipReveal: boolean;
   scoringCards: CardView[]; pendingCards: CardView[]; pileCount: number; gravePoolCount: number;
   handCount: number; willSealed: boolean; isMe: boolean;
 }
@@ -139,6 +145,7 @@ export interface PlayerView {
   id: string; code: string; hostUserId: string; status: GameState['status'];
   settings: Settings; seatCount: number; calendar: Calendar; round: number; season: Season | null;
   phase: Phase; phaseDeadline: number | null; crierSeat: number; version: number;
+  revealStep: number; revealSteps: number; revealWaitingOn: number[];
   seats: SeatView[]; gold: Record<string, number>; lockedTrades: Trade[]; shieldedTrades: Trade[];
   succession: number[]; roundLog: RoundLog | null; logs: RoundLog[];
   winners: number[] | null; sharedBy: number[] | null; scoreRows: ScoreRow[] | null;

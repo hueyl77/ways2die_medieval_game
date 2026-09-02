@@ -26,8 +26,7 @@ export default function Room() {
   const me = view.seats.find((s) => s.isMe);
   const humans = view.seats.filter((s) => !s.isTownsfolk).length;
   const bots = view.seats.filter((s) => s.isTownsfolk).length;
-  const strangers = Math.max(0, 4 - humans - bots);
-  const seatsTotal = Math.min(12, humans + bots + strangers);
+  const seatsTotal = humans + bots;
   const cal = calendarPreview(seatsTotal);
 
   return (
@@ -51,16 +50,13 @@ export default function Room() {
                   : <span className={`ml-auto text-xs font-ui uppercase tracking-wider ${s.ready ? 'text-heal' : 'text-ink-2'}`}>{s.ready ? 'ready' : 'not ready'}</span>}
               </li>
             ))}
-            {Array.from({ length: strangers }).map((_, i) => (
-              <li key={`t${i}`} className="flex items-center gap-3 opacity-50"><Crest color="stranger" size={22} /><span className="font-ui italic">Stranger {i + 1} (fills an empty chair)</span></li>
-            ))}
           </ul>
           <div className="mt-4 flex flex-wrap gap-2 items-center">
             <Button variant={me?.ready ? 'ghost' : 'primary'} disabled={busy} onClick={() => void act(() => api.lobbyReady(view.id, !me?.ready))}>{me?.ready ? 'Not ready' : "I'm ready"}</Button>
-            {isHost && <Button variant="ghost" disabled={busy || humans + bots >= 12} onClick={() => void act(() => api.bot(view.id, 'add'))}>Add a bot</Button>}
+            {isHost && <Button variant="ghost" disabled={busy || seatsTotal >= 12} onClick={() => void act(() => api.bot(view.id, 'add'))}>Add a bot</Button>}
             {isHost && <Button disabled={busy} onClick={() => void act(() => api.start(view.id))}>Start the year</Button>}
           </div>
-          <p className="text-xs text-ink-2 mt-2">Bots and strangers play random cards and cannot win. Fewer than four seats are filled with strangers automatically.</p>
+          <p className="text-xs text-ink-2 mt-2">The host sets the table size (4–12). Seats without a player are filled by bots, who play random cards and cannot win.</p>
           <div className="mt-4"><Eyebrow>Your crest</Eyebrow>
             <div className="flex flex-wrap gap-2 mt-2">
               {CREST_COLORS.map((c) => { const taken = view.seats.some((s) => s.crest === c && !s.isMe); return (
@@ -72,12 +68,17 @@ export default function Room() {
         </Panel>
         <div className="space-y-4">
           <Panel title="This year">
-            <p className="text-sm"><span className="text-gold">{seatsTotal} seats</span> · {cal.rounds} rounds · {cal.seasons}</p>
+            <p className="text-sm"><span className="text-gold">{seatsTotal} seats</span> · {cal.rounds} rounds{view.settings.seasonRules ? ` · ${cal.seasons}` : ''}</p>
             <p className="text-xs text-ink-2 mt-1">Death at {cal.deathAt} wounds · {cal.jobs} wares cards each</p>
           </Panel>
           <Panel title="Settings">
-            <SettingRow label="Gossip" value={view.settings.gossipSeconds} unit="s" host={isHost} onChange={(v) => act(() => api.settings(view.id, { gossipSeconds: v }))} step={30} />
+            <SettingRow label="Table size" value={seatsTotal} unit=" seats" host={isHost} onChange={(v) => act(() => api.settings(view.id, { tableSize: v }))} step={1} />
             <SettingRow label="Placement" value={view.settings.placementSeconds} unit="s" host={isHost} onChange={(v) => act(() => api.settings(view.id, { placementSeconds: v }))} step={30} />
+            <SettingRow label="Reveal, per scene" value={view.settings.revealStepSeconds ?? 20} unit="s" host={isHost} onChange={(v) => act(() => api.settings(view.id, { revealStepSeconds: v }))} step={5} />
+            <div className="flex items-center justify-between py-1 text-sm">
+              <span className="text-ink-2" title="Market Fair (+1 per wares in Harvest), the Reeve's Tax, and the Hungry Winter">Season rules (variant)</span>
+              {isHost ? <button className={`px-2 rounded-sm font-ui text-xs uppercase ${view.settings.seasonRules ? 'bg-gold text-night' : 'bg-night-3'}`} onClick={() => act(() => api.settings(view.id, { seasonRules: !view.settings.seasonRules }))}>{view.settings.seasonRules ? 'On' : 'Off'}</button> : <span className="font-ui">{view.settings.seasonRules ? 'On' : 'Off'}</span>}
+            </div>
           </Panel>
         </div>
       </div>
@@ -99,8 +100,8 @@ function SettingRow({ label, value, unit, host, onChange, step }: { label: strin
 }
 
 export function calendarPreview(seats: number) {
-  if (seats <= 5) return { rounds: 6, seasons: 'Spring · Harvest · Winter (2 rounds each)', deathAt: 3, jobs: seats * 6 - 9 };
-  if (seats <= 8) return { rounds: 4, seasons: 'Harvest · Winter (2 rounds each)', deathAt: 4, jobs: seats * 4 - 9 };
-  return { rounds: 3, seasons: 'Spring · Harvest · Winter (1 round each)', deathAt: 4, jobs: seats * 3 - 9 };
+  if (seats <= 5) return { rounds: 6, seasons: 'Spring · Harvest · Winter (2 rounds each)', deathAt: 3, jobs: seats * 6 - 11 };
+  if (seats <= 8) return { rounds: 4, seasons: 'Harvest · Winter (2 rounds each)', deathAt: 4, jobs: seats * 4 - 11 };
+  return { rounds: 3, seasons: 'Spring · Harvest · Winter (1 round each)', deathAt: 4, jobs: seats * 3 - 11 };
 }
 export type { PlayerView };

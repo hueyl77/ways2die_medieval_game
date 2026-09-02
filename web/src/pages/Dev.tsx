@@ -1,11 +1,12 @@
 // Local harness: runs the real engine in the browser with fake seats so the table,
 // hand, reveal animation and modals can be exercised without accounts or a server.
 import { useCallback, useMemo, useRef, useState } from 'react';
-import { createGame, setReady, submitPlacement, answerChoice, acknowledge, sealWill, tick, projectFor, handOf, gravePoolOf, heirOptions, type GameState } from '../engine/index.ts';
+import { createGame, setReady, submitPlacement, answerChoice, acknowledge, revealSkip, sealWill, tick, projectFor, handOf, gravePoolOf, heirOptions, type GameState } from '../engine/index.ts';
 import { Table } from '../components/Table';
 import { Hand } from '../components/Hand';
 import { GoldBoard, Calendar } from '../components/GoldBoard';
-import { RevealPlayer } from '../components/RevealPlayer';
+import { RevealPlayer, type GoldAnim } from '../components/RevealPlayer';
+import { GameLog } from '../components/GameLog';
 import { ChoiceModal, FuneralModal, EndScreen } from '../components/Modals';
 import { Button, Eyebrow } from '../components/ui';
 import { TRADE_INFO, def } from '../lib/cards';
@@ -22,7 +23,7 @@ export default function Dev() {
   const [selected, setSelected] = useState<string | null>(null);
   const [assignments, setAssignments] = useState<Record<number, string>>({});
   const [haunt, setHaunt] = useState<{ cardId: string; pileSeat: number } | null>(null);
-  const [watched, setWatched] = useState(0);
+  const [goldAnim, setGoldAnim] = useState<GoldAnim | null>(null);
   const bump = useCallback(() => setVersion((v) => v + 1), []);
   const s = stateRef.current;
   const view = useMemo(() => projectFor(s, ME, version, Date.now()), [s, version]);
@@ -64,7 +65,8 @@ export default function Dev() {
   const me = view.seats[view.me.seat!];
   const isGhost = view.me.isGhost;
   const now = Date.now();
-  const showReveal = (view.phase === 'reveal' || view.phase === 'funeral') && !!view.roundLog?.complete && watched < view.round;
+  const showReveal = view.phase === 'reveal' && !!view.roundLog?.complete;
+  const secondsLeft = view.phaseDeadline ? Math.max(0, Math.ceil((view.phaseDeadline - Date.now()) / 1000)) : null;
   const allAssigned = view.seats.every((x) => assignments[x.index]);
 
   const onSeatClick = (seat: number) => {
@@ -82,19 +84,19 @@ export default function Dev() {
         <div><Eyebrow>Dev harness</Eyebrow><div className="font-display text-lg">{view.phase === 'ended' ? 'The year is over' : <>Round {view.round}/{view.calendar.rounds} · <span className="capitalize">{view.season}</span> · {view.phase}</>}</div></div>
         <div className="text-sm">{isGhost ? '👻 ghost' : view.me.trade && <>You are the <span className="text-gold">{TRADE_INFO[view.me.trade].emoji} {TRADE_INFO[view.me.trade].name}</span></>}</div>
         <div className="ml-auto flex gap-2">
-          <Button variant="ghost" onClick={() => { stateRef.current = makeGame(5); setWatched(0); setAssignments({}); bump(); }}>New 5-seat game</Button>
-          <Button variant="ghost" onClick={() => { stateRef.current = makeGame(9); setWatched(0); setAssignments({}); bump(); }}>New 9-seat game</Button>
+          <Button variant="ghost" onClick={() => { stateRef.current = makeGame(5); setAssignments({}); bump(); }}>New 5-seat game</Button>
+          <Button variant="ghost" onClick={() => { stateRef.current = makeGame(9); setAssignments({}); bump(); }}>New 9-seat game</Button>
           <Button variant="ghost" onClick={() => { tick(stateRef.current, now + 1e9); bump(); }}>Force deadline</Button>
         </div>
       </header>
       <main className="relative min-h-0 min-w-0 p-2">
         <Table view={view} assignments={me.locked ? view.me.placements : assignments} hauntTarget={haunt?.pileSeat ?? null} onSeatClick={onSeatClick} selectable={view.phase === 'placement' && !me.locked} />
-        {showReveal && view.roundLog && <RevealPlayer log={view.roundLog} view={view} onDone={() => setWatched(view.round)} />}
+        {showReveal && view.roundLog && <RevealPlayer log={view.roundLog} view={view} secondsLeft={secondsLeft} busy={false} onNext={() => { acknowledge(stateRef.current, me.index, now); settle(); }} onSkip={() => { revealSkip(stateRef.current, me.index, now); settle(); }} onGold={setGoldAnim} />}
         {view.phase === 'choice' && view.me.choices.length > 0 && <ChoiceModal view={view} busy={false} onChoose={(cid, t) => { answerChoice(stateRef.current, me.index, cid, t as never, now); settle(); }} />}
-        {view.phase === 'funeral' && isGhost && !me.willSealed && view.succession.length > 0 && !showReveal && <FuneralModal view={view} busy={false} onSeal={(h) => { sealWill(stateRef.current, me.index, h, now); settle(); }} />}
-        {view.phase === 'ended' && <EndScreen view={view} onHome={() => { stateRef.current = makeGame(5); setWatched(0); bump(); }} />}
+        {view.phase === 'funeral' && isGhost && !me.willSealed && view.succession.length > 0 && <FuneralModal view={view} busy={false} onSeal={(h) => { sealWill(stateRef.current, me.index, h, now); settle(); }} />}
+        {view.phase === 'ended' && <EndScreen view={view} onHome={() => { stateRef.current = makeGame(5); bump(); }} />}
       </main>
-      <aside className="hidden lg:flex flex-col gap-4 p-3 border-l border-night-3 bg-night-2/40 min-h-0 row-span-2"><GoldBoard view={view} /><Calendar view={view} /></aside>
+      <aside className="hidden lg:flex flex-col gap-4 p-3 border-l border-night-3 bg-night-2/40 min-h-0 row-span-2"><GoldBoard view={view} override={showReveal ? goldAnim?.gold ?? null : null} flash={showReveal ? goldAnim?.flash ?? null : null} /><Calendar view={view} /><div className="flex-1 min-h-0 flex flex-col"><div className="font-ui text-[11px] tracking-[0.2em] uppercase text-gold">Log</div><GameLog view={view} /></div></aside>
       <footer className="min-w-0 border-t border-night-3 bg-night-2/60 px-3 py-2">
         <div className="flex items-center gap-3 flex-wrap mb-1">
           {view.phase === 'gossip' && me.alive && <Button onClick={() => { setReady(stateRef.current, me.index, now); settle(); }}>Ready</Button>}
@@ -105,8 +107,6 @@ export default function Dev() {
             {selected && <span className="text-sm text-gold">Click a seat for {def(view.me.hand.find((c) => c.id === selected)!.key).name}</span>}
           </>)}
           {view.phase === 'placement' && isGhost && (<><Button disabled={me.locked || !haunt} onClick={() => { submitPlacement(stateRef.current, me.index, {}, haunt, now); setHaunt(null); settle(); }}>Haunt</Button><Button variant="ghost" disabled={me.locked} onClick={() => { submitPlacement(stateRef.current, me.index, {}, null, now); settle(); }}>Rest quietly</Button></>)}
-          {view.phase === 'reveal' && !showReveal && <Button onClick={() => { acknowledge(stateRef.current, me.index, now); settle(); }}>Continue</Button>}
-          {view.phase === 'reveal' && !showReveal && <Button variant="ghost" onClick={() => setWatched(0)}>Watch again</Button>}
           {view.phase === 'gossip' && me.alive === false && <Button onClick={settle}>Skip (dead)</Button>}
         </div>
         <Hand view={view} cards={isGhost ? view.me.gravePool : view.me.hand} selected={selected ?? haunt?.cardId ?? null} assignments={me.locked ? view.me.placements : assignments} onSelect={(cid) => { if (view.phase === 'placement' && !me.locked) setSelected((x) => (x === cid ? null : cid)); }} />

@@ -1,5 +1,5 @@
 import type { GameState, PlayerView, SeatView, CardView, Seat } from './types.ts';
-import { handOf, gravePoolOf, woundsOf, pileCount, heirOptions, seasonOf } from './engine.ts';
+import { handOf, gravePoolOf, woundsOf, pileCount, heirOptions, seasonOf, revealWaitingOn } from './engine.ts';
 
 const view = (c: { id: string; key: string; meta: Record<string, number | string | boolean | null> }): CardView => ({ id: c.id, key: c.key, meta: { ...c.meta } });
 
@@ -10,7 +10,7 @@ export function projectFor(s: GameState, userId: string | null, version: number,
     wounds: woundsOf(s, st.index),
     woundCards: s.cards.filter((c) => c.zone === 'wound' && c.pileSeat === st.index).map(view),
     woundTokens: st.woundTokens, diedRound: st.diedRound, revealedTrade: st.revealedTrade,
-    locked: st.locked, ready: st.ready, ack: st.ack,
+    locked: st.locked, ready: st.ready, ack: st.ack, skipReveal: st.skipReveal ?? false,
     scoringCards: s.cards.filter((c) => c.zone === 'scoring' && c.pileSeat === st.index).map(view),
     pendingCards: s.cards.filter((c) => c.zone === 'pending' && c.pileSeat === st.index).map(view),
     pileCount: pileCount(s, st.index), gravePoolCount: gravePoolOf(s, st.index).length,
@@ -20,7 +20,9 @@ export function projectFor(s: GameState, userId: string | null, version: number,
   return {
     id: s.id, code: s.code, hostUserId: s.hostUserId, status: s.status, settings: s.settings, seatCount: s.seatCount,
     calendar: s.calendar, round: s.round, season: s.status === 'playing' ? seasonOf(s) : null, phase: s.phase,
-    phaseDeadline: s.phaseDeadline, crierSeat: s.crierSeat, version, seats, gold: { ...s.gold },
+    phaseDeadline: s.phaseDeadline, crierSeat: s.crierSeat, version,
+    revealStep: s.revealStep ?? 0, revealSteps: s.revealSteps ?? 0, revealWaitingOn: s.phase === 'reveal' ? revealWaitingOn(s) : [],
+    seats, gold: { ...s.gold },
     lockedTrades: [...s.lockedTrades], shieldedTrades: [...s.shieldedTrades],
     succession: isGhost && !me!.willSealed ? heirOptions(s, me!.index) : [],
     roundLog: s.roundLog, logs: s.logs, winners: s.winners, sharedBy: s.sharedBy, scoreRows: s.scoreRows,

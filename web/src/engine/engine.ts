@@ -1,11 +1,15 @@
 import { CARDS, TRADES, def, isAttack, isJob, isHeal, MISHAP_KEYS, CALAMITY_KEYS, signatureKeys, type Trade } from './cards.ts';
 import { randInt, shuffle, pick } from './rng.ts';
+import { sceneCount } from './scenes.ts';
 import type { GameState, Seat, CardInst, Settings, Calendar, Season, LogEvent, ScoreRow } from './types.ts';
 
 export const DEFAULT_SETTINGS: Settings = {
-  gossipSeconds: 120, placementSeconds: 150, choiceSeconds: 30, revealSeconds: 45,
-  funeralSeconds: 60, extraTownsfolk: 0, revealPlacementsAtEnd: false,
+  gossipSeconds: 120, placementSeconds: 150, choiceSeconds: 30, revealSeconds: 45, revealStepSeconds: 20,
+  funeralSeconds: 60, extraTownsfolk: 0, tableSize: 4, seasonRules: false, revealPlacementsAtEnd: false,
 };
+/** Season rules are an optional variant; off, every round plays the same and the seasons are just names on the calendar. */
+const seasonal = (s: GameState) => !!s.settings.seasonRules;
+const stepMs = (s: GameState) => (s.settings.revealStepSeconds ?? 20) * 1000;
 
 export class RuleError extends Error {
   code: string;
@@ -17,7 +21,8 @@ export function calendarFor(seatCount: number): Calendar {
   if (seatCount <= 5) { rounds = 6; seasons = ['spring', 'spring', 'harvest', 'harvest', 'winter', 'winter']; deathAt = 3; }
   else if (seatCount <= 8) { rounds = 4; seasons = ['harvest', 'harvest', 'winter', 'winter']; deathAt = 4; }
   else { rounds = 3; seasons = ['spring', 'harvest', 'winter']; deathAt = 4; }
-  return { rounds, seasons, jobsKept: seatCount * rounds - 9, deathAt };
+  // fixed cards per envelope: 4 Mishaps + 1 Calamity + 2 Heals + 1 Protect + 3 signatures = 11
+  return { rounds, seasons, jobsKept: seatCount * rounds - 11, deathAt };
 }
 
 export interface SeatSpec { userId: string | null; name: string; crest: string; isTownsfolk: boolean }
@@ -51,8 +56,8 @@ export function createGame(o: { id: string; code: string; hostUserId: string; se
   const calendar = calendarFor(seatCount);
   const s: GameState = {
     id: o.id, code: o.code, hostUserId: o.hostUserId, status: 'playing', seed: o.seed, rng: o.seed >>> 0,
-    settings, seatCount, calendar, round: 1, phase: 'gossip', phaseDeadline: o.now + settings.gossipSeconds * 1000,
-    crierSeat: 0, seats: [], cards: [], gold: Object.fromEntries(TRADES.map((t) => [t, 0])),
+    settings, seatCount, calendar, round: 1, phase: 'placement', phaseDeadline: o.now + settings.placementSeconds * 1000,
+    crierSeat: 0, revealStep: 0, revealSteps: 0, seats: [], cards: [], gold: Object.fromEntries(TRADES.map((t) => [t, 0])),
     lockedTrades: [], shieldedTrades: [], absentTrades: [], succession: [], choices: [], roundLog: null, logs: [],
     nextCardId: 1, winners: null, sharedBy: null, scoreRows: null, placementsThisRound: {},
   };
@@ -60,20 +65,21 @@ export function createGame(o: { id: string; code: string; hostUserId: string; se
   o.seats.forEach((spec, i) => {
     s.seats.push({
       index: i, userId: spec.userId, name: spec.name, crest: spec.crest, isTownsfolk: spec.isTownsfolk, alive: true,
-      woundTokens: 0, diedRound: null, revealedTrade: null, locked: false, ready: false, ack: false, afkRounds: 0,
+      woundTokens: 0, diedRound: null, revealedTrade: null, locked: false, ready: false, ack: false, skipReveal: false, afkRounds: 0,
       attacksPlaced: 0, trade: trades[i], heir: null, willSealed: false,
     });
   });
   s.absentTrades = trades.slice(seatCount);
   s.crierSeat = randInt(s, seatCount);
-  const mishaps = shuffle(s, [...MISHAP_KEYS]);
+  const mishaps = shuffle(s, [...MISHAP_KEYS, ...MISHAP_KEYS]);   // two copies of each of the 24 mishaps
   const calamities = shuffle(s, [...CALAMITY_KEYS]);
   for (const seat of s.seats) {
     const jobs = seat.isTownsfolk ? 27 : calendar.jobsKept;
     for (let j = 0; j < jobs; j++) newCard(s, `job:${seat.trade}`, seat.index);
     newCard(s, 'heal', seat.index); newCard(s, 'heal', seat.index); newCard(s, 'protect', seat.index);
     for (const k of signatureKeys(seat.trade)) newCard(s, k, seat.index);
-    newCard(s, mishaps.pop()!, seat.index); newCard(s, mishaps.pop()!, seat.index); newCard(s, calamities.pop()!, seat.index);
+    for (let m = 0; m < 4; m++) newCard(s, mishaps.pop()!, seat.index);
+    newCard(s, calamities.pop()!, seat.index);
     if (isHuman(seat)) s.succession.push(seat.index);
   }
   s.roundLog = { round: 1, events: [{ t: 'round_start', round: 1, season: seasonOf(s) }], complete: false };
@@ -149,13 +155,13 @@ const voidCard = (s: GameState, c: CardInst, by: string) => { if (!c.meta.voided
 const discard = (s: GameState, c: CardInst, by: string) => { log(s, { t: 'discard', pileSeat: c.pileSeat!, cardId: c.id, cardKey: c.key, by }); c.zone = 'town_square'; c.pileSeat = null; };
 const neighbors = (s: GameState, p: number) => [(p + s.seatCount - 1) % s.seatCount, (p + 1) % s.seatCount];
 
-function addGold(s: GameState, t: Trade, delta: number, by: string, from?: Trade): boolean {
+function addGold(s: GameState, t: Trade, delta: number, by: string, from?: Trade, ctx?: { pileSeat?: number; cardId?: string }): boolean {
   if (!unlocked(s, t) || delta === 0) return false;
-  if (delta < 0 && s.shieldedTrades.includes(t)) { log(s, { t: 'gold', trade: t, delta: 0, by, absorbed: true }); return false; }
+  if (delta < 0 && s.shieldedTrades.includes(t)) { log(s, { t: 'gold', trade: t, delta: 0, by, absorbed: true, ...ctx }); return false; }
   const before = s.gold[t];
   s.gold[t] = Math.max(0, before + delta);
   const applied = s.gold[t] - before;
-  if (applied !== 0) log(s, { t: 'gold', trade: t, delta: applied, by, from });
+  if (applied !== 0) log(s, { t: 'gold', trade: t, delta: applied, by, from, ...ctx });
   return applied !== 0;
 }
 function richest(s: GameState, exclude: Trade[] = []): Trade[] {
@@ -227,7 +233,7 @@ export function beginResolve(s: GameState, now: number): void {
     if (palisade) for (const c of attacks()) if (!def(c.key).pierce) voidCard(s, c, 'sig:palisade');
     for (const pr of pile.filter((c) => c.key === 'protect' && c.zone === 'revealed' && live(c))) {
       const targets = attacks().filter((c) => !def(c.key).pierce);
-      if (season === 'winter') { if (targets[0]) voidCard(s, targets[0], 'protect'); }
+      if (season === 'winter' && seasonal(s)) { if (targets[0]) voidCard(s, targets[0], 'protect'); }
       else for (const c of targets) voidCard(s, c, 'protect');
       pr.meta.used = true;
     }
@@ -318,10 +324,10 @@ export function finishResolve(s: GameState, now: number, flags: { curfew: boolea
     else log(s, { t: 'chosen', seat: ch.seat, cardKey: ch.cardKey, trade: ch.answer, auto: false });
   }
   // 7. gold — jobs first
-  const jobBonus = (season === 'harvest' ? 1 : 0) + (flags.trestle ? 1 : 0);
+  const jobBonus = (season === 'harvest' && seasonal(s) ? 1 : 0) + (flags.trestle ? 1 : 0);
   for (let p = 0; p < s.seatCount; p++) {
     if (isGrave(s, p) && s.seats[p].diedRound !== s.round) continue;
-    for (const c of revealedIn(s, p)) if (isJob(c.key) && live(c)) addGold(s, def(c.key).trade!, 1 + jobBonus, c.key);
+    for (const c of revealedIn(s, p)) if (isJob(c.key) && live(c)) addGold(s, def(c.key).trade!, 1 + jobBonus, c.key, undefined, { pileSeat: p, cardId: c.id });
   }
   // then signature gold effects clockwise from the Crier
   for (let i = 0; i < s.seatCount; i++) {
@@ -375,7 +381,7 @@ export function finishResolve(s: GameState, now: number, flags: { curfew: boolea
   }
   // 10. season end
   const next = s.calendar.seasons[s.round];
-  if (season === 'harvest' && next !== 'harvest') {
+  if (seasonal(s) && season === 'harvest' && next !== 'harvest') {
     const r = richest(s).filter((t) => s.gold[t] > 0);
     log(s, { t: 'season_event', kind: 'reeves-tax', trades: r });
     for (const t of r) addGold(s, t, -2, 'reeves-tax');
@@ -384,16 +390,43 @@ export function finishResolve(s: GameState, now: number, flags: { curfew: boolea
   s.logs.push(s.roundLog!);
   s.choices = [];
   s.phase = 'reveal';
-  s.phaseDeadline = now + (s.settings.revealSeconds + s.seatCount * 4) * 1000;
-  for (const st of s.seats) st.ack = false;
+  s.revealStep = 0;
+  s.revealSteps = Math.max(1, sceneCount(s.roundLog!));
+  s.phaseDeadline = now + stepMs(s);
+  for (const st of s.seats) { st.ack = false; st.skipReveal = false; }
 }
 
-// ---------------------------------------------------------------- reveal ack → funeral → next round
+// ---------------------------------------------------------------- reveal: one scene at a time, in lockstep
+const allRevealAcked = (s: GameState) => s.seats.filter(isHuman).every((x) => x.ack || x.skipReveal);
+
+/** A player clicked Next on the current scene. The table advances when everyone has. */
 export function acknowledge(s: GameState, seat: number, now: number): void {
   if (s.phase !== 'reveal') throw new RuleError('wrong_phase');
-  s.seats[seat].ack = true;
-  if (s.seats.filter(isHuman).every((x) => x.ack)) afterReveal(s, now);
+  const st = s.seats[seat];
+  if (st.isTownsfolk) throw new RuleError('not_a_player');
+  st.ack = true;
+  if (allRevealAcked(s)) advanceReveal(s, now);
 }
+export const revealNext = acknowledge;
+
+/** A player skips the rest of the reveal: they count as ready for every remaining scene. */
+export function revealSkip(s: GameState, seat: number, now: number): void {
+  if (s.phase !== 'reveal') throw new RuleError('wrong_phase');
+  const st = s.seats[seat];
+  if (st.isTownsfolk) throw new RuleError('not_a_player');
+  st.skipReveal = true; st.ack = true;
+  if (allRevealAcked(s)) advanceReveal(s, now);
+}
+
+export function advanceReveal(s: GameState, now: number): void {
+  if (s.phase !== 'reveal') return;
+  s.revealStep += 1;
+  if (s.revealStep >= s.revealSteps) { afterReveal(s, now); return; }
+  for (const st of s.seats) st.ack = st.skipReveal;
+  s.phaseDeadline = now + stepMs(s);
+  if (allRevealAcked(s)) advanceReveal(s, now);
+}
+export const revealWaitingOn = (s: GameState): number[] => s.seats.filter((x) => isHuman(x) && !x.ack && !x.skipReveal).map((x) => x.index);
 
 export function afterReveal(s: GameState, now: number): void {
   const pendingWills = deadHumans(s).filter((x) => !x.willSealed);
@@ -421,11 +454,10 @@ function nextRoundOrEnd(s: GameState, now: number): void {
   if (s.round >= s.calendar.rounds || livingHumans(s).length === 0) { finalScoring(s); return; }
   s.round += 1;
   s.crierSeat = (s.crierSeat + 1) % s.seatCount;
-  s.phase = 'gossip';
-  s.phaseDeadline = now + s.settings.gossipSeconds * 1000;
-  for (const st of s.seats) { st.ready = false; st.locked = false; st.ack = false; }
-  s.placementsThisRound = {};
+  for (const st of s.seats) { st.ready = false; st.ack = false; st.skipReveal = false; }
+  s.revealStep = 0; s.revealSteps = 0;
   s.roundLog = { round: s.round, events: [{ t: 'round_start', round: s.round, season: seasonOf(s) }], complete: false };
+  startPlacement(s, now);   // no Ready step: gossip happens while cards are placed
 }
 
 export function finalScoring(s: GameState): void {
@@ -470,7 +502,7 @@ export function tick(s: GameState, now: number): boolean {
     case 'gossip': startPlacement(s, now); return true;
     case 'placement': beginResolve(s, now); return true;
     case 'choice': finishResolve(s, now, { curfew: pendingCurfew(s), trestle: pendingTrestle(s) }); return true;
-    case 'reveal': afterReveal(s, now); return true;
+    case 'reveal': advanceReveal(s, now); return true;
     case 'funeral': {
       for (const st of deadHumans(s)) if (!st.willSealed) { const opts = heirOptions(s, st.index); if (opts.length) { const h = pick(s, opts); st.heir = h; s.succession = s.succession.filter((i) => i !== h); } st.willSealed = true; }
       nextRoundOrEnd(s, now); return true;
@@ -478,6 +510,25 @@ export function tick(s: GameState, now: number): boolean {
     default: return false;
   }
 }
+
+/** A human leaves a running game: the seat plays on as a bot. Whatever the seat was blocking is re-checked. */
+export function convertToBot(s: GameState, seat: number, now: number): void {
+  const st = s.seats[seat];
+  if (st.isTownsfolk) return;
+  st.isTownsfolk = true; st.userId = null; st.name = `${st.name} (left)`;
+  st.ready = true; st.ack = true; st.skipReveal = true; st.willSealed = true;
+  s.succession = s.succession.filter((i) => i !== seat);
+  for (const ch of s.choices) if (ch.seat === seat && !ch.answer) { const c = crierHuman(s); if (c !== null) ch.seat = c; else ch.answer = ch.options[0]; }
+  if (s.status !== 'playing') return;
+  switch (s.phase) {
+    case 'gossip': if (livingHumans(s).length && livingHumans(s).every((x) => x.ready)) startPlacement(s, now); break;
+    case 'placement': if (livingHumans(s).length && livingHumans(s).every((x) => x.locked)) beginResolve(s, now); break;
+    case 'choice': if (s.choices.every((c) => c.answer)) finishResolve(s, now, { curfew: pendingCurfew(s), trestle: pendingTrestle(s) }); break;
+    case 'reveal': if (allRevealAcked(s)) advanceReveal(s, now); break;
+    case 'funeral': if (deadHumans(s).every((x) => x.willSealed)) nextRoundOrEnd(s, now); break;
+  }
+}
+export const humanCount = (s: GameState): number => s.seats.filter((x) => x.userId !== null).length;
 
 export function pileCount(s: GameState, p: number): number { return s.cards.filter((c) => c.zone === 'placed' && c.pileSeat === p).length; }
 export { CARDS };
