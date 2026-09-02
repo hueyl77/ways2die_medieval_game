@@ -24,7 +24,7 @@ export default function Home() {
     <div className="min-h-full max-w-3xl mx-auto p-6">
       <header className="flex items-center justify-between mb-8">
         <div><Eyebrow>The village square</Eyebrow><h1 className="font-display text-3xl">Welcome, {displayName}</h1></div>
-        <div className="flex gap-2"><Button variant="ghost" onClick={() => nav('/rules')}>Rules</Button><Button variant="ghost" onClick={() => void signOut()}>Sign out</Button></div>
+        <div className="flex gap-2"><Button variant="ghost" onClick={() => window.open('/rules', '_blank', 'noopener')}>📜 Rules</Button><Button variant="ghost" onClick={() => void signOut()}>Sign out</Button></div>
       </header>
       <div className="grid md:grid-cols-2 gap-4">
         <Panel title="Open a table">

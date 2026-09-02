@@ -246,7 +246,7 @@ export default async function handler(req: Request): Promise<Response> {
         switch (op) {
           case 'state': break;
           case 'ready': if (state.phase === 'gossip') { setReady(state, seat.index, now); changed = true; } break;
-          case 'place': submitPlacement(state, seat.index, (body.placements as Record<string, string>) ?? {}, (body.haunt as { cardId: string; pileSeat: number } | null) ?? null, now); changed = true; break;
+          case 'place': submitPlacement(state, seat.index, (body.placements as Record<string, string>) ?? {}, (body.haunt as { cardId: string; pileSeat: number } | null) ?? null, now, (body.targets as Record<string, never>) ?? {}); changed = true; break;
           case 'choose': answerChoice(state, seat.index, String(body.choiceId), body.trade as never, now); changed = true; break;
           case 'will': sealWill(state, seat.index, Number(body.heir), now); changed = true; break;
           case 'continue': if (state.phase === 'reveal') { acknowledge(state, seat.index, now); changed = true; } break;

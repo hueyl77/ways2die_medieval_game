@@ -13,7 +13,7 @@ import { GoldBoard, Calendar } from '../components/GoldBoard';
 import { Chat } from '../components/Chat';
 import { RevealPlayer, type GoldAnim } from '../components/RevealPlayer';
 import { GameLog } from '../components/GameLog';
-import { ChoiceModal, FuneralModal, EndScreen } from '../components/Modals';
+import { ChoiceModal, FuneralModal, EndScreen, AlmsModal } from '../components/Modals';
 import { Button, Eyebrow } from '../components/ui';
 import { TRADE_INFO, def } from '../lib/cards';
 
@@ -39,11 +39,13 @@ export default function Game() {
   const [selected, setSelected] = useState<string | null>(null);
   const [assignments, setAssignments] = useState<Record<number, string>>({});
   const [haunt, setHaunt] = useState<{ cardId: string; pileSeat: number } | null>(null);
+  const [targets, setTargets] = useState<Record<string, string>>({});
+  const [almsFor, setAlmsFor] = useState<string | null>(null);   // Alms card waiting for a named trade
   const [seenLogs, setSeenLogs] = useState(0);
   const [goldAnim, setGoldAnim] = useState<GoldAnim | null>(null);
   const [tab, setTab] = useState<'gossip' | 'log'>('gossip');
 
-  useEffect(() => { if (view?.phase !== 'placement') { setAssignments({}); setSelected(null); setHaunt(null); } }, [view?.phase, view?.round]);
+  useEffect(() => { if (view?.phase !== 'placement') { setAssignments({}); setSelected(null); setHaunt(null); setTargets({}); setAlmsFor(null); } }, [view?.phase, view?.round]);
 
   // narrate truth answers and deaths into the chat as they happen
   useEffect(() => {
@@ -64,10 +66,12 @@ export default function Game() {
 
   const placeCardOnSeat = useCallback((cardId: string, seat: number) => {
     if (!view || view.phase !== 'placement' || locked) return;
-    if (isGhost) { if (view.seats[seat].alive) setHaunt({ cardId, pileSeat: seat }); setSelected(null); return; }
+    const card = view.me.hand.find((c) => c.id === cardId) ?? view.me.gravePool.find((c) => c.id === cardId);
+    if (isGhost) { if (view.seats[seat].alive) setHaunt({ cardId, pileSeat: seat }); setSelected(null); if (card?.key === 'alms' && !targets[cardId]) setAlmsFor(cardId); return; }
     setAssignments((a) => { const next = { ...a }; for (const k of Object.keys(next)) if (next[Number(k)] === cardId) delete next[Number(k)]; next[seat] = cardId; return next; });
     setSelected(null);
-  }, [view, locked, isGhost]);
+    if (card?.key === 'alms' && !targets[cardId]) setAlmsFor(cardId);
+  }, [view, locked, isGhost, targets]);
   const onSeatClick = useCallback((seat: number) => {
     if (!view || view.phase !== 'placement' || locked) return;
     if (!selected) { if (!isGhost && assignments[seat]) setSelected(assignments[seat]); return; }
@@ -80,8 +84,8 @@ export default function Game() {
     if (!view) return;
     const used = new Set(Object.values(assignments));
     const free = view.me.hand.filter((c) => !used.has(c.id));
-    const jobs = free.filter((c) => c.key.startsWith('job:')); const others = free.filter((c) => !c.key.startsWith('job:'));
-    const queue = [...jobs, ...others];
+    const jobs = free.filter((c) => c.key.startsWith('job:')); const others = free.filter((c) => !c.key.startsWith('job:') && c.key !== 'alms'); const alms = free.filter((c) => c.key === 'alms');
+    const queue = [...jobs, ...others, ...alms];
     const next = { ...assignments };
     for (const s of view.seats) if (!next[s.index]) { const c = queue.shift(); if (c) next[s.index] = c.id; }
     setAssignments(next);
@@ -93,6 +97,7 @@ export default function Game() {
 
   const showReveal = view.phase === 'reveal' && !!view.roundLog?.complete;
   const humansAtTable = view.seats.filter((s) => s.userId).length;
+  const reckoning = view.roundLog?.events.find((e) => e.t === 'reckoning');
   const myTrade = view.me.trade;
   const readyCount = view.seats.filter((s) => !s.isTownsfolk && s.alive && s.ready).length;
   const needed = view.seats.filter((s) => !s.isTownsfolk && s.alive).length;
@@ -105,17 +110,24 @@ export default function Game() {
         <div className="text-sm text-ink-2 flex-1 min-w-[200px]">{PHASE_TEXT[view.phase]}</div>
         {secondsLeft !== null && view.phase !== 'ended' && <div className={`font-ui tabular-nums text-xl ${secondsLeft <= 10 ? 'text-blood' : 'text-gold'}`}>{Math.floor(secondsLeft / 60)}:{String(secondsLeft % 60).padStart(2, '0')}</div>}
         {myTrade && <div className="text-sm">{isGhost ? '👻 You are a ghost' : <>You are the <span className="text-gold font-bold">{TRADE_INFO[myTrade].emoji} {TRADE_INFO[myTrade].name}</span> <span className="text-ink-2">(keep it secret)</span></>}</div>}
+        <Button variant="ghost" onClick={() => window.open('/rules', '_blank', 'noopener')} title="Open the rules in a new window">📜 Rules</Button>
         {view.status === 'finished' ? <Button variant="ghost" onClick={() => nav('/')}>Back to the square</Button>
           : humansAtTable <= 1 ? <Button variant="danger" disabled={busy} onClick={() => { if (window.confirm('Cancel this game? It will be removed from your saved tables.')) void act(() => api.cancel(view.id)).then(() => nav('/')); }}>Cancel game</Button>
           : <Button variant="ghost" disabled={busy} onClick={() => { if (window.confirm('Leave the table? Your seat plays on as a bot and the game continues without you.')) void act(() => api.leave(view.id)).then(() => nav('/')); }}>Leave game</Button>}
       </header>
 
       <main className="relative min-h-0 min-w-0 p-2">
+        {reckoning && reckoning.t === 'reckoning' && view.phase !== 'reveal' && view.phase !== 'ended' && (
+          <div className="absolute top-2 inset-x-2 z-10 mx-auto max-w-2xl bg-blood-deep/90 border border-blood rounded-md px-4 py-2 text-center text-sm shadow-card">
+            <span className="font-display text-base">⚖ The Reckoning.</span> {reckoning.seats.map((x) => `${view.seats[x.seat].name} holds the richest trade — ${TRADE_INFO[x.trade].name} (${x.gold} gold)`).join('; ')}. The envelope is open for the final round.
+          </div>
+        )}
         <Table view={view} assignments={effective} hauntTarget={haunt?.pileSeat ?? null} onSeatClick={onSeatClick} selectable={view.phase === 'placement' && !locked} dropSeat={dnd.hoverSeat} />
         {dnd.drag && createPortal(<div className="fixed z-[95] pointer-events-none" style={{ left: dnd.drag.x - 55, top: dnd.drag.y - 75, transform: 'rotate(-4deg)' }}><CardArt cardKey={(view.me.hand.find((c) => c.id === dnd.drag!.cardId) ?? view.me.gravePool.find((c) => c.id === dnd.drag!.cardId))?.key ?? 'protect'} width={110} /></div>, document.body)}
         {showReveal && view.roundLog && <RevealPlayer log={view.roundLog} view={view} secondsLeft={secondsLeft} busy={busy} onNext={() => void act(() => api.acknowledge(view.id))} onSkip={() => void act(() => api.skip(view.id))} onGold={setGoldAnim} />}
         {view.phase === 'choice' && view.me.choices.length > 0 && <ChoiceModal view={view} busy={busy} onChoose={(cid, t) => void act(() => api.choose(view.id, cid, t))} />}
         {view.phase === 'funeral' && isGhost && !me?.willSealed && view.succession.length > 0 && <FuneralModal view={view} busy={busy} onSeal={(h) => void act(() => api.will(view.id, h))} />}
+        {almsFor && <AlmsModal onPick={(t) => { setTargets((x) => ({ ...x, [almsFor]: t })); setAlmsFor(null); }} onCancel={() => { setAssignments((a) => { const n = { ...a }; for (const k of Object.keys(n)) if (n[Number(k)] === almsFor) delete n[Number(k)]; return n; }); if (haunt?.cardId === almsFor) setHaunt(null); setAlmsFor(null); }} />}
         {view.phase === 'ended' && <EndScreen view={view} onHome={() => nav('/')} />}
       </main>
 
@@ -136,14 +148,14 @@ export default function Game() {
           {view.phase === 'gossip' && me?.alive && <Button disabled={busy || me.ready} onClick={() => void act(() => api.ready(view.id))}>{me.ready ? 'Ready ✓' : 'Ready'}</Button>}
           {view.phase === 'gossip' && <span className="text-sm text-ink-2">{readyCount}/{needed} ready</span>}
           {view.phase === 'placement' && !isGhost && me?.alive && (<>
-            <Button disabled={busy || locked || !allAssigned} onClick={() => void act(() => api.place(view.id, Object.fromEntries(Object.entries(effective).map(([k, v]) => [String(k), v])), null))}>{locked ? 'Locked in ✓' : 'Lock in'}</Button>
+            <Button disabled={busy || locked || !allAssigned} onClick={() => { const missing = Object.values(effective).find((id) => view.me.hand.find((c) => c.id === id)?.key === 'alms' && !targets[id]); if (missing) { setAlmsFor(missing); return; } void act(() => api.place(view.id, Object.fromEntries(Object.entries(effective).map(([k, v]) => [String(k), v])), null, targets)); }}>{locked ? 'Locked in ✓' : 'Lock in'}</Button>
             {!locked && <Button variant="ghost" onClick={autoFill}>Fill the rest with wares</Button>}
             <span className="text-sm text-ink-2">{Object.keys(effective).length}/{view.seatCount} placed · {lockedCount}/{needed} locked</span>
             {selected && <span className="text-sm text-gold">Now click a seat for {def(view.me.hand.find((c) => c.id === selected)!.key).name}</span>}
             {!selected && Object.keys(effective).length === 0 && <span className="text-sm text-ink-2">Drag a card onto a seat, or click a card and then a seat.</span>}
           </>)}
           {view.phase === 'placement' && isGhost && (<>
-            <Button disabled={busy || locked || !haunt} onClick={() => void act(() => api.place(view.id, {}, haunt))}>{locked ? 'Haunted ✓' : 'Haunt'}</Button>
+            <Button disabled={busy || locked || !haunt} onClick={() => void act(() => api.place(view.id, {}, haunt, targets))}>{locked ? 'Haunted ✓' : 'Haunt'}</Button>
             {!locked && <Button variant="ghost" disabled={busy} onClick={() => void act(() => api.place(view.id, {}, null))}>Rest quietly</Button>}
             <span className="text-sm text-moon">{haunt ? `Haunting ${view.seats[haunt.pileSeat].name} with ${def(view.me.gravePool.find((c) => c.id === haunt.cardId)!.key).name}` : 'Pick a card from your grave pool, then a living seat.'}</span>
           </>)}
@@ -152,7 +164,7 @@ export default function Game() {
           {view.phase === 'funeral' && <span className="text-sm text-ink-2">{isGhost && !me?.willSealed ? 'Seal your will.' : 'The dead are sealing their wills…'}</span>}
           {error && <span className="text-sm text-blood ml-auto">{error}</span>}
         </div>
-        <Hand view={view} cards={isGhost ? view.me.gravePool : view.me.hand} selected={selected ?? haunt?.cardId ?? null} assignments={effective} onSelect={(cid) => { if (canDrag && !dnd.justDropped()) setSelected((s) => (s === cid ? null : cid)); }} onDragStart={canDrag ? dnd.startDrag : undefined} />
+        <Hand view={view} cards={isGhost ? view.me.gravePool : view.me.hand} selected={selected ?? haunt?.cardId ?? null} assignments={effective} targets={targets} onSelect={(cid) => { if (canDrag && !dnd.justDropped()) setSelected((s) => (s === cid ? null : cid)); }} onDragStart={canDrag ? dnd.startDrag : undefined} />
       </footer>
     </div>
   );

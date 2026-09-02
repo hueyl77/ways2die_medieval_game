@@ -1,0 +1,11 @@
+{
+ "basic-alms": {
+  "request_id": "atwd-basic-alms-v1",
+  "job_id": "dc1138a0-f763-40ac-bcff-8d99b658916b",
+  "status": "succeeded",
+  "credits": 0.5,
+  "error": null,
+  "url": "https://storage.googleapis.com/ludo-assets/api/47b4260b6cc0ccdea49358dfd31c977d.webp",
+  "file": "alms/basic-alms.webp"
+ }
+}

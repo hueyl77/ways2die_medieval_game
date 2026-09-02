@@ -34,6 +34,7 @@ export default function Room() {
       <header className="flex items-center justify-between mb-6">
         <div><Eyebrow>Room code</Eyebrow><h1 className="font-display text-4xl tracking-[0.3em]">{view.code}</h1></div>
         <div className="flex gap-2">
+          <Button variant="ghost" onClick={() => window.open('/rules', '_blank', 'noopener')} title="Open the rules in a new window">📜 Rules</Button>
           <Button variant="ghost" onClick={() => navigator.clipboard.writeText(`${window.location.origin}/room/${view.code}`)}>Copy invite link</Button>
           <Button variant="ghost" onClick={() => void act(() => api.leave(view.id)).then(() => nav('/'))}>Leave</Button>
         </div>
@@ -56,7 +57,7 @@ export default function Room() {
             {isHost && <Button variant="ghost" disabled={busy || seatsTotal >= 12} onClick={() => void act(() => api.bot(view.id, 'add'))}>Add a bot</Button>}
             {isHost && <Button disabled={busy} onClick={() => void act(() => api.start(view.id))}>Start the year</Button>}
           </div>
-          <p className="text-xs text-ink-2 mt-2">The host sets the table size (4–12). Seats without a player are filled by bots, who play random cards and cannot win.</p>
+          <p className="text-xs text-ink-2 mt-2">The host sets the table size (4–12). Seats without a player are filled by bots, who play random cards — and can win if they out-earn you.</p>
           <div className="mt-4"><Eyebrow>Your crest</Eyebrow>
             <div className="flex flex-wrap gap-2 mt-2">
               {CREST_COLORS.map((c) => { const taken = view.seats.some((s) => s.crest === c && !s.isMe); return (
@@ -100,8 +101,8 @@ function SettingRow({ label, value, unit, host, onChange, step }: { label: strin
 }
 
 export function calendarPreview(seats: number) {
-  if (seats <= 5) return { rounds: 6, seasons: 'Spring · Harvest · Winter (2 rounds each)', deathAt: 3, jobs: seats * 6 - 11 };
-  if (seats <= 8) return { rounds: 4, seasons: 'Harvest · Winter (2 rounds each)', deathAt: 4, jobs: seats * 4 - 11 };
-  return { rounds: 3, seasons: 'Spring · Harvest · Winter (1 round each)', deathAt: 4, jobs: seats * 3 - 11 };
+  if (seats <= 5) return { rounds: 6, seasons: 'Spring · Harvest · Winter (2 rounds each)', deathAt: 3, jobs: seats * 6 - 12 };
+  if (seats <= 8) return { rounds: 4, seasons: 'Harvest · Winter (2 rounds each)', deathAt: 4, jobs: seats * 4 - 12 };
+  return { rounds: 3, seasons: 'Spring · Harvest · Winter (1 round each)', deathAt: 4, jobs: seats * 3 - 12 };
 }
 export type { PlayerView };

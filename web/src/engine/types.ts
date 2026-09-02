@@ -56,6 +56,7 @@ export interface Settings {
   extraTownsfolk: number;        // legacy, unused
   tableSize: number;             // 4–12 seats; empty seats become bots
   seasonRules: boolean;          // optional variant: Market Fair, Reeve's Tax, Hungry Winter (off = every round plays the same)
+  leaderRules: boolean;          // optional variant: the Reeve's tithe every round + the Reckoning in the final round (off by default)
   revealPlacementsAtEnd: boolean;
 }
 
@@ -77,6 +78,8 @@ export type LogEvent =
   | { t: 'choice_wait'; seat: number; cardKey: string }
   | { t: 'chosen'; seat: number; cardKey: string; trade: Trade; auto: boolean }
   | { t: 'season_event'; kind: 'reeves-tax'; trades: Trade[] }
+  | { t: 'reckoning'; seats: { seat: number; trade: Trade; gold: number }[] }
+  | { t: 'alms'; pileSeat: number; trade: Trade; granted: boolean; rank: number }
   | { t: 'banner'; text: string }
   | { t: 'final_reveal'; seats: { seat: number; trade: Trade }[] }
   | { t: 'final_score'; rows: ScoreRow[]; winners: number[]; sharedBy: number[] };

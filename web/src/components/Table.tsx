@@ -39,7 +39,7 @@ function SeatTile({ seat, view, assignedKey, isCrier, hauntTarget, dropTarget, o
         {isCrier && <span title="Crier" className="text-[10px]">📯</span>}
       </div>
       <div className="text-[10px] font-ui uppercase tracking-wider text-ink-2 h-3">
-        {dead ? `☠ ${seat.revealedTrade ? TRADE_INFO[seat.revealedTrade].name : 'dead'}` : status}
+        {dead ? `☠ ${seat.revealedTrade ? TRADE_INFO[seat.revealedTrade].name : 'dead'}` : seat.revealedTrade ? <span className="text-gold">👑 {TRADE_INFO[seat.revealedTrade].name}</span> : status}
       </div>
       <div className="mt-1 flex items-center justify-center gap-1 h-[74px]">
         {dead ? (

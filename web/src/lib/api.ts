@@ -29,7 +29,7 @@ export const api = {
   bot: (gameId: string, action: 'add' | 'remove') => game('bot', { gameId, action }),
   start: (gameId: string) => game('start', { gameId }),
   ready: (gameId: string) => game('ready', { gameId }),
-  place: (gameId: string, placements: Record<string, string>, haunt: { cardId: string; pileSeat: number } | null) => game('place', { gameId, placements, haunt }),
+  place: (gameId: string, placements: Record<string, string>, haunt: { cardId: string; pileSeat: number } | null, targets: Record<string, string> = {}) => game('place', { gameId, placements, haunt, targets }),
   choose: (gameId: string, choiceId: string, trade: string) => game('choose', { gameId, choiceId, trade }),
   will: (gameId: string, heir: number) => game('will', { gameId, heir }),
   acknowledge: (gameId: string) => game('continue', { gameId }),
@@ -40,6 +40,6 @@ export const api = {
 export const ERROR_TEXT: Record<string, string> = {
   not_found: 'No room with that code.', game_started: 'That game has already started.', full: 'That room is full (12 seats).',
   need_a_player: 'Someone has to sit down first.', not_alone: 'Only the last player at the table can cancel the game.', not_host: 'Only the host can do that.', stale: 'The table moved on — try again.',
-  invalid_placement: 'Place exactly one card in front of every seat.', unauthorized: 'Please sign in again.',
+  invalid_placement: 'Place exactly one card in front of every seat.', alms_needs_target: 'Name a trade for your Alms card first.', unauthorized: 'Please sign in again.',
 };
 export const errorText = (e: unknown) => (e instanceof ApiError ? ERROR_TEXT[e.code] ?? e.message ?? e.code : String(e));

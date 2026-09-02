@@ -158,7 +158,9 @@ Choice cards create `pendingChoices` during resolve; resolution pauses at that s
 6. **Gold**: job cards bank 1 (+Market Fair, +Trestle Market pending); then gold signatures clockwise from the Crier: Cutpurse, Paste Gems, Gleaning, Thumb on the Scale, King's Commission, Miller's Toll, Physician's Fee, Cordwood, Bumper Crop, False Colors (choice), Iron Strongbox (choice → shield), Snare bounty, Sunday Best/Blackmail → scoring cards on the owner. Iron Strongbox shields apply to every loss.
 7. **Words**: Inquest / Appraisal / Tracks in the Snow computed from the true state (Townsfolk piles: no effect); Strong Ale → `revealHand(seat, 5s)` event.
 8. **Pending**: Grindstone, Curfew, Cloak, Trestle Market, Rotten Beam, Deep Forest, Slow Poison, Snare(persistent) recorded on the pile for next round; expired ones discarded.
-9. Locked tracks (dead trades) ignore all gold changes. Townsfolk trades cannot win.
+9. Locked tracks (dead trades) ignore all gold changes. Every living seat, bots included, is eligible to win.
+9b. **Alms** (one per envelope): the placer names a trade; at the gold step, if that trade is last or second-to-last among trades held by living seats, it gains 5.
+9c. Optional leader rules behind `settings.leaderRules` (off, no lobby toggle): the Reeve's tithe (each track pays floor(gold/8) after every round) and the Reckoning (the richest living trade is unmasked at the start of the final round).
 10. Season events (only when `settings.seasonRules` — the optional Turning Year variant — is on): Market Fair (+1 per wares in Harvest), Reeve's Tax at the end of Harvest, and the Hungry Winter (a Protect voids one Attack). Off by default: every round plays the same.
 
 ### 5.4 Persistence

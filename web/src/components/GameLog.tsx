@@ -20,6 +20,7 @@ export function describeRound(events: LogEvent[], name: (seat: number) => string
       case 'poison_set': out.push({ text: `${name(e.seat)} was poisoned; it bites at the end of next round.`, tone: 'text-blood' }); break;
       case 'death': out.push({ text: `☠ ${e.name} died. The envelope opened: ${tradeName(e.trade)}.`, tone: 'text-blood font-bold' }); break;
       case 'gold':
+        if (e.by === 'alms') break;   // described by the alms event
         if (e.by.startsWith('job:') && !e.absorbed) { const w = wares.get(e.trade) ?? { total: 0, count: 0 }; w.total += e.delta; w.count += 1; wares.set(e.trade, w); break; }
         out.push({ text: e.absorbed ? `${tradeName(e.trade)} is shielded — ${describeBy(e.by)} took nothing.` : `${tradeName(e.trade)} ${e.delta > 0 ? 'gained' : 'lost'} ${Math.abs(e.delta)} gold from ${describeBy(e.by)}${e.from ? ` (taken from ${tradeName(e.from)})` : ''}.`, tone: 'text-gold' }); break;
       case 'shield': out.push({ text: `${tradeName(e.trade)} was locked in an Iron Strongbox.`, tone: 'text-gold' }); break;
@@ -30,6 +31,8 @@ export function describeRound(events: LogEvent[], name: (seat: number) => string
       case 'choice_wait': out.push({ text: `${name(e.seat)} had a choice to make for ${cardName(e.cardKey)}.`, tone: 'text-ink-2' }); break;
       case 'chosen': out.push({ text: `${name(e.seat)} chose ${tradeName(e.trade)} for ${cardName(e.cardKey)}${e.auto ? ' (by default)' : ''}.`, tone: 'text-gold' }); break;
       case 'season_event': out.push({ text: `The Reeve's Tax fell on ${e.trades.length ? e.trades.map(tradeName).join(', ') : 'nobody'}.`, tone: 'text-gold' }); break;
+      case 'alms': out.push({ text: e.granted ? `Alms in front of ${name(e.pileSeat)} named the ${tradeName(e.trade)} — among the poorest trades in play, so it gained 5 gold.` : `Alms in front of ${name(e.pileSeat)} named the ${tradeName(e.trade)}, but it was not among the two poorest trades in play.`, tone: 'text-gold' }); break;
+      case 'reckoning': out.push({ text: `⚖ The Reckoning: ${e.seats.map((x) => `${name(x.seat)} holds the richest trade, ${tradeName(x.trade)} (${x.gold} gold)`).join('; ')}. Their envelope is open for the final round.`, tone: 'text-blood font-bold' }); break;
       case 'banner': out.push({ text: e.text, tone: 'text-parchment' }); break;
       case 'final_reveal': out.push({ text: `The final reveal: ${e.seats.map((x) => `${name(x.seat)} — ${tradeName(x.trade)}`).join('; ')}.`, tone: 'text-gold font-bold' }); break;
       case 'final_score': out.push({ text: e.winners.length ? `${e.winners.map(name).join(' & ')} won the year.${e.sharedBy.length ? ` ${e.sharedBy.map(name).join(' & ')} rose to share it.` : ''}` : 'Nobody won the year.', tone: 'text-gold font-bold' }); break;
@@ -41,7 +44,7 @@ export function describeRound(events: LogEvent[], name: (seat: number) => string
   if (firstGold >= 0) out.splice(firstGold, 0, ...waresLines); else out.push(...waresLines);
   return out;
 }
-const describeBy = (by: string) => by === 'reeves-tax' ? "the Reeve's Tax" : by === 'wounds' ? 'wounds' : cardName(by);
+const describeBy = (by: string) => by === 'reeves-tax' ? "the Reeve's Tax" : by === 'tithe' ? "the Reeve's tithe (1 per 8 held)" : by === 'wounds' ? 'wounds' : cardName(by);
 
 export function GameLog({ view }: { view: PlayerView }) {
   const box = useRef<HTMLDivElement>(null);
