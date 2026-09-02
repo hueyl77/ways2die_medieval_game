@@ -1,0 +1,138 @@
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
+import { useAuth } from '../auth/AuthProvider';
+import { api } from '../lib/api';
+import { useGame } from '../state/useGame';
+import { useChat } from '../state/useChat';
+import { Table } from '../components/Table';
+import { Hand } from '../components/Hand';
+import { GoldBoard, Calendar } from '../components/GoldBoard';
+import { Chat } from '../components/Chat';
+import { RevealPlayer } from '../components/RevealPlayer';
+import { ChoiceModal, FuneralModal, EndScreen } from '../components/Modals';
+import { Button, Eyebrow } from '../components/ui';
+import { TRADE_INFO, def } from '../lib/cards';
+
+const PHASE_TEXT: Record<string, string> = {
+  gossip: 'Gossip — accuse, deny, lie. Click Ready when you are done talking.',
+  placement: 'Placement — put exactly one card in front of every seat, including yourself.',
+  choice: 'A choice is being made…',
+  reveal: 'The reveal.',
+  funeral: 'A funeral. The dead are sealing their wills.',
+  ended: 'The year is over.',
+};
+
+export default function Game() {
+  const { id } = useParams();
+  const nav = useNavigate();
+  const { user, displayName } = useAuth();
+  const { view, error, busy, act, secondsLeft } = useGame(id);
+  const meSeat = view?.me.seat ?? null;
+  const me = meSeat !== null && view ? view.seats[meSeat] : null;
+  const isGhost = !!view?.me.isGhost;
+  const chat = useChat(id, { name: displayName, userId: user?.id ?? null, ghost: isGhost });
+
+  const [selected, setSelected] = useState<string | null>(null);
+  const [assignments, setAssignments] = useState<Record<number, string>>({});
+  const [haunt, setHaunt] = useState<{ cardId: string; pileSeat: number } | null>(null);
+  const [watched, setWatched] = useState(0);
+  const [seenLogs, setSeenLogs] = useState(0);
+
+  useEffect(() => { if (view?.phase !== 'placement') { setAssignments({}); setSelected(null); setHaunt(null); } }, [view?.phase, view?.round]);
+
+  // narrate truth answers and deaths into the chat as they happen
+  useEffect(() => {
+    if (!view) return;
+    for (let i = seenLogs; i < view.logs.length; i++) {
+      for (const e of view.logs[i].events) {
+        if (e.t === 'truth') chat.system(`${view.seats[e.seat].name}, under ${def(e.cardKey).name}: "${e.answer}"`);
+        if (e.t === 'death') chat.system(`${e.name} has died. The envelope opens: ${TRADE_INFO[e.trade].name}.`);
+        if (e.t === 'season_event') chat.system(`The Reeve's Tax falls on ${e.trades.length ? e.trades.map((t) => TRADE_INFO[t].name).join(', ') : 'nobody'}.`);
+      }
+    }
+    if (view.logs.length !== seenLogs) setSeenLogs(view.logs.length);
+  }, [view, seenLogs, chat]);
+
+  const locked = !!me?.locked;
+  const effective = useMemo<Record<number, string>>(() => (locked && view ? Object.fromEntries(Object.entries(view.me.placements).map(([k, v]) => [Number(k), v])) : assignments), [locked, view, assignments]);
+  const allAssigned = !!view && view.seats.every((s) => effective[s.index]);
+
+  const onSeatClick = useCallback((seat: number) => {
+    if (!view || view.phase !== 'placement' || locked) return;
+    if (isGhost) { if (selected && view.seats[seat].alive) setHaunt({ cardId: selected, pileSeat: seat }); return; }
+    if (!selected) { if (assignments[seat]) { setSelected(assignments[seat]); } return; }
+    setAssignments((a) => { const next = { ...a }; for (const k of Object.keys(next)) if (next[Number(k)] === selected) delete next[Number(k)]; next[seat] = selected; return next; });
+    setSelected(null);
+  }, [view, locked, isGhost, selected, assignments]);
+
+  const autoFill = () => {
+    if (!view) return;
+    const used = new Set(Object.values(assignments));
+    const free = view.me.hand.filter((c) => !used.has(c.id));
+    const jobs = free.filter((c) => c.key.startsWith('job:')); const others = free.filter((c) => !c.key.startsWith('job:'));
+    const queue = [...jobs, ...others];
+    const next = { ...assignments };
+    for (const s of view.seats) if (!next[s.index]) { const c = queue.shift(); if (c) next[s.index] = c.id; }
+    setAssignments(next);
+  };
+
+  if (error && !view) return <div className="p-6 text-blood">{error} <Button variant="ghost" onClick={() => nav('/')}>Home</Button></div>;
+  if (!view) return <div className="grid h-full place-items-center text-ink-2">Taking your seat…</div>;
+  if (meSeat === null) return <div className="p-6">You are not at this table. <Button variant="ghost" onClick={() => nav('/')}>Home</Button></div>;
+
+  const showReveal = (view.phase === 'reveal' || view.phase === 'funeral') && !!view.roundLog?.complete && watched < view.round;
+  const myTrade = view.me.trade;
+  const readyCount = view.seats.filter((s) => !s.isTownsfolk && s.alive && s.ready).length;
+  const needed = view.seats.filter((s) => !s.isTownsfolk && s.alive).length;
+  const lockedCount = view.seats.filter((s) => !s.isTownsfolk && s.alive && s.locked).length;
+
+  return (
+    <div className="h-full grid grid-rows-[auto_1fr_auto] lg:grid-cols-[minmax(0,1fr)_320px] lg:grid-rows-[auto_1fr_auto] relative overflow-hidden">
+      <header className="lg:col-span-2 flex flex-wrap items-center gap-x-6 gap-y-1 px-4 py-2 border-b border-night-3 bg-night-2/60">
+        <div><Eyebrow>Room {view.code}</Eyebrow><div className="font-display text-lg leading-tight">{view.phase === 'ended' ? 'The year is over' : <>Round {view.round} of {view.calendar.rounds} · <span className="capitalize">{view.season}</span></>}</div></div>
+        <div className="text-sm text-ink-2 flex-1 min-w-[200px]">{PHASE_TEXT[view.phase]}</div>
+        {secondsLeft !== null && view.phase !== 'ended' && <div className={`font-ui tabular-nums text-xl ${secondsLeft <= 10 ? 'text-blood' : 'text-gold'}`}>{Math.floor(secondsLeft / 60)}:{String(secondsLeft % 60).padStart(2, '0')}</div>}
+        {myTrade && <div className="text-sm">{isGhost ? '👻 You are a ghost' : <>You are the <span className="text-gold font-bold">{TRADE_INFO[myTrade].emoji} {TRADE_INFO[myTrade].name}</span> <span className="text-ink-2">(keep it secret)</span></>}</div>}
+        <Button variant="ghost" onClick={() => nav('/')}>Leave table</Button>
+      </header>
+
+      <main className="relative min-h-0 min-w-0 p-2">
+        <Table view={view} assignments={effective} hauntTarget={haunt?.pileSeat ?? null} onSeatClick={onSeatClick} selectable={view.phase === 'placement' && !locked} />
+        {showReveal && view.roundLog && <RevealPlayer log={view.roundLog} view={view} onDone={() => setWatched(view.round)} />}
+        {view.phase === 'choice' && view.me.choices.length > 0 && <ChoiceModal view={view} busy={busy} onChoose={(cid, t) => void act(() => api.choose(view.id, cid, t))} />}
+        {view.phase === 'funeral' && isGhost && !me?.willSealed && view.succession.length > 0 && !showReveal && <FuneralModal view={view} busy={busy} onSeal={(h) => void act(() => api.will(view.id, h))} />}
+        {view.phase === 'ended' && <EndScreen view={view} onHome={() => nav('/')} />}
+      </main>
+
+      <aside className="hidden lg:flex flex-col gap-4 p-3 border-l border-night-3 bg-night-2/40 min-h-0 row-span-2">
+        <GoldBoard view={view} />
+        <Calendar view={view} />
+        <div className="flex-1 min-h-0"><Chat msgs={chat.msgs} onSend={(t) => void chat.send(t)} /></div>
+      </aside>
+
+      <footer className="min-w-0 border-t border-night-3 bg-night-2/60 px-3 py-2">
+        <div className="flex items-center gap-3 flex-wrap mb-1">
+          {view.phase === 'gossip' && me?.alive && <Button disabled={busy || me.ready} onClick={() => void act(() => api.ready(view.id))}>{me.ready ? 'Ready ✓' : 'Ready'}</Button>}
+          {view.phase === 'gossip' && <span className="text-sm text-ink-2">{readyCount}/{needed} ready</span>}
+          {view.phase === 'placement' && !isGhost && me?.alive && (<>
+            <Button disabled={busy || locked || !allAssigned} onClick={() => void act(() => api.place(view.id, Object.fromEntries(Object.entries(effective).map(([k, v]) => [String(k), v])), null))}>{locked ? 'Locked in ✓' : 'Lock in'}</Button>
+            {!locked && <Button variant="ghost" onClick={autoFill}>Fill the rest with wares</Button>}
+            <span className="text-sm text-ink-2">{Object.keys(effective).length}/{view.seatCount} placed · {lockedCount}/{needed} locked</span>
+            {selected && <span className="text-sm text-gold">Now click a seat for {def(view.me.hand.find((c) => c.id === selected)!.key).name}</span>}
+          </>)}
+          {view.phase === 'placement' && isGhost && (<>
+            <Button disabled={busy || locked || !haunt} onClick={() => void act(() => api.place(view.id, {}, haunt))}>{locked ? 'Haunted ✓' : 'Haunt'}</Button>
+            {!locked && <Button variant="ghost" disabled={busy} onClick={() => void act(() => api.place(view.id, {}, null))}>Rest quietly</Button>}
+            <span className="text-sm text-moon">{haunt ? `Haunting ${view.seats[haunt.pileSeat].name} with ${def(view.me.gravePool.find((c) => c.id === haunt.cardId)!.key).name}` : 'Pick a card from your grave pool, then a living seat.'}</span>
+          </>)}
+          {view.phase === 'reveal' && !showReveal && <Button disabled={busy || !!me?.ack} onClick={() => void act(() => api.acknowledge(view.id))}>{me?.ack ? 'Waiting for the others…' : 'Continue'}</Button>}
+          {view.phase === 'reveal' && !showReveal && <Button variant="ghost" onClick={() => setWatched(0)}>Watch again</Button>}
+          {view.phase === 'choice' && <span className="text-sm text-ink-2">{view.me.choices.length ? 'Your choice is needed.' : 'Waiting for a choice…'}</span>}
+          {view.phase === 'funeral' && <span className="text-sm text-ink-2">{isGhost && !me?.willSealed ? 'Seal your will.' : 'The dead are sealing their wills…'}</span>}
+          {error && <span className="text-sm text-blood ml-auto">{error}</span>}
+        </div>
+        <Hand view={view} cards={isGhost ? view.me.gravePool : view.me.hand} selected={selected ?? haunt?.cardId ?? null} assignments={effective} onSelect={(cid) => { if (view.phase === 'placement' && !locked) setSelected((s) => (s === cid ? null : cid)); }} />
+      </footer>
+    </div>
+  );
+}

@@ -1,0 +1,11 @@
+{
+  "name": "million-ways-to-die",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test:engine": "node tests/sim.test.ts",
+    "build:function": "esbuild functions/src/game.ts --bundle --format=esm --platform=neutral --target=es2022 --external:npm:* --outfile=functions/dist/game.js",
+    "deploy:function": "npm run build:function && npx -y @insforge/cli functions deploy game --file functions/dist/game.js --name 'Game engine'"
+  },
+  "devDependencies": { "esbuild": "^0.25.0" }
+}

@@ -1,0 +1,748 @@
+<title>A Thousand Ways to Die in Medieval</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Eczar:wght@500;600;700;800&family=Alegreya:ital,wght@0,400;0,500;0,700;1,400;1,500&family=Alegreya+Sans:wght@400;500;700;800&display=swap">
+<style>
+  :root {
+    --ground: #ECEAE2;
+    --surface: #F7F5EF;
+    --surface-2: #F0EDE4;
+    --ink: #262019;
+    --muted: #6C655A;
+    --line: #D6D1C3;
+    --gold: #8F6A1C;
+    --gold-soft: #EDE2C6;
+    --blood: #93392B;
+    --heal: #4A6B3F;
+    --moon: #41607A;
+    --moon-soft: #DCE4EA;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground: #14161C;
+      --surface: #1D2028;
+      --surface-2: #181B22;
+      --ink: #E9E5DB;
+      --muted: #9B958A;
+      --line: #2F333E;
+      --gold: #D8A84F;
+      --gold-soft: #2E2A1D;
+      --blood: #D07A62;
+      --heal: #8FB47F;
+      --moon: #8FB3CE;
+      --moon-soft: #1F2833;
+    }
+  }
+  :root[data-theme="dark"] {
+    --ground: #14161C;
+    --surface: #1D2028;
+    --surface-2: #181B22;
+    --ink: #E9E5DB;
+    --muted: #9B958A;
+    --line: #2F333E;
+    --gold: #D8A84F;
+    --gold-soft: #2E2A1D;
+    --blood: #D07A62;
+    --heal: #8FB47F;
+    --moon: #8FB3CE;
+    --moon-soft: #1F2833;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    background: var(--ground);
+    color: var(--ink);
+    font-family: "Alegreya", Georgia, "Times New Roman", serif;
+    font-size: 1.06rem;
+    line-height: 1.6;
+    margin: 0;
+  }
+
+  /* ---------- Hero ---------- */
+  .hero {
+    background: #10131B;
+    background: radial-gradient(ellipse 130% 90% at 22% -10%, #232B3F 0%, #161B28 45%, #0D1017 100%);
+    color: #E8E4DA;
+    padding: 4.2rem 1.5rem 3.2rem;
+    text-align: center;
+  }
+  .hero .bell {
+    font-size: 2rem;
+    margin-bottom: 0.6rem;
+    filter: grayscale(0.2);
+  }
+  .hero .eyebrow {
+    font-family: "Alegreya Sans", "Gill Sans", Verdana, sans-serif;
+    font-size: 0.78rem;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: #A8A294;
+    margin: 0 0 0.9rem;
+  }
+  .hero h1 {
+    font-family: "Eczar", "Alegreya", Georgia, serif;
+    font-weight: 800;
+    font-size: clamp(2.8rem, 8vw, 4.6rem);
+    line-height: 1.0;
+    margin: 0 0 0.9rem;
+    color: #F0EBDD;
+    text-wrap: balance;
+  }
+  .hero .tagline {
+    font-size: 1.2rem;
+    font-style: italic;
+    color: #C4BEAE;
+    margin: 0 0 1.5rem;
+  }
+  .hero .meta {
+    font-family: "Alegreya Sans", "Gill Sans", Verdana, sans-serif;
+    font-size: 0.87rem;
+    letter-spacing: 0.08em;
+    color: #8E8878;
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 0.4rem 1.8rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .hero .meta strong { color: #CFC9B8; font-weight: 500; }
+
+  /* ---------- Body ---------- */
+  main {
+    max-width: 47rem;
+    margin: 0 auto;
+    padding: 1.5rem 1.5rem 5rem;
+  }
+  section { margin-top: 3.2rem; }
+
+  .lede {
+    font-size: 1.14rem;
+    font-style: italic;
+    color: var(--muted);
+    max-width: 60ch;
+    margin: 2.4rem auto 0;
+    text-align: center;
+  }
+
+  .folio {
+    font-family: "Alegreya Sans", "Gill Sans", Verdana, sans-serif;
+    font-size: 0.78rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--gold);
+    display: flex;
+    align-items: baseline;
+    gap: 0.8rem;
+    margin: 0 0 0.5rem;
+  }
+  .folio::after { content: ""; flex: 1; border-top: 1px solid var(--line); transform: translateY(-0.2em); }
+  h2 {
+    font-family: "Eczar", "Alegreya", Georgia, serif;
+    font-weight: 600;
+    font-size: 1.8rem;
+    line-height: 1.12;
+    margin: 0 0 1rem;
+    text-wrap: balance;
+  }
+  h3 {
+    font-family: "Eczar", "Alegreya", Georgia, serif;
+    font-weight: 600;
+    font-size: 1.2rem;
+    margin: 1.8rem 0 0.55rem;
+  }
+  p { margin: 0 0 0.95rem; max-width: 66ch; }
+  ul, ol { margin: 0 0 1rem; padding-left: 1.4rem; max-width: 64ch; }
+  li { margin-bottom: 0.4rem; }
+  li::marker { color: var(--gold); font-weight: 600; }
+  strong { font-weight: 700; }
+
+  .callout {
+    background: var(--surface-2);
+    border-left: 3px solid var(--gold);
+    padding: 0.95rem 1.25rem 0.7rem;
+    margin: 1.3rem 0;
+  }
+  .callout.moon { border-left-color: var(--moon); }
+  .callout p { margin-bottom: 0.35rem; }
+  .callout .label {
+    font-family: "Alegreya Sans", "Gill Sans", Verdana, sans-serif;
+    font-size: 0.73rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 0.35rem;
+  }
+
+  /* phases strip */
+  .flow {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    align-items: center;
+    margin: 1.2rem 0 1.5rem;
+    padding: 0;
+    list-style: none;
+    font-family: "Alegreya Sans", "Gill Sans", Verdana, sans-serif;
+    font-size: 0.86rem;
+  }
+  .flow li { background: var(--surface); border: 1px solid var(--line); padding: 0.4rem 0.8rem; margin: 0; white-space: nowrap; }
+  .flow li.hot { border-color: var(--gold); background: var(--gold-soft); }
+  .flow .arrow { color: var(--muted); background: none; border: none; padding: 0 0.05rem; }
+
+  /* tables */
+  .tablewrap { overflow-x: auto; margin: 1.2rem 0 1.5rem; }
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    font-size: 0.93rem;
+    font-family: "Alegreya Sans", "Gill Sans", Verdana, sans-serif;
+  }
+  th {
+    text-align: left;
+    font-weight: 800;
+    font-size: 0.74rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    border-bottom: 2px solid var(--line);
+    padding: 0.5rem 0.9rem 0.5rem 0;
+    white-space: nowrap;
+  }
+  td { border-bottom: 1px solid var(--line); padding: 0.55rem 0.9rem 0.55rem 0; vertical-align: top; }
+  td.num, th.num { text-align: center; font-variant-numeric: tabular-nums; }
+  td:first-child { font-weight: 500; }
+
+  /* trades grid */
+  .trade {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    padding: 1.05rem 1.25rem 0.8rem;
+    margin: 0 0 0.9rem;
+  }
+  .trade h4 {
+    font-family: "Eczar", Georgia, serif;
+    font-weight: 700;
+    font-size: 1.12rem;
+    margin: 0 0 0.15rem;
+  }
+  .trade .verb {
+    font-family: "Alegreya Sans", "Gill Sans", Verdana, sans-serif;
+    font-size: 0.78rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin: 0 0 0.6rem;
+  }
+  .trade ul { list-style: none; padding: 0; margin: 0; max-width: none; }
+  .trade li { margin: 0 0 0.45rem; padding-left: 0; }
+  .cardname {
+    font-family: "Eczar", Georgia, serif;
+    font-weight: 600;
+    color: var(--gold);
+    white-space: nowrap;
+  }
+  .tag {
+    display: inline-block;
+    font-family: "Alegreya Sans", "Gill Sans", Verdana, sans-serif;
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 0.05rem 0.42rem;
+    border-radius: 2px;
+    margin-right: 0.3rem;
+    vertical-align: 0.1em;
+    white-space: nowrap;
+  }
+  .tag.attack  { color: var(--blood); border: 1px solid var(--blood); }
+  .tag.heal    { color: var(--heal);  border: 1px solid var(--heal); }
+  .tag.shield  { color: var(--moon);  border: 1px solid var(--moon); }
+  .tag.gold    { color: var(--gold);  border: 1px solid var(--gold); }
+  .tag.word    { color: var(--muted); border: 1px solid var(--muted); }
+
+  .seasons { display: grid; grid-template-columns: repeat(auto-fit, minmax(215px, 1fr)); gap: 0.8rem; margin: 1.3rem 0 1.5rem; }
+  .season { background: var(--surface); border: 1px solid var(--line); border-top: 3px solid var(--moon); padding: 0.95rem 1.1rem 0.7rem; }
+  .season .name { font-family: "Eczar", Georgia, serif; font-weight: 700; font-size: 1.05rem; margin-bottom: 0.35rem; }
+  .season .rounds { font-family: "Alegreya Sans", Verdana, sans-serif; font-size: 0.75rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 0.4rem; }
+  .season p { font-size: 0.95rem; margin-bottom: 0.4rem; }
+
+  .faq dt {
+    font-weight: 700;
+    margin-top: 0.9rem;
+  }
+  .faq dd { margin: 0.15rem 0 0 0; color: var(--ink); max-width: 64ch; }
+  .faq dd::before { content: "— "; color: var(--gold); }
+
+  .footnote {
+    margin-top: 4rem;
+    padding-top: 1.2rem;
+    border-top: 1px solid var(--line);
+    font-size: 0.92rem;
+    color: var(--muted);
+    font-style: italic;
+    text-align: center;
+  }
+
+  @media (max-width: 560px) { body { font-size: 1.0rem; } }
+</style>
+
+<header class="hero">
+  <div class="bell" aria-hidden="true">💀</div>
+  <p class="eyebrow">Rules of play</p>
+  <h1>A Thousand Ways to Die in Medieval</h1>
+  <p class="tagline">Honest trades, unfortunate accidents.</p>
+  <ul class="meta">
+    <li><strong>3–12</strong> players</li>
+    <li><strong>45–75</strong> minutes</li>
+    <li>Ages <strong>12+</strong></li>
+  </ul>
+</header>
+
+<main>
+
+<p class="lede">A medieval village of honest tradespeople — a blacksmith, an innkeeper, a jeweler, a thief. Everyone works, everyone earns, and everyone smiles across the market square. But the neighbors keep having accidents — bees, geese, falling roof tiles, the occasional trebuchet — and nobody ever saw who arranged them. Earn more than anyone, survive the year, and never let them find out which trade is yours.</p>
+
+<section>
+  <p class="folio"><span>1</span> Overview</p>
+  <h2>Every coin is a clue</h2>
+  <p>Each player secretly runs one of twelve trades. Gold is earned <strong>by trades, not by players</strong>, on a public board — so every coin you bank is also evidence about who you are.</p>
+  <p>The game is played in rounds. Each round, every player places one card face-down in front of <strong>every</strong> seat at the table, including their own. Piles are shuffled before they're flipped, so no card is ever traceable to the player who placed it. Attacks wound (and every wound you still carry at the end costs a coin), heals mend, protects shield, job cards bank gold — and nobody can prove anything about anyone.</p>
+  <div class="callout">
+    <p class="label">Object of the game</p>
+    <p>Be alive at the end of the year with the richest trade among the survivors.</p>
+  </div>
+</section>
+
+<section>
+  <p class="folio"><span>2</span> Components</p>
+  <h2>What's in the box</h2>
+  <ul>
+    <li><strong>12 trade envelopes</strong>, each containing 34 cards: 1 role card (with a distinct back) · 27 job cards · 2 Heals · 1 Protect · 3 signature cards unique to that trade (§8).</li>
+    <li><strong>The Mishap deck</strong>: 36 Attack cards, every one a different way to get hurt — 24 <strong>Mishaps</strong> (1 wound) and 12 <strong>Calamities</strong> (2 wounds). See §15.</li>
+    <li><strong>Gold board</strong> with 12 trade tracks and 12 gold markers.</li>
+    <li><strong>12 crest cards</strong> (player identities, used for wills).</li>
+    <li><strong>Townsfolk marker</strong> for an automated seat (§10).</li>
+    <li><strong>20 wound tokens</strong> for wounds beyond a card's first.</li>
+    <li><strong>Crier token</strong> (first player) · round marker · calendar strip.</li>
+  </ul>
+  <p>The twelve trades: <strong>Blacksmith, Farmer, Thief, Innkeeper, City Guard, Carpenter, Jeweler, Tailor, Apothecary, Hunter, Woodsman, Miller.</strong></p>
+  <div class="callout moon">
+    <p class="label">Public knowledge</p>
+    <p>Every envelope has the same structure, and the exact contents of all twelve are printed in §8. Every seat also holds exactly two Mishaps and one Calamity — but <em>which</em> ones is anyone's guess. Counting what has and hasn't been revealed is a core skill of the game.</p>
+  </div>
+</section>
+
+<section>
+  <p class="folio"><span>3</span> Setup</p>
+  <h2>Dealing out the village</h2>
+  <ol>
+    <li>Place the gold board in the center; set all 12 gold markers to 0.</li>
+    <li><strong>Fill the table to at least four seats.</strong> With three players, add one Townsfolk seat (§10): an empty chair with the Townsfolk marker. Seats = players + Townsfolk.</li>
+    <li>Consult the table for your seat count; place the round marker on the calendar.</li>
+    <li>Shuffle all 12 envelopes and deal one to every seat, players and Townsfolk alike. <strong>Return the rest to the box unopened</strong> — nobody knows which trades are absent.</li>
+    <li>Privately open your envelope. Memorize your role card and <strong>return it to the envelope</strong>; keep the envelope face-down in front of you all game. Set aside job cards above your "job cards kept" number, face-down to the box. Take everything else into your hand. Then shuffle the Mishaps and deal two face-down to every seat, shuffle the Calamities and deal one to every seat, and return the rest to the box unseen; add yours to your hand. Prepare any Townsfolk seat as described in §10.</li>
+    <li>Each player takes a crest marker. The <strong>matching crest cards</strong> go face-down in a stack in the center — the <strong>succession</strong>, touched only when someone dies. Townsfolk take no crest.</li>
+    <li>Give the Crier token to the player who most recently sold something.</li>
+  </ol>
+
+  <div class="tablewrap">
+  <table>
+    <thead><tr><th class="num">Seats</th><th class="num">Rounds</th><th>Seasons</th><th class="num">Job cards kept</th><th class="num">Hand size</th><th class="num">You die at</th></tr></thead>
+    <tbody>
+      <tr><td class="num">4</td><td class="num">6</td><td>Spring · Harvest · Winter — 2 rounds each</td><td class="num">15</td><td class="num">24</td><td class="num">3 wounds</td></tr>
+      <tr><td class="num">5</td><td class="num">6</td><td>Spring · Harvest · Winter — 2 rounds each</td><td class="num">21</td><td class="num">30</td><td class="num">3 wounds</td></tr>
+      <tr><td class="num">6</td><td class="num">4</td><td>Harvest · Winter — 2 rounds each</td><td class="num">15</td><td class="num">24</td><td class="num">4 wounds</td></tr>
+      <tr><td class="num">7</td><td class="num">4</td><td>Harvest · Winter — 2 rounds each</td><td class="num">19</td><td class="num">28</td><td class="num">4 wounds</td></tr>
+      <tr><td class="num">8</td><td class="num">4</td><td>Harvest · Winter — 2 rounds each</td><td class="num">23</td><td class="num">32</td><td class="num">4 wounds</td></tr>
+      <tr><td class="num">9</td><td class="num">3</td><td>Spring · Harvest · Winter — 1 round each</td><td class="num">18</td><td class="num">27</td><td class="num">4 wounds</td></tr>
+      <tr><td class="num">10</td><td class="num">3</td><td>Spring · Harvest · Winter — 1 round each</td><td class="num">21</td><td class="num">30</td><td class="num">4 wounds</td></tr>
+      <tr><td class="num">11</td><td class="num">3</td><td>Spring · Harvest · Winter — 1 round each</td><td class="num">24</td><td class="num">33</td><td class="num">4 wounds</td></tr>
+      <tr><td class="num">12</td><td class="num">3</td><td>Spring · Harvest · Winter — 1 round each</td><td class="num">27</td><td class="num">36</td><td class="num">4 wounds</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p><em>Tip: hands are large. Keep yours sorted in a face-down spread — you're hiding it from the table, not from yourself.</em></p>
+</section>
+
+<section>
+  <p class="folio"><span>4</span> Playing a round</p>
+  <h2>Five phases</h2>
+
+  <ul class="flow" aria-label="Round phases">
+    <li>Gossip</li>
+    <li class="arrow">→</li>
+    <li class="hot">Placement</li>
+    <li class="arrow">→</li>
+    <li>Shuffle</li>
+    <li class="arrow">→</li>
+    <li class="hot">Reveal &amp; resolve</li>
+    <li class="arrow">→</li>
+    <li>Cleanup</li>
+  </ul>
+
+  <h3>4.1 Gossip</h3>
+  <p>Talk. Accuse, deny, promise, and lie as much as you like. Nothing said is binding, and you may <strong>never</strong> show cards or your role. Two or three minutes is plenty.</p>
+
+  <h3>4.2 Placement</h3>
+  <p>Each player places <strong>exactly one card face-down in front of every seat, including their own</strong> (and one on each grave — §9). Placements are made openly: people see <em>where</em> you place, never <em>what</em>. Ghosts may haunt now (§9.3), and each Townsfolk's tender deals its cards (§10).</p>
+
+  <h3>4.3 Shuffle</h3>
+  <p>Each player picks up the pile in front of them and shuffles it <strong>without looking at the faces</strong>; a Townsfolk's tender shuffles its pile. From this moment, no card can be traced to its placer.</p>
+
+  <h3>4.4 Reveal &amp; resolve</h3>
+  <p>Starting with the Crier and going clockwise, each pile is flipped face-up and fully resolved (§5) before the next is flipped. Grave piles flip last; their cards have no effect (§9.2).</p>
+
+  <h3>4.5 Cleanup</h3>
+  <p>Resolved cards go face-up to a shared discard in the center — the <strong>town square</strong>. Wounds, scoring cards, and pending cards stay where they are. Advance the round marker, apply any season-end event (§7), and pass the Crier token left.</p>
+</section>
+
+<section>
+  <p class="folio"><span>5</span> Resolving a pile</p>
+  <h2>Order of effects</h2>
+  <ol>
+    <li><strong>Voids.</strong> Apply everything that cancels cards: a Protect voids all Attacks in the pile <em>(Winter: each Protect voids only one)</em>; Snares, Night Patrol, Curfew, Cloak of Plain Cloth, Bad Batch, Rotten Beam, and Deep Forest apply as written; a Broken Door discards a Protect before anything else. Card text always beats season rules.</li>
+    <li><strong>Wounds.</strong> Each surviving Attack card stays face-up in front of the pile's owner as a <strong>wound</strong>. A card that deals more than one wound (a Calamity, a Hunting Bow, a Sneak Attack, anything sharpened by a Grindstone) adds a wound token beside it for each extra wound.</li>
+    <li><strong>Heals.</strong> Each Heal removes one wound from the pile's owner — a token first, then a card (to the town square). Attacks and Heals in the same pile net out — a Heal can save you from a killing blow revealed alongside it. Heals beyond your wounds are wasted; you cannot bank health.</li>
+    <li><strong>Death check.</strong> If the owner's wounds equal their death number, they die — finish resolving the pile, then hold the funeral (§9.1).</li>
+    <li><strong>Gold.</strong> Each job card banks 1 gold to its trade's track — <em>no matter whose pile it was in, and no matter who placed it.</em> Apply Market Fair and other bonuses, then signature gold effects.</li>
+    <li><strong>Words.</strong> Truth cards (Inquest, Appraisal, Tracks in the Snow) are answered immediately, out loud, <strong>truthfully</strong>. This is a binding rule of the game, not a suggestion.</li>
+    <li><strong>Pending.</strong> Cards with "next round" effects stay face-up on the pile as reminders, then discard when spent.</li>
+  </ol>
+  <div class="callout">
+    <p class="label">Wounds are cards</p>
+    <p>Health needs no tracker: landed Attacks sit in front of you as wounds (with a token for any second wound), heals take them away, and everyone can always see exactly how close to death everyone else is.</p>
+  </div>
+</section>
+
+<section>
+  <p class="folio"><span>6</span> Gold</p>
+  <h2>Trades get rich, not people</h2>
+  <ul>
+    <li>Gold belongs to <strong>trades, not players</strong>. The track is public; its owner is not.</li>
+    <li>Job cards bank regardless of which pile they appear in. Placing your own job card in front of an enemy is a perfectly safe placement — it pays you either way.</li>
+    <li><strong>Scoring cards</strong> (Blackmail, Sunday Best) stay face-up in front of the player they hit and apply to <em>that player's own trade</em> at final scoring — whatever trade that turns out to be.</li>
+    <li><strong>Wounds cost gold.</strong> Every wound still in front of you at the final reveal scores −1 for your trade. An attack that doesn't kill still pays, and a heal is worth a coin to whoever receives it.</li>
+    <li>A dead player's trade is revealed and its track <strong>locks</strong>: no gains, no losses, no victory, and it is ignored when a card targets the "richest" or "poorest" track.</li>
+    <li>Tracks of absent trades are normal targets. Nobody knows which tracks those are — a climbing track might be a bluff, a Gleaning, a False Colors… or a real neighbor getting rich.</li>
+  </ul>
+</section>
+
+<section>
+  <p class="folio"><span>7</span> The calendar</p>
+  <h2>The year escalates</h2>
+  <p>Season rules apply to every round of the season. Six-round games play the full year; four-round games start at Harvest; the three-round <strong>short year</strong> (9 seats or more) plays one round per season.</p>
+  <div class="seasons">
+    <div class="season">
+      <div class="name">Spring</div>
+      <div class="rounds">Full year 1–2 · Short year 1</div>
+      <p>No special rule. Learn faces. Tell your first lies.</p>
+    </div>
+    <div class="season">
+      <div class="name">Harvest</div>
+      <div class="rounds">Full year 3–4 · Four rounds 1–2 · Short year 2</div>
+      <p><strong>Market Fair:</strong> every job card banks +1 gold.</p>
+      <p><strong>Season's end — the Reeve's Tax:</strong> every track tied for richest loses 2.</p>
+    </div>
+    <div class="season">
+      <div class="name">Winter</div>
+      <div class="rounds">Full year 5–6 · Four rounds 3–4 · Short year 3</div>
+      <p><strong>The Hungry Winter:</strong> each Protect voids only one Attack.</p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <p class="folio"><span>8</span> The trades</p>
+  <h2>Signature cards</h2>
+  <p>Every envelope holds three signature cards — the only copies in the game. Playing one is powerful, and it's also a confession: it proves your trade is at the table, though never which chair it sits in. <em>Silver Dagger, Sneak Attack, Hunting Bow, Felling Axe, and Broken Door count as Attacks for every rule and truth card.</em></p>
+
+  <div class="trade">
+    <h4>⚒ Blacksmith</h4>
+    <p class="verb">The arms dealer</p>
+    <ul>
+      <li><span class="tag attack">Attack</span><span class="cardname">Silver Dagger</span> — Attack. Cannot be voided by a Protect.</li>
+      <li><span class="tag attack">Pending</span><span class="cardname">Grindstone</span> — Next round, each Attack revealed in this pile deals 1 extra wound.</li>
+      <li><span class="tag gold">Gold</span><span class="cardname">Iron Strongbox</span> — The pile's owner sets this beside any track. For the rest of the game that track ignores every effect that would take gold from it — taxes, thefts, and scoring penalties alike.</li>
+    </ul>
+  </div>
+
+  <div class="trade">
+    <h4>🌾 Farmer</h4>
+    <p class="verb">The provider</p>
+    <ul>
+      <li><span class="tag heal">Heal</span><span class="cardname">Hearty Stew</span> — The pile's owner heals 2.</li>
+      <li><span class="tag gold">Gold</span><span class="cardname">Bumper Crop</span> — The Farmer track gains 1; the pile's owner heals 1.</li>
+      <li><span class="tag gold">Gold</span><span class="cardname">Gleaning</span> — The poorest track gains 2 <em>(ties: the pile's owner picks)</em>.</li>
+    </ul>
+  </div>
+
+  <div class="trade">
+    <h4>🗡 Thief</h4>
+    <p class="verb">The criminal</p>
+    <ul>
+      <li><span class="tag gold">Gold</span><span class="cardname">Cutpurse</span> — Move 2 gold from the richest track other than the Thief track to the Thief track.</li>
+      <li><span class="tag gold">Scoring</span><span class="cardname">Blackmail</span> — Stays in front of the pile's owner. At the final count their trade loses 1 gold and the Thief track gains 1.</li>
+      <li><span class="tag attack">Attack</span><span class="cardname">Sneak Attack</span> — Attack dealing 2 wounds. Cannot be voided by a Protect.</li>
+    </ul>
+  </div>
+
+  <div class="trade">
+    <h4>🍺 Innkeeper</h4>
+    <p class="verb">The host</p>
+    <ul>
+      <li><span class="tag word">Reveal</span><span class="cardname">Strong Ale</span> — The pile's owner is drunk: they must spread their entire hand face-up on the table for everyone to see while the Crier counts slowly to five, then gather it up.</li>
+      <li><span class="tag heal">Heal</span><span class="cardname">A Round on the House</span> — Every player heals 1.</li>
+      <li><span class="tag attack">Void</span><span class="cardname">Bad Batch</span> — All Heals revealed in this pile this round are voided.</li>
+    </ul>
+  </div>
+
+  <div class="trade">
+    <h4>🛡 City Guard</h4>
+    <p class="verb">The law</p>
+    <ul>
+      <li><span class="tag shield">Shield</span><span class="cardname">Night Patrol</span> — Void one Attack in this pile and one in each neighboring pile.</li>
+      <li><span class="tag shield">Pending</span><span class="cardname">Curfew</span> — Next round, every Attack revealed anywhere is voided.</li>
+      <li><span class="tag word">Truth</span><span class="cardname">Inquest</span> — The pile's owner must truthfully answer: <em>"Did you place any Attack this round?"</em></li>
+    </ul>
+  </div>
+
+  <div class="trade">
+    <h4>🔨 Carpenter</h4>
+    <p class="verb">Builder and breaker</p>
+    <ul>
+      <li><span class="tag shield">Shield</span><span class="cardname">Palisade</span> — Voids all Attacks in this pile this round <em>and</em> next round, even in Winter.</li>
+      <li><span class="tag gold">Pending</span><span class="cardname">Trestle Market</span> — Next round, every job card banks +1 <em>(stacks with Market Fair)</em>.</li>
+      <li><span class="tag attack">Pending</span><span class="cardname">Rotten Beam</span> — Next round, Protects revealed in this pile are voided.</li>
+    </ul>
+  </div>
+
+  <div class="trade">
+    <h4>💎 Jeweler</h4>
+    <p class="verb">The wealth broker</p>
+    <ul>
+      <li><span class="tag gold">Gold</span><span class="cardname">King's Commission</span> — The Jeweler track gains 2.</li>
+      <li><span class="tag word">Truth</span><span class="cardname">Appraisal</span> — The pile's owner must truthfully announce how many job cards remain in their hand.</li>
+      <li><span class="tag gold">Gold</span><span class="cardname">Paste Gems</span> — The richest track loses 2 <em>(ties: the pile's owner picks)</em>.</li>
+    </ul>
+  </div>
+
+  <div class="trade">
+    <h4>🧵 Tailor</h4>
+    <p class="verb">Appearances</p>
+    <ul>
+      <li><span class="tag gold">Gold</span><span class="cardname">False Colors</span> — Banks 1 gold to any track of the pile owner's choice.</li>
+      <li><span class="tag shield">Pending</span><span class="cardname">Cloak of Plain Cloth</span> — Next round, all Attacks revealed in this pile are voided.</li>
+      <li><span class="tag gold">Scoring</span><span class="cardname">Sunday Best</span> — The Tailor track gains 1; stays in front of the pile's owner, whose trade scores +1 at game end.</li>
+    </ul>
+  </div>
+
+  <div class="trade">
+    <h4>⚗ Apothecary</h4>
+    <p class="verb">The poisoner-physician</p>
+    <ul>
+      <li><span class="tag heal">Heal</span><span class="cardname">Panacea</span> — Remove every wound from the pile's owner.</li>
+      <li><span class="tag attack">Pending</span><span class="cardname">Slow Poison</span> — Stays on the pile: at the end of <em>next</em> round the owner takes 1 wound — voided if any Heal is revealed in this pile first (that Heal is spent as the antidote). Protects do not stop it; it is not an Attack.</li>
+      <li><span class="tag gold">Gold</span><span class="cardname">Physician's Fee</span> — The Apothecary track gains 1 per wound currently in play (max 3).</li>
+    </ul>
+  </div>
+
+  <div class="trade">
+    <h4>🏹 Hunter</h4>
+    <p class="verb">The tracker</p>
+    <ul>
+      <li><span class="tag attack">Attack</span><span class="cardname">Hunting Bow</span> — Attack dealing 2 wounds.</li>
+      <li><span class="tag shield">Persistent</span><span class="cardname">Snare</span> — Stays on the pile: the next Attack revealed here is voided; when it springs, the Hunter track gains 1.</li>
+      <li><span class="tag word">Truth</span><span class="cardname">Tracks in the Snow</span> — The pile's owner must truthfully announce how many Attacks they have placed <em>so far this game</em>.</li>
+    </ul>
+  </div>
+
+  <div class="trade">
+    <h4>🪓 Woodsman</h4>
+    <p class="verb">The man outside the walls</p>
+    <ul>
+      <li><span class="tag attack">Attack</span><span class="cardname">Felling Axe</span> — Attack; also discard every pending and persistent card on this pile (Palisade, Snare, Slow Poison…). Wounds and scoring cards are untouched.</li>
+      <li><span class="tag gold">Gold</span><span class="cardname">Cordwood</span> — The Woodsman track gains 1 — or 2 during Winter.</li>
+      <li><span class="tag shield">Pending</span><span class="cardname">Deep Forest</span> — Next round, every card revealed in this pile has no effect, and job cards there bank nothing.</li>
+    </ul>
+  </div>
+
+  <div class="trade">
+    <h4>⚙ Miller</h4>
+    <p class="verb">The cheat</p>
+    <ul>
+      <li><span class="tag gold">Gold</span><span class="cardname">Miller's Toll</span> — The Miller track gains 1 for every two job cards revealed in this pile (max 3). Everyone's grain comes through the mill.</li>
+      <li><span class="tag gold">Gold</span><span class="cardname">Thumb on the Scale</span> — Every track richer than the Miller track loses 1.</li>
+      <li><span class="tag attack">Attack</span><span class="cardname">Broken Door</span> — Attack; before voids are applied, discard one Protect card from this pile.</li>
+    </ul>
+  </div>
+</section>
+
+<section>
+  <p class="folio"><span>9</span> Death &amp; the dead</p>
+  <h2>The village keeps its ghosts</h2>
+
+  <h3>9.1 The funeral</h3>
+  <ol>
+    <li>Open your envelope and reveal your role card. Your trade's track <strong>locks</strong> (§6).</li>
+    <li>Your remaining hand is shuffled <strong>face-down onto your seat</strong> — this starts your <strong>grave pool</strong>.</li>
+    <li><strong>Seal your will.</strong> Take the succession stack, browse it privately, and choose the crest of one <strong>living</strong> player — your secret heir. Seal exactly one crest inside your envelope: <em>choose in secret, seal in view</em>, so the table sees one card go in without seeing its face. Return the stack to the center. Keep your envelope in front of you; it can never be changed, and your heir is not told. If no living player's crest remains, you die without a will.</li>
+  </ol>
+
+  <h3>9.2 The grave</h3>
+  <p>Your seat stays in the game. Every living player must still place one card on each grave every round — the grave is the village's only dump, and what people throw away there is public information. Grave piles are shuffled (by the ghost) and revealed like any other, but <strong>their cards have no effect</strong>. After the reveal they join that grave's pool, face-down.</p>
+
+  <h3>9.3 The haunt</h3>
+  <ul>
+    <li><strong>Talk freely</strong> in every Gossip phase. You have an agenda; nobody should trust you, and that's the point.</li>
+    <li><strong>Haunt.</strong> Each Placement phase you may take one card from your grave pool (you may examine your pool privately at any time) and place it face-down into any living player's pile. The table sees which pile the grave visited — never what it sent. Haunted cards resolve normally. Job cards of your own locked trade bank nothing; anyone else's bank as usual.</li>
+  </ul>
+
+  <h3>9.4 Winning from beyond</h3>
+  <p>When the wills are opened at game end, a ghost whose sealed crest names the winner <strong>shares the victory</strong>. Each crest exists once, so each heir can serve only one ghost — dying early means first pick of heirs. If your heir dies, your legacy dies with them.</p>
+</section>
+
+<section>
+  <p class="folio"><span>10</span> Townsfolk</p>
+  <h2>The stranger at the table</h2>
+  <p>A Townsfolk is a seat run by chance instead of a player — a stranger with a trade of its own. Use one whenever there are only three players; you may also add up to two at any size for a more chaotic village.</p>
+  <h3>Setup</h3>
+  <p>Deal the Townsfolk an envelope like anyone else. The player on its left is its <strong>tender</strong>. Without looking at any faces, the tender slides the role card out (role cards have a distinct back) and returns it to the envelope, then shuffles <em>all</em> the remaining cards — no trimming — together with the seat's three Attack cards into a face-down deck at the seat. Nobody knows the stranger's trade.</p>
+  <h3>Each round</h3>
+  <p>During Placement, the tender deals one card from the deck, face-down and unseen, into every pile at the table — the Townsfolk's own pile included. The tender shuffles the Townsfolk's pile before the reveal. Townsfolk do not gossip and never haunt.</p>
+  <h3>Its cards</h3>
+  <p>They resolve exactly like anyone's: its job cards bank to its hidden trade, its Attacks wound, its signature cards fire. When a card revealed in a Townsfolk's pile calls for a choice, the Crier chooses. Truth cards and Strong Ale revealed in a Townsfolk's pile have no effect.</p>
+  <h3>Its death</h3>
+  <p>A Townsfolk that takes enough wounds dies like anyone: reveal its role, lock its track, and shuffle its remaining deck face-down onto its seat as a grave the living must still feed each round. It seals no will and does not haunt.</p>
+  <div class="callout">
+    <p class="label">It cannot win</p>
+    <p>At scoring, a Townsfolk's track is ignored — though its rising gold will have muddied the board all game, and nobody will have known whose it was.</p>
+  </div>
+</section>
+
+<section>
+  <p class="folio"><span>11</span> Game end</p>
+  <h2>The final reveal</h2>
+  <ol>
+    <li><strong>The final reveal.</strong> After the last round of Winter, all living players open their envelopes and show their roles at once.</li>
+    <li><strong>Settle accounts.</strong> Apply each player's scoring cards (+/−) and −1 per wound to their own trade's track.</li>
+    <li><strong>Crown the winner.</strong> The living player whose trade's track is highest wins; Townsfolk tracks are ignored. Ties go to the fewest wounds; if still tied, the winners share it.</li>
+    <li><strong>Open the wills.</strong> A ghost whose crest names the winner rises to share the win.</li>
+  </ol>
+  <p>If everyone dies, the village stands empty and nobody wins.</p>
+</section>
+
+<section>
+  <p class="folio"><span>12</span> Table rules</p>
+  <h2>The laws of the village</h2>
+  <ul>
+    <li><strong>Never show cards.</strong> Not your hand, not your role, not "just one." The only reveals are funerals, the final reveal, and a Strong Ale.</li>
+    <li><strong>Truth cards are binding.</strong> Answers to Inquest, Appraisal, and Tracks in the Snow must be honest, and a drunk shows their whole hand. Everything else may be a lie.</li>
+    <li><strong>No binding deals.</strong> Promise anything; deliver whatever you like.</li>
+    <li><strong>Shuffle blind.</strong> Never look at faces while shuffling a pile, and anyone may ask for a pile's card count before it's flipped.</li>
+  </ul>
+</section>
+
+<section>
+  <p class="folio"><span>13</span> Rulings</p>
+  <h2>Frequently asked</h2>
+  <dl class="faq">
+    <dt>Can I place an Attack in front of myself?</dt>
+    <dd>Yes. Any card may go in any pile.</dd>
+    <dt>Who is "adjacent"?</dt>
+    <dd>Your seated neighbors, alive or dead.</dd>
+    <dt>Richest/poorest ties?</dt>
+    <dd>The pile's owner chooses among tied tracks. The Reeve's Tax has no owner: every tied track pays.</dd>
+    <dt>Do gold bonuses stack?</dt>
+    <dd>Yes — Trestle Market during Market Fair banks +2 over the base.</dd>
+    <dt>Deep Forest is announced a round ahead — do we still place there?</dt>
+    <dd>Yes. Everyone must feed the void one card. Choose your sacrifice.</dd>
+    <dt>Slow Poison vs. Panacea?</dt>
+    <dd>Panacea removes wounds; it doesn't void a pending poison. Only a Heal revealed in that pile does.</dd>
+    <dt>Can a ghost haunt a grave, or skip haunting?</dt>
+    <dd>No graves; only living players' piles. Skipping is allowed.</dd>
+    <dt>Does the Felling Axe remove wounds or scoring cards?</dt>
+    <dd>No. Only pending and persistent cards on the pile.</dd>
+    <dt>How do I heal a Calamity?</dt>
+    <dd>A Heal removes its wound token first; the card stays as one wound until healed again.</dd>
+    <dt>What does "cannot be voided by a Protect" cover?</dt>
+    <dd>Protect cards and the Palisade. Snares, Night Patrol, Curfew, Cloak of Plain Cloth, and Deep Forest still stop a Silver Dagger or Sneak Attack.</dd>
+    <dt>What does a drunk have to show?</dt>
+    <dd>Every card in their hand, face-up, for a slow count of five. The role card stays in the envelope; wounds and scoring cards are already public.</dd>
+    <dt>A pile's count looks wrong before the flip?</dt>
+    <dd>Count it openly — a haunted pile legitimately runs one card heavy.</dd>
+    <dt>Do the Townsfolk's cards count when I'm counting Attacks still at large?</dt>
+    <dd>Yes. Treat the stranger's deck as unknown: everything in it is possible until it's revealed.</dd>
+    <dt>Can a Townsfolk's trade end up the richest track?</dt>
+    <dd>Yes — and until it dies, nobody can prove which track is the stranger's. It just can't win.</dd>
+  </dl>
+</section>
+
+<section>
+  <p class="folio"><span>14</span> First year</p>
+  <h2>Advice for new villagers</h2>
+  <ul>
+    <li><strong>Your own pile is a decoder ring.</strong> You know the one card you placed in front of yourself. Subtract it from your pile's reveal, and what's left is exactly what the table did to you.</li>
+    <li><strong>Count everything.</strong> The envelope contents are public. Every Attack that hasn't appeared is still in someone's hand.</li>
+    <li><strong>Nobody can kill alone — but every hit pays.</strong> Four wounds of attacks against a defended player will never be enough on their own; murders take partners, and partners take gossip. (The thief's Sneak Attack is the one exception — which is why nobody trusts the thief.) Meanwhile every wound you leave on a rival is a coin off their score, so aim your attacks at the trade you suspect is winning rather than dumping them on a grave.</li>
+    <li><strong>Earning is confessing.</strong> Every coin on your track sharpens the table's guess. The winner is usually the player who got rich slowest.</li>
+  </ul>
+</section>
+
+<section>
+  <p class="folio"><span>15</span> The mishap deck</p>
+  <h2>A thousand ways to get hurt</h2>
+  <p>Every Attack card in the game is a different way to get hurt. <strong>Mishaps</strong> deal 1 wound; <strong>Calamities</strong> deal 2. All of them are Attacks for every rule, void, and truth card. Each seat draws two Mishaps and one Calamity at setup, so the table always knows <em>how many</em> accidents are waiting — never <em>which</em>.</p>
+  <div class="trade">
+    <h4>Mishaps</h4>
+    <p class="verb">1 wound · 24 cards</p>
+    <ul>
+      <li><span class="tag attack">1</span><span class="cardname">Bee Swarm</span> — Someone moved the hive. Someone always moves the hive.</li>
+      <li><span class="tag attack">1</span><span class="cardname">Loose Cobblestone</span> — The market square claims another ankle.</li>
+      <li><span class="tag attack">1</span><span class="cardname">The Goose</span> — It has hated you since Michaelmas.</li>
+      <li><span class="tag attack">1</span><span class="cardname">Gardyloo!</span> — The contents of an upstairs chamber pot, with a cheerful warning shouted afterward.</li>
+      <li><span class="tag attack">1</span><span class="cardname">Rotten Floorboard</span> — Straight through to the cellar. The cellar was not empty.</li>
+      <li><span class="tag attack">1</span><span class="cardname">Cart-Horse Kick</span> — He didn't like the look of you either.</li>
+      <li><span class="tag attack">1</span><span class="cardname">Nettle Patch</span> — A gentle shove, a soft landing, six hours of regret.</li>
+      <li><span class="tag attack">1</span><span class="cardname">Falling Roof Tile</span> — Slate, from a great height, with excellent aim.</li>
+      <li><span class="tag attack">1</span><span class="cardname">Rabid Mongrel</span> — The dog was fine yesterday. Probably.</li>
+      <li><span class="tag attack">1</span><span class="cardname">Hot Poker Handle</span> — Someone left it in the fire. Someone knew you'd grab it.</li>
+      <li><span class="tag attack">1</span><span class="cardname">Ale-Slick Stairs</span> — Every tavern has that one step.</li>
+      <li><span class="tag attack">1</span><span class="cardname">Runaway Barrel</span> — Downhill, gathering speed, full of pickled herring.</li>
+      <li><span class="tag attack">1</span><span class="cardname">Pig Stampede</span> — Market day. Forty pigs. One narrow lane.</li>
+      <li><span class="tag attack">1</span><span class="cardname">Blow Dart from the Hedge</span> — A tiny thorn, a tiny whistle, a great deal of swelling.</li>
+      <li><span class="tag attack">1</span><span class="cardname">Tainted Stew</span> — The meat was… ambitious.</li>
+      <li><span class="tag attack">1</span><span class="cardname">Hidden Rake</span> — Ancient. Reliable. Face-height.</li>
+      <li><span class="tag attack">1</span><span class="cardname">Root-Cellar Trapdoor</span> — Left open, in the dark, just for you.</li>
+      <li><span class="tag attack">1</span><span class="cardname">Mousetrap in the Boot</span> — Snap.</li>
+      <li><span class="tag attack">1</span><span class="cardname">Bucket Down the Well</span> — Somebody let go of the rope.</li>
+      <li><span class="tag attack">1</span><span class="cardname">Hornets in the Hood</span> — You'll find them when you put it on.</li>
+      <li><span class="tag attack">1</span><span class="cardname">Ferret in the Trousers</span> — Traditional. Unpleasant. Hilarious to everyone else.</li>
+      <li><span class="tag attack">1</span><span class="cardname">The King's Swan</span> — The bird is protected by law. You are not.</li>
+      <li><span class="tag attack">1</span><span class="cardname">Greased Ladder</span> — Third rung. Every time.</li>
+      <li><span class="tag attack">1</span><span class="cardname">Turnip from the Pillory Crowd</span> — Not aimed at you. Hit you anyway.</li>
+    </ul>
+  </div>
+  <div class="trade">
+    <h4>Calamities</h4>
+    <p class="verb">2 wounds · 12 cards</p>
+    <ul>
+      <li><span class="tag attack">2</span><span class="cardname">Cathedral Scaffold</span> — Two hundred years to build, two seconds to fall off.</li>
+      <li><span class="tag attack">2</span><span class="cardname">Bear in the Woodpile</span> — Nobody knows how long it's been in there.</li>
+      <li><span class="tag attack">2</span><span class="cardname">Trebuchet Practice</span> — The engineers sincerely apologize.</li>
+      <li><span class="tag attack">2</span><span class="cardname">Staked Pit</span> — Dug for boar. Covered with leaves. Ready for you.</li>
+      <li><span class="tag attack">2</span><span class="cardname">Runaway Millstone</span> — Two tons, downhill, spinning.</li>
+      <li><span class="tag attack">2</span><span class="cardname">Boiling Pitch</span> — Poured from the walls, and the walls were quite sure you were the enemy.</li>
+      <li><span class="tag attack">2</span><span class="cardname">Portcullis</span> — Timed to the second. The second was yours.</li>
+      <li><span class="tag attack">2</span><span class="cardname">Falling Church Bell</span> — The rope frayed. The bell rang once.</li>
+      <li><span class="tag attack">2</span><span class="cardname">Boar Charge</span> — It was cornered. So were you.</li>
+      <li><span class="tag attack">2</span><span class="cardname">Through the Ice</span> — The river looked solid. The river lied.</li>
+      <li><span class="tag attack">2</span><span class="cardname">Drowned in Malmsey</span> — A full butt of sweet wine. There are worse ways to go, but not many.</li>
+      <li><span class="tag attack">2</span><span class="cardname">Nightshade Tart</span> — The berries were the wrong kind of purple.</li>
+    </ul>
+  </div>
+</section>
+
+<p class="footnote">A Thousand Ways to Die in Medieval · rules edition 1.5 · honest trades, unfortunate accidents</p>
+
+</main>

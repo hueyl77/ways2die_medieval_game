@@ -1,0 +1,704 @@
+{
+ "defaults": {
+  "image_type": "card-art",
+  "art_style": "Western Cartoon",
+  "aspect_ratio": "ar_3_4",
+  "augment_prompt": true
+ },
+ "jobs": [
+  {
+   "id": "role-blacksmith",
+   "request_id": "atwd-role-blacksmith-v1",
+   "name": "Blacksmith",
+   "kind": "role",
+   "prompt": "Portrait of a burly village blacksmith at the forge, leather apron, hammer over one shoulder, sparks in the air, a small dagger hidden behind the back. Waist-up portrait looking at the viewer with a sly, slightly untrustworthy smile, workshop or stall behind them. Medieval European village, 14th century. Comic and slightly grim tone, no gore, expressive characters, rich detail, centered composition for a playing card illustration, no text, no lettering, no border."
+  },
+  {
+   "id": "role-farmer",
+   "request_id": "atwd-role-farmer-v1",
+   "name": "Farmer",
+   "kind": "role",
+   "prompt": "Portrait of a weathered village farmer with a pitchfork and a basket of turnips, straw in the hair, mud on the boots. Waist-up portrait looking at the viewer with a sly, slightly untrustworthy smile, workshop or stall behind them. Medieval European village, 14th century. Comic and slightly grim tone, no gore, expressive characters, rich detail, centered composition for a playing card illustration, no text, no lettering, no border."
+  },
+  {
+   "id": "role-thief",
+   "request_id": "atwd-role-thief-v1",
+   "name": "Thief",
+   "kind": "role",
+   "prompt": "Portrait of a wiry village thief in a hooded cloak, fingers already inside someone else's purse, innocent expression. Waist-up portrait looking at the viewer with a sly, slightly untrustworthy smile, workshop or stall behind them. Medieval European village, 14th century. Comic and slightly grim tone, no gore, expressive characters, rich detail, centered composition for a playing card illustration, no text, no lettering, no border."
+  },
+  {
+   "id": "role-innkeeper",
+   "request_id": "atwd-role-innkeeper-v1",
+   "name": "Innkeeper",
+   "kind": "role",
+   "prompt": "Portrait of a rosy-cheeked innkeeper wiping a tankard, keys at the belt, tavern full of drunks behind. Waist-up portrait looking at the viewer with a sly, slightly untrustworthy smile, workshop or stall behind them. Medieval European village, 14th century. Comic and slightly grim tone, no gore, expressive characters, rich detail, centered composition for a playing card illustration, no text, no lettering, no border."
+  },
+  {
+   "id": "role-city-guard",
+   "request_id": "atwd-role-city-guard-v1",
+   "name": "City Guard",
+   "kind": "role",
+   "prompt": "Portrait of a city guard in a kettle helm and tabard holding a halberd, keys and a lantern, stern but shifty. Waist-up portrait looking at the viewer with a sly, slightly untrustworthy smile, workshop or stall behind them. Medieval European village, 14th century. Comic and slightly grim tone, no gore, expressive characters, rich detail, centered composition for a playing card illustration, no text, no lettering, no border."
+  },
+  {
+   "id": "role-carpenter",
+   "request_id": "atwd-role-carpenter-v1",
+   "name": "Carpenter",
+   "kind": "role",
+   "prompt": "Portrait of a village carpenter with a saw and a plank over the shoulder, sawdust everywhere, pencil behind the ear. Waist-up portrait looking at the viewer with a sly, slightly untrustworthy smile, workshop or stall behind them. Medieval European village, 14th century. Comic and slightly grim tone, no gore, expressive characters, rich detail, centered composition for a playing card illustration, no text, no lettering, no border."
+  },
+  {
+   "id": "role-jeweler",
+   "request_id": "atwd-role-jeweler-v1",
+   "name": "Jeweler",
+   "kind": "role",
+   "prompt": "Portrait of a village jeweler with a loupe and a tray of gems, velvet cap, gold rings on every finger. Waist-up portrait looking at the viewer with a sly, slightly untrustworthy smile, workshop or stall behind them. Medieval European village, 14th century. Comic and slightly grim tone, no gore, expressive characters, rich detail, centered composition for a playing card illustration, no text, no lettering, no border."
+  },
+  {
+   "id": "role-tailor",
+   "request_id": "atwd-role-tailor-v1",
+   "name": "Tailor",
+   "kind": "role",
+   "prompt": "Portrait of a village tailor with a measuring cord and pins in the mouth, bolts of colorful cloth, needle raised. Waist-up portrait looking at the viewer with a sly, slightly untrustworthy smile, workshop or stall behind them. Medieval European village, 14th century. Comic and slightly grim tone, no gore, expressive characters, rich detail, centered composition for a playing card illustration, no text, no lettering, no border."
+  },
+  {
+   "id": "role-apothecary",
+   "request_id": "atwd-role-apothecary-v1",
+   "name": "Apothecary",
+   "kind": "role",
+   "prompt": "Portrait of a village apothecary with vials of colored liquid, dried herbs hanging, a suspicious smile. Waist-up portrait looking at the viewer with a sly, slightly untrustworthy smile, workshop or stall behind them. Medieval European village, 14th century. Comic and slightly grim tone, no gore, expressive characters, rich detail, centered composition for a playing card illustration, no text, no lettering, no border."
+  },
+  {
+   "id": "role-hunter",
+   "request_id": "atwd-role-hunter-v1",
+   "name": "Hunter",
+   "kind": "role",
+   "prompt": "Portrait of a village hunter with a longbow and a brace of rabbits, fur hat, a hound at heel. Waist-up portrait looking at the viewer with a sly, slightly untrustworthy smile, workshop or stall behind them. Medieval European village, 14th century. Comic and slightly grim tone, no gore, expressive characters, rich detail, centered composition for a playing card illustration, no text, no lettering, no border."
+  },
+  {
+   "id": "role-woodsman",
+   "request_id": "atwd-role-woodsman-v1",
+   "name": "Woodsman",
+   "kind": "role",
+   "prompt": "Portrait of a village woodsman with a great axe over the shoulder, bundle of firewood, snow on the boots. Waist-up portrait looking at the viewer with a sly, slightly untrustworthy smile, workshop or stall behind them. Medieval European village, 14th century. Comic and slightly grim tone, no gore, expressive characters, rich detail, centered composition for a playing card illustration, no text, no lettering, no border."
+  },
+  {
+   "id": "role-miller",
+   "request_id": "atwd-role-miller-v1",
+   "name": "Miller",
+   "kind": "role",
+   "prompt": "Portrait of a flour-dusted village miller beside a millstone with a sack of grain and one thumb on a balance scale. Waist-up portrait looking at the viewer with a sly, slightly untrustworthy smile, workshop or stall behind them. Medieval European village, 14th century. Comic and slightly grim tone, no gore, expressive characters, rich detail, centered composition for a playing card illustration, no text, no lettering, no border."
+  },
+  {
+   "id": "wares-blacksmith",
+   "request_id": "atwd-wares-blacksmith-v1",
+   "name": "Blacksmith",
+   "kind": "wares",
+   "prompt": "Still life of a blacksmith's market stall of ironwork: horseshoes, hinges, knives, a kettle, and a fresh-forged sword. Medieval European village, 14th century. Comic and slightly grim tone, no gore, expressive characters, rich detail, centered composition for a playing card illustration, no text, no lettering, no border."
+  },
+  {
+   "id": "wares-farmer",
+   "request_id": "atwd-wares-farmer-v1",
+   "name": "Farmer",
+   "kind": "wares",
+   "prompt": "Still life of a farmer's market stall heaped with vegetables, sacks of grain, eggs, and a suspicious goose. Medieval European village, 14th century. Comic and slightly grim tone, no gore, expressive characters, rich detail, centered composition for a playing card illustration, no text, no lettering, no border."
+  },
+  {
+   "id": "wares-thief",
+   "request_id": "atwd-wares-thief-v1",
+   "name": "Thief",
+   "kind": "wares",
+   "prompt": "Still life of a thief's fence: a cloth spread in an alley with stolen rings, purses, a candlestick, and a stolen chicken. Medieval European village, 14th century. Comic and slightly grim tone, no gore, expressive characters, rich detail, centered composition for a playing card illustration, no text, no lettering, no border."
+  },
+  {
+   "id": "wares-innkeeper",
+   "request_id": "atwd-wares-innkeeper-v1",
+   "name": "Innkeeper",
+   "kind": "wares",
+   "prompt": "Still life of an inn's serving counter with foaming tankards, a roast, bread, and a barrel tapped for ale. Medieval European village, 14th century. Comic and slightly grim tone, no gore, expressive characters, rich detail, centered composition for a playing card illustration, no text, no lettering, no border."
+  },
+  {
+   "id": "wares-city-guard",
+   "request_id": "atwd-wares-city-guard-v1",
+   "name": "City Guard",
+   "kind": "wares",
+   "prompt": "Still life of a guard's patrol duty: a lantern, keys, a halberd, and a purse of collected fines on a stone table. Medieval European village, 14th century. Comic and slightly grim tone, no gore, expressive characters, rich detail, centered composition for a playing card illustration, no text, no lettering, no border."
+  },
+  {
+   "id": "wares-carpenter",
+   "request_id": "atwd-wares-carpenter-v1",
+   "name": "Carpenter",
+   "kind": "wares",
+   "prompt": "Still life of a carpenter's wares: a stool, a chest, a cradle, a ladder, and shavings on the floor. Medieval European village, 14th century. Comic and slightly grim tone, no gore, expressive characters, rich detail, centered composition for a playing card illustration, no text, no lettering, no border."
+  },
+  {
+   "id": "wares-jeweler",
+   "request_id": "atwd-wares-jeweler-v1",
+   "name": "Jeweler",
+   "kind": "wares",
+   "prompt": "Still life of a jeweler's velvet tray of rings, necklaces, and a single enormous gem under a magnifying glass. Medieval European village, 14th century. Comic and slightly grim tone, no gore, expressive characters, rich detail, centered composition for a playing card illustration, no text, no lettering, no border."
+  },
+  {
+   "id": "wares-tailor",
+   "request_id": "atwd-wares-tailor-v1",
+   "name": "Tailor",
+   "kind": "wares",
+   "prompt": "Still life of a tailor's stall of folded cloth, a fine doublet on a stand, ribbons, and a pincushion. Medieval European village, 14th century. Comic and slightly grim tone, no gore, expressive characters, rich detail, centered composition for a playing card illustration, no text, no lettering, no border."
+  },
+  {
+   "id": "wares-apothecary",
+   "request_id": "atwd-wares-apothecary-v1",
+   "name": "Apothecary",
+   "kind": "wares",
+   "prompt": "Still life of an apothecary's shelf of potion bottles, dried herbs, a mortar and pestle, a jar labeled with a skull. Medieval European village, 14th century. Comic and slightly grim tone, no gore, expressive characters, rich detail, centered composition for a playing card illustration, no text, no lettering, no border."
+  },
+  {
+   "id": "wares-hunter",
+   "request_id": "atwd-wares-hunter-v1",
+   "name": "Hunter",
+   "kind": "wares",
+   "prompt": "Still life of a hunter's game hung on a rail: hares, pheasants, a deer, and furs, with a bow leaning beside. Medieval European village, 14th century. Comic and slightly grim tone, no gore, expressive characters, rich detail, centered composition for a playing card illustration, no text, no lettering, no border."
+  },
+  {
+   "id": "wares-woodsman",
+   "request_id": "atwd-wares-woodsman-v1",
+   "name": "Woodsman",
+   "kind": "wares",
+   "prompt": "Still life of a woodsman's stacked timber and split firewood beside a sled, an axe buried in a stump. Medieval European village, 14th century. Comic and slightly grim tone, no gore, expressive characters, rich detail, centered composition for a playing card illustration, no text, no lettering, no border."
+  },
+  {
+   "id": "wares-miller",
+   "request_id": "atwd-wares-miller-v1",
+   "name": "Miller",
+   "kind": "wares",
+   "prompt": "Still life of a miller's sacks of flour on a cart beside a waterwheel and a millstone, flour dust in the air. Medieval European village, 14th century. Comic and slightly grim tone, no gore, expressive characters, rich detail, centered composition for a playing card illustration, no text, no lettering, no border."
+  },
+  {
+   "id": "sig-silver-dagger",
+   "request_id": "atwd-sig-silver-dagger-v1",
+   "name": "Silver Dagger",
+   "kind": "sig",
+   "prompt": "a gleaming silver dagger lying on an anvil in moonlight, sparks fading. Medieval European village, 14th century. Comic and slightly grim tone, no gore, expressive characters, rich detail, centered composition for a playing card illustration, no text, no lettering, no border."
+  },
+  {
+   "id": "sig-grindstone",
+   "request_id": "atwd-sig-grindstone-v1",
+   "name": "Grindstone",
+   "kind": "sig",
+   "prompt": "a foot-pedal grindstone throwing a shower of sparks as a blade is sharpened to a wicked edge. Medieval European village, 14th century. Comic and slightly grim tone, no gore, expressive characters, rich detail, centered composition for a playing card illustration, no text, no lettering, no border."
+  },
+  {
+   "id": "sig-iron-strongbox",
+   "request_id": "atwd-sig-iron-strongbox-v1",
+   "name": "Iron Strongbox",
+   "kind": "sig",
+   "prompt": "a squat iron-banded strongbox with three heavy locks, a thief's broken pick lying beside it. Medieval European village, 14th century. Comic and slightly grim tone, no gore, expressive characters, rich detail, centered composition for a playing card illustration, no text, no lettering, no border."
+  },
+  {
+   "id": "sig-hearty-stew",
+   "request_id": "atwd-sig-hearty-stew-v1",
+   "name": "Hearty Stew",
+   "kind": "sig",
+   "prompt": "a steaming cauldron of thick stew over a fire, a ladle, a loaf of bread, a happy dog. Medieval European village, 14th century. Comic and slightly grim tone, no gore, expressive characters, rich detail, centered composition for a playing card illustration, no text, no lettering, no border."
+  },
+  {
+   "id": "sig-bumper-crop",
+   "request_id": "atwd-sig-bumper-crop-v1",
+   "name": "Bumper Crop",
+   "kind": "sig",
+   "prompt": "an overflowing harvest cart of wheat sheaves, pumpkins, and apples pulled by a tired ox. Medieval European village, 14th century. Comic and slightly grim tone, no gore, expressive characters, rich detail, centered composition for a playing card illustration, no text, no lettering, no border."
+  },
+  {
+   "id": "sig-gleaning",
+   "request_id": "atwd-sig-gleaning-v1",
+   "name": "Gleaning",
+   "kind": "sig",
+   "prompt": "poor villagers stooping to gather leftover grain in a stubble field at golden dusk. Medieval European village, 14th century. Comic and slightly grim tone, no gore, expressive characters, rich detail, centered composition for a playing card illustration, no text, no lettering, no border."
+  },
+  {
+   "id": "sig-cutpurse",
+   "request_id": "atwd-sig-cutpurse-v1",
+   "name": "Cutpurse",
+   "kind": "sig",
+   "prompt": "a nimble hand slicing a fat purse from a merchant's belt in a crowded market. Medieval European village, 14th century. Comic and slightly grim tone, no gore, expressive characters, rich detail, centered composition for a playing card illustration, no text, no lettering, no border."
+  },
+  {
+   "id": "sig-blackmail",
+   "request_id": "atwd-sig-blackmail-v1",
+   "name": "Blackmail",
+   "kind": "sig",
+   "prompt": "a hooded figure handing a sealed letter to a sweating townsman who clutches his coin bag. Medieval European village, 14th century. Comic and slightly grim tone, no gore, expressive characters, rich detail, centered composition for a playing card illustration, no text, no lettering, no border."
+  },
+  {
+   "id": "sig-sneak-attack",
+   "request_id": "atwd-sig-sneak-attack-v1",
+   "name": "Sneak Attack",
+   "kind": "sig",
+   "prompt": "a shadowy figure creeping up behind an unaware villager in a dark alley, cudgel raised. Medieval European village, 14th century. Comic and slightly grim tone, no gore, expressive characters, rich detail, centered composition for a playing card illustration, no text, no lettering, no border."
+  },
+  {
+   "id": "sig-strong-ale",
+   "request_id": "atwd-sig-strong-ale-v1",
+   "name": "Strong Ale",
+   "kind": "sig",
+   "prompt": "a red-faced drunk asleep on a tavern table, his playing cards spilled face-up, others leaning in to look. Medieval European village, 14th century. Comic and slightly grim tone, no gore, expressive characters, rich detail, centered composition for a playing card illustration, no text, no lettering, no border."
+  },
+  {
+   "id": "sig-a-round-on-the-house",
+   "request_id": "atwd-sig-a-round-on-the-house-v1",
+   "name": "A Round on the House",
+   "kind": "sig",
+   "prompt": "a cheering tavern crowd raising foaming tankards as the innkeeper rolls out a barrel. Medieval European village, 14th century. Comic and slightly grim tone, no gore, expressive characters, rich detail, centered composition for a playing card illustration, no text, no lettering, no border."
+  },
+  {
+   "id": "sig-bad-batch",
+   "request_id": "atwd-sig-bad-batch-v1",
+   "name": "Bad Batch",
+   "kind": "sig",
+   "prompt": "green-faced villagers clutching their stomachs beside a barrel with a skull chalked on it. Medieval European village, 14th century. Comic and slightly grim tone, no gore, expressive characters, rich detail, centered composition for a playing card illustration, no text, no lettering, no border."
+  },
+  {
+   "id": "sig-night-patrol",
+   "request_id": "atwd-sig-night-patrol-v1",
+   "name": "Night Patrol",
+   "kind": "sig",
+   "prompt": "a city guard with lantern and halberd walking a torch-lit cobbled lane at night, cats watching. Medieval European village, 14th century. Comic and slightly grim tone, no gore, expressive characters, rich detail, centered composition for a playing card illustration, no text, no lettering, no border."
+  },
+  {
+   "id": "sig-curfew",
+   "request_id": "atwd-sig-curfew-v1",
+   "name": "Curfew",
+   "kind": "sig",
+   "prompt": "empty moonlit streets, guards swinging the town gates shut, a bell ringing in the tower. Medieval European village, 14th century. Comic and slightly grim tone, no gore, expressive characters, rich detail, centered composition for a playing card illustration, no text, no lettering, no border."
+  },
+  {
+   "id": "sig-inquest",
+   "request_id": "atwd-sig-inquest-v1",
+   "name": "Inquest",
+   "kind": "sig",
+   "prompt": "a stern guard interrogating a sweating villager across a table, a quill and a ledger. Medieval European village, 14th century. Comic and slightly grim tone, no gore, expressive characters, rich detail, centered composition for a playing card illustration, no text, no lettering, no border."
+  },
+  {
+   "id": "sig-palisade",
+   "request_id": "atwd-sig-palisade-v1",
+   "name": "Palisade",
+   "kind": "sig",
+   "prompt": "a stout wooden palisade wall with sharpened stakes surrounding a cozy cottage. Medieval European village, 14th century. Comic and slightly grim tone, no gore, expressive characters, rich detail, centered composition for a playing card illustration, no text, no lettering, no border."
+  },
+  {
+   "id": "sig-trestle-market",
+   "request_id": "atwd-sig-trestle-market-v1",
+   "name": "Trestle Market",
+   "kind": "sig",
+   "prompt": "carpenters hammering together market stalls with bunting while merchants unload wares. Medieval European village, 14th century. Comic and slightly grim tone, no gore, expressive characters, rich detail, centered composition for a playing card illustration, no text, no lettering, no border."
+  },
+  {
+   "id": "sig-rotten-beam",
+   "request_id": "atwd-sig-rotten-beam-v1",
+   "name": "Rotten Beam",
+   "kind": "sig",
+   "prompt": "a rotten roof beam cracking and collapsing in a cloud of dust as a family dives aside. Medieval European village, 14th century. Comic and slightly grim tone, no gore, expressive characters, rich detail, centered composition for a playing card illustration, no text, no lettering, no border."
+  },
+  {
+   "id": "sig-king-s-commission",
+   "request_id": "atwd-sig-king-s-commission-v1",
+   "name": "King's Commission",
+   "kind": "sig",
+   "prompt": "a jeweler presenting a jeweled crown to a haughty royal messenger with a scroll. Medieval European village, 14th century. Comic and slightly grim tone, no gore, expressive characters, rich detail, centered composition for a playing card illustration, no text, no lettering, no border."
+  },
+  {
+   "id": "sig-appraisal",
+   "request_id": "atwd-sig-appraisal-v1",
+   "name": "Appraisal",
+   "kind": "sig",
+   "prompt": "a jeweler squinting through a loupe at a gem, a ledger and scales beside him. Medieval European village, 14th century. Comic and slightly grim tone, no gore, expressive characters, rich detail, centered composition for a playing card illustration, no text, no lettering, no border."
+  },
+  {
+   "id": "sig-paste-gems",
+   "request_id": "atwd-sig-paste-gems-v1",
+   "name": "Paste Gems",
+   "kind": "sig",
+   "prompt": "a shattered glass gem on a counter, glass shards, and a furious customer pointing. Medieval European village, 14th century. Comic and slightly grim tone, no gore, expressive characters, rich detail, centered composition for a playing card illustration, no text, no lettering, no border."
+  },
+  {
+   "id": "sig-false-colors",
+   "request_id": "atwd-sig-false-colors-v1",
+   "name": "False Colors",
+   "kind": "sig",
+   "prompt": "a grinning tailor holding up two different guild tabards, deciding which to sell as genuine. Medieval European village, 14th century. Comic and slightly grim tone, no gore, expressive characters, rich detail, centered composition for a playing card illustration, no text, no lettering, no border."
+  },
+  {
+   "id": "sig-cloak-of-plain-cloth",
+   "request_id": "atwd-sig-cloak-of-plain-cloth-v1",
+   "name": "Cloak of Plain Cloth",
+   "kind": "sig",
+   "prompt": "a figure melting into a market crowd in a drab hooded cloak, unnoticed by searching guards. Medieval European village, 14th century. Comic and slightly grim tone, no gore, expressive characters, rich detail, centered composition for a playing card illustration, no text, no lettering, no border."
+  },
+  {
+   "id": "sig-sunday-best",
+   "request_id": "atwd-sig-sunday-best-v1",
+   "name": "Sunday Best",
+   "kind": "sig",
+   "prompt": "a villager strutting through the church door in extravagant new clothes as neighbors gawk. Medieval European village, 14th century. Comic and slightly grim tone, no gore, expressive characters, rich detail, centered composition for a playing card illustration, no text, no lettering, no border."
+  },
+  {
+   "id": "sig-panacea",
+   "request_id": "atwd-sig-panacea-v1",
+   "name": "Panacea",
+   "kind": "sig",
+   "prompt": "a glowing green potion in a crystal bottle surrounded by herbs, a patient sitting up in bed. Medieval European village, 14th century. Comic and slightly grim tone, no gore, expressive characters, rich detail, centered composition for a playing card illustration, no text, no lettering, no border."
+  },
+  {
+   "id": "sig-slow-poison",
+   "request_id": "atwd-sig-slow-poison-v1",
+   "name": "Slow Poison",
+   "kind": "sig",
+   "prompt": "a vial dripping into a goblet of wine beside an hourglass, a hand withdrawing into shadow. Medieval European village, 14th century. Comic and slightly grim tone, no gore, expressive characters, rich detail, centered composition for a playing card illustration, no text, no lettering, no border."
+  },
+  {
+   "id": "sig-physician-s-fee",
+   "request_id": "atwd-sig-physician-s-fee-v1",
+   "name": "Physician's Fee",
+   "kind": "sig",
+   "prompt": "an apothecary counting a pile of coins beside a row of bandaged, groaning patients. Medieval European village, 14th century. Comic and slightly grim tone, no gore, expressive characters, rich detail, centered composition for a playing card illustration, no text, no lettering, no border."
+  },
+  {
+   "id": "sig-hunting-bow",
+   "request_id": "atwd-sig-hunting-bow-v1",
+   "name": "Hunting Bow",
+   "kind": "sig",
+   "prompt": "a hunter drawing a longbow at full stretch in a misty forest, arrow nocked. Medieval European village, 14th century. Comic and slightly grim tone, no gore, expressive characters, rich detail, centered composition for a playing card illustration, no text, no lettering, no border."
+  },
+  {
+   "id": "sig-snare",
+   "request_id": "atwd-sig-snare-v1",
+   "name": "Snare",
+   "kind": "sig",
+   "prompt": "a rope snare in the undergrowth snapping tight around a surprised boot. Medieval European village, 14th century. Comic and slightly grim tone, no gore, expressive characters, rich detail, centered composition for a playing card illustration, no text, no lettering, no border."
+  },
+  {
+   "id": "sig-tracks-in-the-snow",
+   "request_id": "atwd-sig-tracks-in-the-snow-v1",
+   "name": "Tracks in the Snow",
+   "kind": "sig",
+   "prompt": "a hunter kneeling to examine a trail of footprints in fresh snow, breath steaming. Medieval European village, 14th century. Comic and slightly grim tone, no gore, expressive characters, rich detail, centered composition for a playing card illustration, no text, no lettering, no border."
+  },
+  {
+   "id": "sig-felling-axe",
+   "request_id": "atwd-sig-felling-axe-v1",
+   "name": "Felling Axe",
+   "kind": "sig",
+   "prompt": "a woodsman swinging a great axe into a tree that cracks and begins to topple. Medieval European village, 14th century. Comic and slightly grim tone, no gore, expressive characters, rich detail, centered composition for a playing card illustration, no text, no lettering, no border."
+  },
+  {
+   "id": "sig-cordwood",
+   "request_id": "atwd-sig-cordwood-v1",
+   "name": "Cordwood",
+   "kind": "sig",
+   "prompt": "a neatly stacked woodpile in snow beside a cottage with smoke curling from the chimney. Medieval European village, 14th century. Comic and slightly grim tone, no gore, expressive characters, rich detail, centered composition for a playing card illustration, no text, no lettering, no border."
+  },
+  {
+   "id": "sig-deep-forest",
+   "request_id": "atwd-sig-deep-forest-v1",
+   "name": "Deep Forest",
+   "kind": "sig",
+   "prompt": "a lone figure walking into a dark, misty, ancient forest where the path disappears. Medieval European village, 14th century. Comic and slightly grim tone, no gore, expressive characters, rich detail, centered composition for a playing card illustration, no text, no lettering, no border."
+  },
+  {
+   "id": "sig-miller-s-toll",
+   "request_id": "atwd-sig-miller-s-toll-v1",
+   "name": "Miller's Toll",
+   "kind": "sig",
+   "prompt": "a smug miller taking a sack of grain from each of a long line of grumbling farmers. Medieval European village, 14th century. Comic and slightly grim tone, no gore, expressive characters, rich detail, centered composition for a playing card illustration, no text, no lettering, no border."
+  },
+  {
+   "id": "sig-thumb-on-the-scale",
+   "request_id": "atwd-sig-thumb-on-the-scale-v1",
+   "name": "Thumb on the Scale",
+   "kind": "sig",
+   "prompt": "a miller's flour-dusted thumb pressing down on a balance scale as a customer looks away. Medieval European village, 14th century. Comic and slightly grim tone, no gore, expressive characters, rich detail, centered composition for a playing card illustration, no text, no lettering, no border."
+  },
+  {
+   "id": "sig-broken-door",
+   "request_id": "atwd-sig-broken-door-v1",
+   "name": "Broken Door",
+   "kind": "sig",
+   "prompt": "a burly miller bursting headfirst through a wooden door in an explosion of splinters. Medieval European village, 14th century. Comic and slightly grim tone, no gore, expressive characters, rich detail, centered composition for a playing card illustration, no text, no lettering, no border."
+  },
+  {
+   "id": "mishap-bee-swarm",
+   "request_id": "atwd-mishap-bee-swarm-v1",
+   "name": "Bee Swarm",
+   "kind": "mishap",
+   "prompt": "a cloud of angry bees chasing a peasant who has knocked over a hive, arms flailing. Medieval European village, 14th century. Comic and slightly grim tone, no gore, expressive characters, rich detail, centered composition for a playing card illustration, no text, no lettering, no border."
+  },
+  {
+   "id": "mishap-loose-cobblestone",
+   "request_id": "atwd-mishap-loose-cobblestone-v1",
+   "name": "Loose Cobblestone",
+   "kind": "mishap",
+   "prompt": "a villager face-planting in the market square after tripping on a loose cobblestone, cabbages flying. Medieval European village, 14th century. Comic and slightly grim tone, no gore, expressive characters, rich detail, centered composition for a playing card illustration, no text, no lettering, no border."
+  },
+  {
+   "id": "mishap-the-goose",
+   "request_id": "atwd-mishap-the-goose-v1",
+   "name": "The Goose",
+   "kind": "mishap",
+   "prompt": "a furious white goose attacking a terrified peasant in a muddy lane, wings spread, turnips dropped. Medieval European village, 14th century. Comic and slightly grim tone, no gore, expressive characters, rich detail, centered composition for a playing card illustration, no text, no lettering, no border."
+  },
+  {
+   "id": "mishap-gardyloo",
+   "request_id": "atwd-mishap-gardyloo-v1",
+   "name": "Gardyloo!",
+   "kind": "mishap",
+   "prompt": "a chamber pot being emptied from an upstairs window onto a well-dressed passerby below. Medieval European village, 14th century. Comic and slightly grim tone, no gore, expressive characters, rich detail, centered composition for a playing card illustration, no text, no lettering, no border."
+  },
+  {
+   "id": "mishap-rotten-floorboard",
+   "request_id": "atwd-mishap-rotten-floorboard-v1",
+   "name": "Rotten Floorboard",
+   "kind": "mishap",
+   "prompt": "a villager crashing through a rotten floorboard into a cellar full of surprised rats. Medieval European village, 14th century. Comic and slightly grim tone, no gore, expressive characters, rich detail, centered composition for a playing card illustration, no text, no lettering, no border."
+  },
+  {
+   "id": "mishap-cart-horse-kick",
+   "request_id": "atwd-mishap-cart-horse-kick-v1",
+   "name": "Cart-Horse Kick",
+   "kind": "mishap",
+   "prompt": "a cart horse kicking a peasant clean over a fence, hat still in the air. Medieval European village, 14th century. Comic and slightly grim tone, no gore, expressive characters, rich detail, centered composition for a playing card illustration, no text, no lettering, no border."
+  },
+  {
+   "id": "mishap-nettle-patch",
+   "request_id": "atwd-mishap-nettle-patch-v1",
+   "name": "Nettle Patch",
+   "kind": "mishap",
+   "prompt": "a villager landing bottom-first in a patch of stinging nettles after a shove, someone whistling nearby. Medieval European village, 14th century. Comic and slightly grim tone, no gore, expressive characters, rich detail, centered composition for a playing card illustration, no text, no lettering, no border."
+  },
+  {
+   "id": "mishap-falling-roof-tile",
+   "request_id": "atwd-mishap-falling-roof-tile-v1",
+   "name": "Falling Roof Tile",
+   "kind": "mishap",
+   "prompt": "a slate roof tile sliding off a roof toward an oblivious villager's head. Medieval European village, 14th century. Comic and slightly grim tone, no gore, expressive characters, rich detail, centered composition for a playing card illustration, no text, no lettering, no border."
+  },
+  {
+   "id": "mishap-rabid-mongrel",
+   "request_id": "atwd-mishap-rabid-mongrel-v1",
+   "name": "Rabid Mongrel",
+   "kind": "mishap",
+   "prompt": "a scruffy foaming dog clamped onto the seat of a fleeing villager's trousers. Medieval European village, 14th century. Comic and slightly grim tone, no gore, expressive characters, rich detail, centered composition for a playing card illustration, no text, no lettering, no border."
+  },
+  {
+   "id": "mishap-hot-poker-handle",
+   "request_id": "atwd-mishap-hot-poker-handle-v1",
+   "name": "Hot Poker Handle",
+   "kind": "mishap",
+   "prompt": "a villager yelping and dropping a red-hot fire poker, steam rising from the hand. Medieval European village, 14th century. Comic and slightly grim tone, no gore, expressive characters, rich detail, centered composition for a playing card illustration, no text, no lettering, no border."
+  },
+  {
+   "id": "mishap-ale-slick-stairs",
+   "request_id": "atwd-mishap-ale-slick-stairs-v1",
+   "name": "Ale-Slick Stairs",
+   "kind": "mishap",
+   "prompt": "a drunk sliding down a tavern staircase on his back, tankard still upright in hand. Medieval European village, 14th century. Comic and slightly grim tone, no gore, expressive characters, rich detail, centered composition for a playing card illustration, no text, no lettering, no border."
+  },
+  {
+   "id": "mishap-runaway-barrel",
+   "request_id": "atwd-mishap-runaway-barrel-v1",
+   "name": "Runaway Barrel",
+   "kind": "mishap",
+   "prompt": "a huge barrel rolling downhill through a village street toward a frozen villager, herring spilling. Medieval European village, 14th century. Comic and slightly grim tone, no gore, expressive characters, rich detail, centered composition for a playing card illustration, no text, no lettering, no border."
+  },
+  {
+   "id": "mishap-pig-stampede",
+   "request_id": "atwd-mishap-pig-stampede-v1",
+   "name": "Pig Stampede",
+   "kind": "mishap",
+   "prompt": "forty pigs stampeding down a narrow lane over a flattened farmer. Medieval European village, 14th century. Comic and slightly grim tone, no gore, expressive characters, rich detail, centered composition for a playing card illustration, no text, no lettering, no border."
+  },
+  {
+   "id": "mishap-blow-dart-from-the-hedge",
+   "request_id": "atwd-mishap-blow-dart-from-the-hedge-v1",
+   "name": "Blow Dart from the Hedge",
+   "kind": "mishap",
+   "prompt": "a tiny dart sticking in a villager's neck, a suspicious hedge with a blowpipe poking out. Medieval European village, 14th century. Comic and slightly grim tone, no gore, expressive characters, rich detail, centered composition for a playing card illustration, no text, no lettering, no border."
+  },
+  {
+   "id": "mishap-tainted-stew",
+   "request_id": "atwd-mishap-tainted-stew-v1",
+   "name": "Tainted Stew",
+   "kind": "mishap",
+   "prompt": "a villager turning green over a bowl of stew with something moving in it. Medieval European village, 14th century. Comic and slightly grim tone, no gore, expressive characters, rich detail, centered composition for a playing card illustration, no text, no lettering, no border."
+  },
+  {
+   "id": "mishap-hidden-rake",
+   "request_id": "atwd-mishap-hidden-rake-v1",
+   "name": "Hidden Rake",
+   "kind": "mishap",
+   "prompt": "a rake handle springing up to smack a villager in the face, teeth in the grass. Medieval European village, 14th century. Comic and slightly grim tone, no gore, expressive characters, rich detail, centered composition for a playing card illustration, no text, no lettering, no border."
+  },
+  {
+   "id": "mishap-root-cellar-trapdoor",
+   "request_id": "atwd-mishap-root-cellar-trapdoor-v1",
+   "name": "Root-Cellar Trapdoor",
+   "kind": "mishap",
+   "prompt": "a villager mid-fall into an open cellar trapdoor, lantern flying. Medieval European village, 14th century. Comic and slightly grim tone, no gore, expressive characters, rich detail, centered composition for a playing card illustration, no text, no lettering, no border."
+  },
+  {
+   "id": "mishap-mousetrap-in-the-boot",
+   "request_id": "atwd-mishap-mousetrap-in-the-boot-v1",
+   "name": "Mousetrap in the Boot",
+   "kind": "mishap",
+   "prompt": "a villager hopping on one foot, a mousetrap snapped onto the toes of the other. Medieval European village, 14th century. Comic and slightly grim tone, no gore, expressive characters, rich detail, centered composition for a playing card illustration, no text, no lettering, no border."
+  },
+  {
+   "id": "mishap-bucket-down-the-well",
+   "request_id": "atwd-mishap-bucket-down-the-well-v1",
+   "name": "Bucket Down the Well",
+   "kind": "mishap",
+   "prompt": "a wooden bucket falling down a well shaft onto the head of someone peering up from below. Medieval European village, 14th century. Comic and slightly grim tone, no gore, expressive characters, rich detail, centered composition for a playing card illustration, no text, no lettering, no border."
+  },
+  {
+   "id": "mishap-hornets-in-the-hood",
+   "request_id": "atwd-mishap-hornets-in-the-hood-v1",
+   "name": "Hornets in the Hood",
+   "kind": "mishap",
+   "prompt": "a villager pulling on a hood and discovering the hornets' nest inside it. Medieval European village, 14th century. Comic and slightly grim tone, no gore, expressive characters, rich detail, centered composition for a playing card illustration, no text, no lettering, no border."
+  },
+  {
+   "id": "mishap-ferret-in-the-trousers",
+   "request_id": "atwd-mishap-ferret-in-the-trousers-v1",
+   "name": "Ferret in the Trousers",
+   "kind": "mishap",
+   "prompt": "a villager dancing wildly with a ferret disappearing into his trousers, crowd laughing. Medieval European village, 14th century. Comic and slightly grim tone, no gore, expressive characters, rich detail, centered composition for a playing card illustration, no text, no lettering, no border."
+  },
+  {
+   "id": "mishap-the-king-s-swan",
+   "request_id": "atwd-mishap-the-king-s-swan-v1",
+   "name": "The King's Swan",
+   "kind": "mishap",
+   "prompt": "an enormous swan hissing and beating a cowering villager with its wings by a riverbank. Medieval European village, 14th century. Comic and slightly grim tone, no gore, expressive characters, rich detail, centered composition for a playing card illustration, no text, no lettering, no border."
+  },
+  {
+   "id": "mishap-greased-ladder",
+   "request_id": "atwd-mishap-greased-ladder-v1",
+   "name": "Greased Ladder",
+   "kind": "mishap",
+   "prompt": "a villager sliding down a greased ladder while painting a sign, paint pot airborne. Medieval European village, 14th century. Comic and slightly grim tone, no gore, expressive characters, rich detail, centered composition for a playing card illustration, no text, no lettering, no border."
+  },
+  {
+   "id": "mishap-turnip-from-the-pillory-crowd",
+   "request_id": "atwd-mishap-turnip-from-the-pillory-crowd-v1",
+   "name": "Turnip from the Pillory Crowd",
+   "kind": "mishap",
+   "prompt": "a turnip flying from a jeering crowd at the pillory, striking an innocent bystander instead. Medieval European village, 14th century. Comic and slightly grim tone, no gore, expressive characters, rich detail, centered composition for a playing card illustration, no text, no lettering, no border."
+  },
+  {
+   "id": "calamity-cathedral-scaffold",
+   "request_id": "atwd-calamity-cathedral-scaffold-v1",
+   "name": "Cathedral Scaffold",
+   "kind": "calamity",
+   "prompt": "a stonemason tumbling backwards off a rickety wooden scaffold high on an unfinished cathedral, tools flying, pigeons scattering. Medieval European village, 14th century. Comic and slightly grim tone, no gore, expressive characters, rich detail, centered composition for a playing card illustration, no text, no lettering, no border."
+  },
+  {
+   "id": "calamity-bear-in-the-woodpile",
+   "request_id": "atwd-calamity-bear-in-the-woodpile-v1",
+   "name": "Bear in the Woodpile",
+   "kind": "calamity",
+   "prompt": "a huge bear erupting out of a woodpile as a woodcutter drops his armful of logs. Medieval European village, 14th century. Comic and slightly grim tone, no gore, expressive characters, rich detail, centered composition for a playing card illustration, no text, no lettering, no border."
+  },
+  {
+   "id": "calamity-trebuchet-practice",
+   "request_id": "atwd-calamity-trebuchet-practice-v1",
+   "name": "Trebuchet Practice",
+   "kind": "calamity",
+   "prompt": "a trebuchet launching a boulder over a wall, straight toward a villager holding a picnic basket. Medieval European village, 14th century. Comic and slightly grim tone, no gore, expressive characters, rich detail, centered composition for a playing card illustration, no text, no lettering, no border."
+  },
+  {
+   "id": "calamity-staked-pit",
+   "request_id": "atwd-calamity-staked-pit-v1",
+   "name": "Staked Pit",
+   "kind": "calamity",
+   "prompt": "a hunter's leaf-covered pit trap opening under a startled villager, sharpened stakes below. Medieval European village, 14th century. Comic and slightly grim tone, no gore, expressive characters, rich detail, centered composition for a playing card illustration, no text, no lettering, no border."
+  },
+  {
+   "id": "calamity-runaway-millstone",
+   "request_id": "atwd-calamity-runaway-millstone-v1",
+   "name": "Runaway Millstone",
+   "kind": "calamity",
+   "prompt": "an enormous millstone rolling downhill through the village toward a wide-eyed miller's apprentice. Medieval European village, 14th century. Comic and slightly grim tone, no gore, expressive characters, rich detail, centered composition for a playing card illustration, no text, no lettering, no border."
+  },
+  {
+   "id": "calamity-boiling-pitch",
+   "request_id": "atwd-calamity-boiling-pitch-v1",
+   "name": "Boiling Pitch",
+   "kind": "calamity",
+   "prompt": "defenders on a castle wall tipping a cauldron of boiling pitch onto a villager who only came to deliver bread. Medieval European village, 14th century. Comic and slightly grim tone, no gore, expressive characters, rich detail, centered composition for a playing card illustration, no text, no lettering, no border."
+  },
+  {
+   "id": "calamity-portcullis",
+   "request_id": "atwd-calamity-portcullis-v1",
+   "name": "Portcullis",
+   "kind": "calamity",
+   "prompt": "a heavy portcullis dropping toward a villager frozen in the gateway with a wheelbarrow. Medieval European village, 14th century. Comic and slightly grim tone, no gore, expressive characters, rich detail, centered composition for a playing card illustration, no text, no lettering, no border."
+  },
+  {
+   "id": "calamity-falling-church-bell",
+   "request_id": "atwd-calamity-falling-church-bell-v1",
+   "name": "Falling Church Bell",
+   "kind": "calamity",
+   "prompt": "a great bronze bell falling from a bell tower toward the bell-ringer below, rope frayed. Medieval European village, 14th century. Comic and slightly grim tone, no gore, expressive characters, rich detail, centered composition for a playing card illustration, no text, no lettering, no border."
+  },
+  {
+   "id": "calamity-boar-charge",
+   "request_id": "atwd-calamity-boar-charge-v1",
+   "name": "Boar Charge",
+   "kind": "calamity",
+   "prompt": "a massive wild boar charging a hunter who has dropped his spear and turned to run. Medieval European village, 14th century. Comic and slightly grim tone, no gore, expressive characters, rich detail, centered composition for a playing card illustration, no text, no lettering, no border."
+  },
+  {
+   "id": "calamity-through-the-ice",
+   "request_id": "atwd-calamity-through-the-ice-v1",
+   "name": "Through the Ice",
+   "kind": "calamity",
+   "prompt": "a villager crashing through the ice of a frozen river, only a hat left on the surface. Medieval European village, 14th century. Comic and slightly grim tone, no gore, expressive characters, rich detail, centered composition for a playing card illustration, no text, no lettering, no border."
+  },
+  {
+   "id": "calamity-drowned-in-malmsey",
+   "request_id": "atwd-calamity-drowned-in-malmsey-v1",
+   "name": "Drowned in Malmsey",
+   "kind": "calamity",
+   "prompt": "a pair of legs kicking out of a giant open barrel of wine in a cellar, a lantern tipping. Medieval European village, 14th century. Comic and slightly grim tone, no gore, expressive characters, rich detail, centered composition for a playing card illustration, no text, no lettering, no border."
+  },
+  {
+   "id": "calamity-nightshade-tart",
+   "request_id": "atwd-calamity-nightshade-tart-v1",
+   "name": "Nightshade Tart",
+   "kind": "calamity",
+   "prompt": "a villager happily biting into a purple berry tart as an apothecary in the background covers her eyes. Medieval European village, 14th century. Comic and slightly grim tone, no gore, expressive characters, rich detail, centered composition for a playing card illustration, no text, no lettering, no border."
+  },
+  {
+   "id": "basic-heal",
+   "request_id": "atwd-basic-heal-v1",
+   "name": "Heal",
+   "kind": "basic",
+   "prompt": "a kindly village healer wrapping a bandage around a grateful patient's arm, herbs and a bowl of water. Medieval European village, 14th century. Comic and slightly grim tone, no gore, expressive characters, rich detail, centered composition for a playing card illustration, no text, no lettering, no border."
+  },
+  {
+   "id": "basic-protect",
+   "request_id": "atwd-basic-protect-v1",
+   "name": "Protect",
+   "kind": "basic",
+   "prompt": "a heavy oak door barred with an iron bar, a battered wooden shield leaning beside it, a cat asleep on the step. Medieval European village, 14th century. Comic and slightly grim tone, no gore, expressive characters, rich detail, centered composition for a playing card illustration, no text, no lettering, no border."
+  },
+  {
+   "id": "basic-card-back",
+   "request_id": "atwd-basic-card-back-v1",
+   "name": "Card Back",
+   "kind": "basic",
+   "prompt": "a symmetrical ornamental woodcut frame around a grinning skull wearing a merchant's cap, coins, vines, and tiny icons of a goose, a bee, a barrel and an axe. Medieval European village, 14th century. Comic and slightly grim tone, no gore, expressive characters, rich detail, centered composition for a playing card illustration, no text, no lettering, no border.",
+   "aspect_ratio": "ar_3_4"
+  }
+ ]
+}
