@@ -27,22 +27,6 @@ export function Table({ view, assignments, hauntTarget, onSeatClick, selectable,
           </motion.div>
         );
       })}
-      {focusSeat !== null && view.seats[focusSeat] && <FocusArrow angle={Math.PI / 2 + ((focusSeat - myIndex) * 2 * Math.PI) / n} bottomCentre={focusSeat === myIndex} />}
-    </div>
-  );
-}
-
-/** A pulsing gold arrow at the seat whose pile is being revealed: above the tile pointing down at its top, or, for the
- *  seat at the bottom centre (whose top is where the reveal sits), beside the tile pointing at its right side.
- *  It lives under the reveal overlay, so the revealed cards always draw on top of it. */
-function FocusArrow({ angle, bottomCentre }: { angle: number; bottomCentre: boolean }) {
-  const x = 50 + 42 * Math.cos(angle); const y = 50 + 33 * Math.sin(angle);
-  const transform = bottomCentre ? 'translate(calc(-50% + 112px), -50%) rotate(180deg)' : 'translate(-50%, calc(-50% - 108px)) rotate(90deg)';
-  return (
-    <div className="absolute pointer-events-none" style={{ left: `${x}%`, top: `${y}%`, transform }}>
-      <motion.svg width="64" height="40" viewBox="0 0 64 40" animate={{ x: [0, 12, 0] }} transition={{ duration: 0.9, repeat: Infinity, ease: 'easeInOut' }} style={{ filter: 'drop-shadow(0 0 10px rgba(216,168,79,.9))' }}>
-        <path d="M4 20 H44 M30 6 L46 20 L30 34" fill="none" stroke="#D8A84F" strokeWidth="7" strokeLinecap="round" strokeLinejoin="round" />
-      </motion.svg>
     </div>
   );
 }
