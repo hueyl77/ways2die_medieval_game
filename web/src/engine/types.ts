@@ -126,6 +126,7 @@ export interface GameState extends Record<string, unknown> {
   succession: number[];            // seat indexes whose crest is still in the stack
   choices: Choice[];
   taxedPiles: number[];            // piles visited by a Tax Collector this round
+  curfewVoids?: number;            // attacks stopped by a Curfew this round (the Guard is paid per void)
   roundLog: RoundLog | null;
   logs: RoundLog[];
   nextCardId: number;

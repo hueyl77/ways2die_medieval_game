@@ -28,7 +28,7 @@ The game is played in rounds. Each round, every player places one card face-down
   - 1 Alms card for that trade (poor relief — see §8)
   - 1 Tax Collector card (see §8)
   - 3 signature cards unique to the trade (see §8)
-- **The Mishap deck**: 60 Attack cards — 48 **Mishaps** (1 wound; two copies of each of 24 accidents) and 12 **Calamities** (2 wounds). See §15.
+- **The Mishap deck**: 36 Attack cards — 24 **Mishaps** (1 wound, every one a different accident) and 12 **Calamities** (2 wounds). See §15.
 - **Gold board** with 12 trade tracks and 12 gold markers
 - **12 crest cards** (player identities, used for wills)
 - **Townsfolk marker** (for an automated seat, §10)
@@ -38,7 +38,7 @@ The game is played in rounds. Each round, every player places one card face-down
 
 The twelve trades: **Blacksmith, Farmer, Thief, Innkeeper, City Guard, Carpenter, Jeweler, Tailor, Apothecary, Hunter, Woodsman, Miller.**
 
-> **Public knowledge.** Every envelope has the same structure — the exact contents of all twelve are printed in §8 and on the envelope backs. Every seat also holds exactly four Mishaps and one Calamity — but *which* ones is anyone's guess. Counting what has and hasn't been revealed is a core skill of the game.
+> **Public knowledge.** Every envelope has the same structure — the exact contents of all twelve are printed in §8 and on the envelope backs. Every seat also holds exactly three Mishaps and one Calamity — but *which* ones is anyone's guess. Counting what has and hasn't been revealed is a core skill of the game.
 
 ---
 
@@ -50,14 +50,14 @@ The twelve trades: **Blacksmith, Farmer, Thief, Innkeeper, City Guard, Carpenter
 
    | Seats | Rounds | Seasons | Job cards kept | Hand size | You die at |
    |:-:|:-:|:--|:-:|:-:|:-:|
-   | 4 | 6 | Spring · Harvest · Winter — 2 rounds each | 11 | 24 | 3 wounds |
-   | 5 | 6 | Spring · Harvest · Winter — 2 rounds each | 17 | 30 | 3 wounds |
-   | 6 | 4 | Harvest · Winter — 2 rounds each | 11 | 24 | 4 wounds |
-   | 7 | 4 | Harvest · Winter — 2 rounds each | 15 | 28 | 4 wounds |
-   | 8 | 4 | Harvest · Winter — 2 rounds each | 19 | 32 | 4 wounds |
+   | 4 | 6 | Spring · Harvest · Winter — 2 rounds each | 12 | 24 | 3 wounds |
+   | 5 | 6 | Spring · Harvest · Winter — 2 rounds each | 18 | 30 | 3 wounds |
+   | 6 | 4 | Harvest · Winter — 2 rounds each | 12 | 24 | 4 wounds |
+   | 7 | 4 | Harvest · Winter — 2 rounds each | 16 | 28 | 4 wounds |
+   | 8 | 4 | Harvest · Winter — 2 rounds each | 20 | 32 | 4 wounds |
 
 4. Shuffle all 12 envelopes and deal one to every seat, players and Townsfolk alike. **Return the rest to the box unopened** — nobody knows which trades are absent.
-5. Privately open your envelope. Memorize your role card and **return it to the envelope**; keep the envelope face-down in front of you for the whole game. Set aside job cards above your "job cards kept" number and return them to the box face-down. Take everything else into your hand. Then shuffle the Mishaps and deal four face-down to every seat, shuffle the Calamities and deal one to every seat, and return the rest to the box unseen; add yours to your hand. Prepare any Townsfolk seat as described in §10.
+5. Privately open your envelope. Memorize your role card and **return it to the envelope**; keep the envelope face-down in front of you for the whole game. Set aside job cards above your "job cards kept" number and return them to the box face-down. Take everything else into your hand. Then shuffle the Mishaps and deal three face-down to every seat, shuffle the Calamities and deal one to every seat, and return the rest to the box unseen; add yours to your hand. Prepare any Townsfolk seat as described in §10.
 6. Each player takes a crest marker. Place the **matching crest cards** face-down in a stack in the center — this is the **succession**. It is touched only when someone dies. Townsfolk take no crest.
 7. Give the Crier token to the player who most recently sold something.
 
@@ -129,7 +129,7 @@ Resolve each flipped pile in this order:
 
 ## 8. The trades & their signature cards
 
-Every envelope also holds one **Alms** card: *printed for its own trade. Alms is judged first in the gold step, on the board as it stood before this round's wares: if that trade is clearly last or second-to-last among the trades still in play — ties do nothing, so at the start of the game nobody qualifies — it gains 5 gold.* Alms is the village's catch-up, and like a signature card it proves its trade is at the table.
+Every envelope also holds one **Alms** card: *printed for its own trade. Alms is judged first in the gold step, on the board as it stood before this round's wares: if that trade is clearly last or second-to-last among the trades still in play — ties do nothing, so at the start of the game nobody qualifies — it gains 4 gold.* Alms is the village's catch-up, and like a signature card it proves its trade is at the table.
 
 Every envelope also holds one **Tax Collector**: *the crown's man visits this pile — every coin that would be earned from the cards in it this round (wares, Alms, and gold-gaining signature cards) goes to the crown instead.* Drop it where you expect a rival's wares to land; a Protect or a Heal in the same pile still works.
 
@@ -152,17 +152,17 @@ Every envelope holds three signature cards — the only copies in the game. Play
 
 **🍺 Innkeeper**
 - **Strong Ale** — The pile's owner is drunk: they must spread their entire hand face-up on the table for everyone to see while the Crier counts slowly to five, then gather it up.
-- **A Round on the House** — Every player heals 1.
+- **A Round on the House** — Every wounded player heals 1; the Innkeeper track gains 1 per player served (max 3).
 - **Bad Batch** — All Heals revealed in this pile this round are voided.
 
 **🛡 City Guard**
-- **Night Patrol** — Void one Attack in this pile and one in each neighboring pile.
-- **Curfew** — Next round, every Attack revealed anywhere is voided.
-- **Inquest** — The pile's owner must truthfully answer: *"Did you place any Attack this round?"*
+- **Night Patrol** — Void up to two Attacks in this pile and one in each neighboring pile; the City Guard track gains 1 per Attack voided (max 2).
+- **Curfew** — Next round, every Attack revealed anywhere is voided; the City Guard track gains 1 per Attack stopped (max 3).
+- **Inquest** — The pile's owner must truthfully answer: *"Did you place any Attack this round?"* The City Guard track gains 1 for the inquiry.
 
 **🔨 Carpenter**
 - **Palisade** — A second Protect: voids every Attack in this pile this round.
-- **Trestle Market** — Next round, every job card banks +1 *(stacks with Market Fair)*.
+- **Trestle Market** — The Carpenter track gains 2. Next round, every job card banks +1 *(stacks with Market Fair)*.
 - **Rotten Beam** — Next round, Protects revealed in this pile are voided.
 
 **💎 Jeweler**
@@ -176,9 +176,9 @@ Every envelope holds three signature cards — the only copies in the game. Play
 - **Sunday Best** — The Tailor track gains 1. Scoring card: the pile's owner's trade scores +1 at game end.
 
 **⚗ Apothecary**
-- **Panacea** — Remove every wound from the pile's owner.
+- **Panacea** — The pile's owner heals 2, and it cures a Slow Poison on this pile without being spent.
 - **Slow Poison** — Stays on the pile: at the end of *next* round the owner takes 1 wound — voided if any Heal is revealed in this pile first (that Heal is spent as the antidote). Protects do not stop it; it is not an Attack.
-- **Physician's Fee** — The Apothecary track gains 1 per wound currently in play (max 3).
+- **Physician's Fee** — The Apothecary track gains 1 per wound currently in play (max 2).
 
 **🏹 Hunter**
 - **Hunting Bow** — Attack dealing 2 wounds.
@@ -187,11 +187,11 @@ Every envelope holds three signature cards — the only copies in the game. Play
 
 **🪓 Woodsman**
 - **Felling Axe** — Attack; also discard every pending and persistent card on this pile (Snare, Slow Poison, Grindstone…). Wounds and scoring cards are untouched.
-- **Cordwood** — The Woodsman track gains 1 — or 2 during Winter.
+- **Cordwood** — The Woodsman track gains 2.
 - **Deep Forest** — Next round, every card revealed in this pile has no effect, and job cards there bank nothing.
 
 **⚙ Miller**
-- **Miller's Toll** — The Miller track gains 1 for every two job cards revealed in this pile (max 3). Everyone's grain comes through the mill.
+- **Miller's Toll** — The Miller track gains 1 for every two job cards revealed in this pile (at least 1, at most 3). Everyone's grain comes through the mill.
 - **Thumb on the Scale** — Every track richer than the Miller track loses 1.
 - **Broken Door** — Attack; before voids are applied, discard one Protect card from this pile.
 
@@ -284,14 +284,14 @@ If everyone dies, the village stands empty and nobody wins.
 
 - **Your own pile is a decoder ring.** You know the one card you placed in front of yourself. Subtract it from your pile's reveal, and what's left is exactly what the table did to you.
 - **Count everything.** The envelope contents are public. Every Attack that hasn't appeared is still in someone's hand.
-- **Nobody can kill alone — but every hit pays.** Six wounds of attacks against a defended player is exactly enough if every one lands — so a lone assassin can succeed, but only against someone nobody heals. Partners make it certain, and partners take gossip. Meanwhile every wound you leave on a rival is a coin off their score, so aim your attacks at the trade you suspect is winning rather than dumping them on a grave.
+- **Nobody can kill alone — but every hit pays.** Five wounds of attacks against a defended player will not be enough on their own; murders take partners, and partners take gossip. Meanwhile every wound you leave on a rival is a coin off their score, so aim your attacks at the trade you suspect is winning rather than dumping them on a grave.
 - **Earning is confessing.** Every coin on your track sharpens the table's guess. The winner is usually the player who got rich slowest.
 
 ---
 
 ## 15. The Mishap Deck
 
-Every Attack card in the game is a different way to get hurt. **Mishaps** deal 1 wound; **Calamities** deal 2. All of them are Attacks for every rule, void, and truth card. Each seat draws four Mishaps and one Calamity at setup, so the table always knows *how many* accidents are waiting — never *which*.
+Every Attack card in the game is a different way to get hurt. **Mishaps** deal 1 wound; **Calamities** deal 2. All of them are Attacks for every rule, void, and truth card. Each seat draws three Mishaps and one Calamity at setup, so the table always knows *how many* accidents are waiting — never *which*.
 
 **Mishaps (1 wound)**
 - **Bee Swarm** — Someone moved the hive. Someone always moves the hive.

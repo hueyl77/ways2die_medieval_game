@@ -72,15 +72,15 @@ export default function Rules() {
             <div className="text-center"><CardFace cardKey="protect" width={104} /><div className="text-xs mt-1 font-ui">Protect × 1</div></div>
             <div className="text-center"><CardFace cardKey="alms:carpenter" width={104} /><div className="text-xs mt-1 font-ui">Alms × 1 · for your trade</div></div>
             <div className="text-center"><CardFace cardKey="tax-collector" width={104} /><div className="text-xs mt-1 font-ui">Tax Collector × 1</div></div>
-            <div className="text-center"><CardFace cardKey="mishap:hidden-rake" width={104} /><div className="text-xs mt-1 font-ui">Mishap × 4 · 1 wound</div></div>
+            <div className="text-center"><CardFace cardKey="mishap:hidden-rake" width={104} /><div className="text-xs mt-1 font-ui">Mishap × 3 · 1 wound</div></div>
             <div className="text-center"><CardFace cardKey="calamity:trebuchet-practice" width={104} /><div className="text-xs mt-1 font-ui">Calamity × 1 · 2 wounds</div></div>
             <div className="text-center"><CardFace cardKey="sig:hearty-stew" width={104} /><div className="text-xs mt-1 font-ui">Signature × 3 · your trade's</div></div>
           </div>
           <ul className="mt-5 space-y-1.5 max-w-2xl text-sm">
             <li><b className="text-gold">Wares</b> bank 1 gold to your trade's track no matter which pile they land in — placing them in front of an enemy is perfectly safe.</li>
-            <li><b className="text-gold">Attacks</b> (Mishaps and Calamities) wound whoever's pile they're in. Which accidents you drew is your secret; the table only knows everyone holds four small ones and one big one.</li>
+            <li><b className="text-gold">Attacks</b> (Mishaps and Calamities) wound whoever's pile they're in. Which accidents you drew is your secret; the table only knows everyone holds three small ones and one big one.</li>
             <li><b className="text-gold">Heal</b> removes a wound from the pile's owner; <b className="text-gold">Protect</b> voids every attack in its pile that round.</li>
-            <li><b className="text-gold">Alms</b> is the catch-up card, printed for your own trade. It is judged first, before the round's wares are counted: if your trade is clearly last or second-to-last among the trades still in play (ties — like everyone at 0 — do nothing), it gains 5 gold. Playing it also tells the table your trade is in the game.</li>
+            <li><b className="text-gold">Alms</b> is the catch-up card, printed for your own trade. It is judged first, before the round's wares are counted: if your trade is clearly last or second-to-last among the trades still in play (ties — like everyone at 0 — do nothing), it gains 4 gold. Playing it also tells the table your trade is in the game.</li>
             <li><b className="text-gold">Tax Collector</b> shuts a pile's takings: every coin that would be earned from the cards in that pile this round — wares, Alms, gold-gaining signature cards — goes to the crown instead. Drop it where you expect a rival's wares to land.</li>
             <li><b className="text-gold">Signature cards</b> are unique to your trade — powerful, and a confession: revealing one proves your trade is at the table (though never which chair).</li>
           </ul>

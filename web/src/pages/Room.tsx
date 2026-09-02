@@ -101,7 +101,7 @@ function SettingRow({ label, value, unit, host, onChange, step }: { label: strin
 }
 
 export function calendarPreview(seats: number) {
-  if (seats <= 5) return { rounds: 6, seasons: 'Spring · Harvest · Winter (2 rounds each)', deathAt: 3, jobs: seats * 6 - 13 };
-  return { rounds: 4, seasons: 'Harvest · Winter (2 rounds each)', deathAt: 4, jobs: seats * 4 - 13 };
+  if (seats <= 5) return { rounds: 6, seasons: 'Spring · Harvest · Winter (2 rounds each)', deathAt: 3, jobs: seats * 6 - 12 };
+  return { rounds: 4, seasons: 'Harvest · Winter (2 rounds each)', deathAt: 4, jobs: seats * 4 - 12 };
 }
 export type { PlayerView };
