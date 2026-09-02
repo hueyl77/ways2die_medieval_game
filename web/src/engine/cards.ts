@@ -109,7 +109,7 @@ const SIGNATURES: Record<Trade, SigSpec[]> = {
     { name: 'Inquest', text: "The pile's owner must truthfully answer: did you place any Attack this round?" },
   ],
   carpenter: [
-    { name: 'Palisade', text: 'Voids all Attacks in this pile this round and next round, even in Winter.' },
+    { name: 'Palisade', text: 'A second Protect: voids every Attack in this pile this round.' },
     { name: 'Trestle Market', text: 'Next round, every job card banks +1.' },
     { name: 'Rotten Beam', text: 'Next round, Protects revealed in this pile are voided.' },
   ],
@@ -150,6 +150,8 @@ function add(def: CardDef) { CARDS[def.key] = def; }
 
 add({ key: 'heal', name: 'Heal', type: 'heal', text: "Remove one wound from the pile's owner.", art: 'basic-heal' });
 add({ key: 'protect', name: 'Protect', type: 'protect', text: 'Void every Attack in this pile (Winter: one Attack).', art: 'basic-protect' });
+add({ key: 'tax-collector', name: 'Tax Collector', type: 'signature', text: 'The crown\'s man visits this pile: every coin that would be earned from the cards in it this round — wares, Alms, and gold-gaining signature cards — goes to the crown instead.', flavor: 'He counts faster than you can hide it.', art: 'basic-tax-collector' });
+for (const t of TRADES) add({ key: `alms:${t}`, name: `Alms for the ${TRADE_INFO[t].name}`, type: 'signature', trade: t, text: `Judged before this round's gold is counted: if the ${TRADE_INFO[t].name} is clearly last or second-to-last among the trades still in play (ties do nothing), it gains 5 gold.`, flavor: 'The poor box is emptied for whoever the village pities most.', art: 'basic-alms' });
 for (const t of TRADES) {
   add({ key: `job:${t}`, name: `${TRADE_INFO[t].name}'s Wares`, type: 'job', trade: t, text: `Bank 1 gold to the ${TRADE_INFO[t].name} track.`, art: `wares-${slug(TRADE_INFO[t].name)}` });
   for (const s of SIGNATURES[t]) {

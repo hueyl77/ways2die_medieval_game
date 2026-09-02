@@ -1,17 +1,16 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import type { ChatMsg } from '../state/useChat';
-import { Eyebrow } from './ui';
 
-export function Chat({ msgs, onSend, disabled }: { msgs: ChatMsg[]; onSend: (t: string) => void; disabled?: boolean }) {
+export function Chat({ msgs, onSend, disabled, status }: { msgs: ChatMsg[]; onSend: (t: string) => void; disabled?: boolean; status?: string | null }) {
   const [text, setText] = useState('');
   const box = useRef<HTMLDivElement>(null);
   useEffect(() => { box.current?.scrollTo({ top: box.current.scrollHeight }); }, [msgs.length]);
   function submit(e: FormEvent) { e.preventDefault(); if (text.trim()) { onSend(text); setText(''); } }
   return (
     <div className="flex flex-col h-full min-h-0">
-      <Eyebrow>Gossip</Eyebrow>
       <div ref={box} className="flex-1 min-h-0 overflow-y-auto scrollbar-thin mt-2 space-y-1 pr-1">
-        {msgs.length === 0 && <p className="text-xs text-ink-2 italic">Nobody has said anything yet. Suspicious.</p>}
+        {status && <p className="text-xs text-blood">{status}</p>}
+        {msgs.length === 0 && !status && <p className="text-xs text-ink-2 italic">Nobody has said anything yet. Suspicious.</p>}
         {msgs.map((m) => (
           <div key={m.id} className={`text-sm leading-snug ${m.system ? 'text-gold italic' : m.ghost ? 'text-moon italic' : ''}`}>
             {!m.system && <span className={`font-ui font-bold ${m.me ? 'text-gold' : 'text-parchment'}`}>{m.ghost ? '👻 ' : ''}{m.name}: </span>}{m.text}

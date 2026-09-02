@@ -13,7 +13,7 @@ The physical edition will be printed later; this product is also the playtest en
 
 ## 2. Goals
 
-1. **Faithful:** implement rulebook 1.5 exactly, including all 12 trades, 36 signature cards, the 36-card mishap deck, seasons, wounds-cost-gold, Townsfolk, funerals, wills, and haunting.
+1. **Faithful:** implement rulebook 1.5 exactly, including all 12 trades, 36 signature cards, the 60-card mishap deck, seasons, wounds-cost-gold, Townsfolk, funerals, wills, and haunting.
 2. **Fun at a distance:** the gossip phase must feel like a table — voice/text chat, visible reactions, a shared reveal that everyone watches at the same moment.
 3. **Legible:** a first-time player can play without reading the rulebook; every card explains itself on hover and every effect is animated when it resolves.
 4. **Fair by construction:** hidden information (hands, roles, who-placed-what, heirs) never reaches a client that shouldn't have it. Anonymity is enforced by the server, not the UI.
@@ -43,11 +43,11 @@ Ranked ladders, friends lists, cosmetics/monetization, native mobile apps, AI op
 A round table. One seat per player (and per Townsfolk). In front of every seat, a face-down **pile**. At the bottom, **your hand**. On the side, the **gold board** (12 trade tracks), the **calendar** (season and round), and **gossip chat**.
 
 Each round:
-1. **Gossip** (timed, default 120 s): chat, accuse, lie. Anyone can click *Ready*; the phase ends when all living players are ready or the timer expires.
+1. **Gossip** happens while cards are placed — there is no separate Ready step.
 2. **Placement:** drag (or tap-assign) exactly one card from your hand onto every seat's pile, including your own and any grave. The Townsfolk's cards are dealt automatically. Ghosts may haunt one card from their grave pool. *Lock in* when done; the phase ends when everyone has locked in or the timer expires (unlocked players get a random legal placement — the rulebook's Townsfolk behavior).
 3. **Reveal:** the server shuffles every pile and resolves the whole round with the global order (voids → wounds → heals → deaths → gold → words → pending). The client plays it back as an animation: every pile flips, effects pop, wounds land, the gold board moves, truth cards read out their answers. Nobody can tell who placed what.
 4. **Funerals** (if any): the dead player's role flips face-up, their remaining hand becomes their grave pool, and they privately seal a will by choosing a living heir.
-5. **Cleanup:** season events (Market Fair, Reeve's Tax, Hungry Winter), the next round begins.
+5. **Cleanup:** the next round begins. (Season events — Market Fair, Reeve's Tax, Hungry Winter — are an optional host setting, off by default.)
 
 Game end: the final reveal (all envelopes open at once), scoring (wounds −1 each, scoring cards, wills), a winner, and a full replay log.
 
@@ -62,16 +62,16 @@ Game end: the final reveal (all envelopes open at once), scoring (wounds −1 ea
 - Create a room → 6-character join code + shareable link.
 - Join by code. Host sees the seat list; players can pick a crest color and mark ready.
 - Host settings: Townsfolk count (auto-fill to 4 seats; optional extras), gossip timer, placement timer, private/public.
-- Start requires 3–12 humans; the app fills to 4 seats with Townsfolk per the rulebook table (rounds, seasons, job cards kept, death threshold).
+- Start requires 3–8 humans; the app fills to 4 seats with Townsfolk per the rulebook table (rounds, seasons, job cards kept, death threshold).
 
 ### 6.3 Game engine (P0) — server-authoritative
-- Dealing: envelopes (trades) shuffled and dealt to seats; unused trades stay hidden; job cards trimmed to the table's count; 2 Mishaps + 1 Calamity per seat from the shared mishap deck; 3 signature cards per trade; crests for the succession.
+- Dealing: envelopes (trades) shuffled and dealt to seats; unused trades stay hidden; job cards trimmed to the table's count; 4 Mishaps + 1 Calamity per seat from the shared mishap deck; 3 signature cards per trade; crests for the succession.
 - Placement validation: exactly one card per pile; ghost haunts one card from their own grave pool; Townsfolk dealt at random.
 - Resolution: the global simultaneous order from the rulebook's online recommendation, with every card's text implemented (see `TECH_SPEC.md §6`).
 - Truth cards auto-resolve: Inquest, Appraisal, Tracks in the Snow announce the true answer; Strong Ale shows the drunk's hand to everyone for 5 seconds.
 - Choice cards (Iron Strongbox, Gleaning/Paste Gems ties, False Colors): the pile's owner gets a modal; timeout → default (own... first eligible track). Townsfolk choices → the Crier.
 - Funerals, wills (heir from the succession; unique crests), graves as mandatory piles, haunting, ghost chat.
-- Season events, final reveal, scoring, shared victories via wills, "nobody wins" if everyone dies.
+- Final reveal, scoring (bots compete on equal terms), shared victories via wills, "nobody wins" if everyone dies.
 - AFK rule: any player who fails to act by the deadline is auto-played (random legal placement / random heir); after two consecutive AFK rounds the seat converts to Townsfolk.
 
 ### 6.4 Table UI (P0)

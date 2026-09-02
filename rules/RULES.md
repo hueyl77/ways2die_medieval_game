@@ -2,7 +2,7 @@
 
 *Honest trades, unfortunate accidents.*
 
-**3–12 players · 45–75 minutes · ages 12+**
+**3–8 players · 45–75 minutes · ages 12+**
 
 A medieval village of honest tradespeople — a blacksmith, an innkeeper, a jeweler, a thief. Everyone works, everyone earns, and everyone smiles across the market square. But the neighbors keep having accidents — bees, geese, falling roof tiles, the occasional trebuchet — and nobody ever saw who arranged them. Earn more than anyone, survive the year, and never let them find out which trade is yours.
 
@@ -20,13 +20,15 @@ The game is played in rounds. Each round, every player places one card face-down
 
 ## 2. Components
 
-- **12 trade envelopes**, each containing 34 cards:
+- **12 trade envelopes**, each containing 36 cards:
   - 1 role card (role cards have a distinct back)
   - 27 job cards (that trade's wares)
   - 2 Heal cards
   - 1 Protect card
+  - 1 Alms card for that trade (poor relief — see §8)
+  - 1 Tax Collector card (see §8)
   - 3 signature cards unique to the trade (see §8)
-- **The Mishap deck**: 36 Attack cards, every one a different way to get hurt — 24 **Mishaps** (1 wound) and 12 **Calamities** (2 wounds). See §15.
+- **The Mishap deck**: 60 Attack cards — 48 **Mishaps** (1 wound; two copies of each of 24 accidents) and 12 **Calamities** (2 wounds). See §15.
 - **Gold board** with 12 trade tracks and 12 gold markers
 - **12 crest cards** (player identities, used for wills)
 - **Townsfolk marker** (for an automated seat, §10)
@@ -36,7 +38,7 @@ The game is played in rounds. Each round, every player places one card face-down
 
 The twelve trades: **Blacksmith, Farmer, Thief, Innkeeper, City Guard, Carpenter, Jeweler, Tailor, Apothecary, Hunter, Woodsman, Miller.**
 
-> **Public knowledge.** Every envelope has the same structure — the exact contents of all twelve are printed in §8 and on the envelope backs. Every seat also holds exactly two Mishaps and one Calamity — but *which* ones is anyone's guess. Counting what has and hasn't been revealed is a core skill of the game.
+> **Public knowledge.** Every envelope has the same structure — the exact contents of all twelve are printed in §8 and on the envelope backs. Every seat also holds exactly four Mishaps and one Calamity — but *which* ones is anyone's guess. Counting what has and hasn't been revealed is a core skill of the game.
 
 ---
 
@@ -48,18 +50,14 @@ The twelve trades: **Blacksmith, Farmer, Thief, Innkeeper, City Guard, Carpenter
 
    | Seats | Rounds | Seasons | Job cards kept | Hand size | You die at |
    |:-:|:-:|:--|:-:|:-:|:-:|
-   | 4 | 6 | Spring · Harvest · Winter — 2 rounds each | 15 | 24 | 3 wounds |
-   | 5 | 6 | Spring · Harvest · Winter — 2 rounds each | 21 | 30 | 3 wounds |
-   | 6 | 4 | Harvest · Winter — 2 rounds each | 15 | 24 | 4 wounds |
-   | 7 | 4 | Harvest · Winter — 2 rounds each | 19 | 28 | 4 wounds |
-   | 8 | 4 | Harvest · Winter — 2 rounds each | 23 | 32 | 4 wounds |
-   | 9 | 3 | Spring · Harvest · Winter — 1 round each | 18 | 27 | 4 wounds |
-   | 10 | 3 | Spring · Harvest · Winter — 1 round each | 21 | 30 | 4 wounds |
-   | 11 | 3 | Spring · Harvest · Winter — 1 round each | 24 | 33 | 4 wounds |
-   | 12 | 3 | Spring · Harvest · Winter — 1 round each | 27 | 36 | 4 wounds |
+   | 4 | 6 | Spring · Harvest · Winter — 2 rounds each | 11 | 24 | 3 wounds |
+   | 5 | 6 | Spring · Harvest · Winter — 2 rounds each | 17 | 30 | 3 wounds |
+   | 6 | 4 | Harvest · Winter — 2 rounds each | 11 | 24 | 4 wounds |
+   | 7 | 4 | Harvest · Winter — 2 rounds each | 15 | 28 | 4 wounds |
+   | 8 | 4 | Harvest · Winter — 2 rounds each | 19 | 32 | 4 wounds |
 
 4. Shuffle all 12 envelopes and deal one to every seat, players and Townsfolk alike. **Return the rest to the box unopened** — nobody knows which trades are absent.
-5. Privately open your envelope. Memorize your role card and **return it to the envelope**; keep the envelope face-down in front of you for the whole game. Set aside job cards above your "job cards kept" number and return them to the box face-down. Take everything else into your hand. Then shuffle the Mishaps and deal two face-down to every seat, shuffle the Calamities and deal one to every seat, and return the rest to the box unseen; add yours to your hand. Prepare any Townsfolk seat as described in §10.
+5. Privately open your envelope. Memorize your role card and **return it to the envelope**; keep the envelope face-down in front of you for the whole game. Set aside job cards above your "job cards kept" number and return them to the box face-down. Take everything else into your hand. Then shuffle the Mishaps and deal four face-down to every seat, shuffle the Calamities and deal one to every seat, and return the rest to the box unseen; add yours to your hand. Prepare any Townsfolk seat as described in §10.
 6. Each player takes a crest marker. Place the **matching crest cards** face-down in a stack in the center — this is the **succession**. It is touched only when someone dies. Townsfolk take no crest.
 7. Give the Crier token to the player who most recently sold something.
 
@@ -72,7 +70,7 @@ The twelve trades: **Blacksmith, Farmer, Thief, Innkeeper, City Guard, Carpenter
 Each round has five phases:
 
 ### 4.1 Gossip
-Talk. Accuse, deny, promise, and lie as much as you like. Nothing said is binding, and you may **never** show cards or your role. Two or three minutes is plenty.
+Talk while you place. Accuse, deny, promise, and lie as much as you like. Nothing said is binding, and you may **never** show cards or your role. There is no separate discussion step: the round is open for placement from the start, and it ends when everyone has placed.
 
 ### 4.2 Placement
 Each player places **exactly one card face-down in front of every seat, including their own** (and one on each grave — see §9). Placements are made openly — people see *where* you place, but never *what*. Ghosts may haunt now (§9.3), and each Townsfolk's tender deals its cards (§10).
@@ -84,7 +82,7 @@ Each player picks up the pile in front of them and shuffles it **without looking
 Starting with the Crier and going clockwise, each pile is flipped face-up and fully resolved (§5) before the next pile is flipped. Grave piles flip last; their cards have no effect (§9.2).
 
 ### 4.5 Cleanup
-Resolved cards go face-up to a shared discard in the center — the **town square**. Wounds, scoring cards, and pending cards stay where they are (§5.4). Advance the round marker, apply any season-end event (§7), and pass the Crier token left.
+Resolved cards go face-up to a shared discard in the center — the **town square**. Wounds, scoring cards, and pending cards stay where they are (§5.4). Advance the round marker, apply any season-end event if the Turning Year variant is on (§7), and pass the Crier token left.
 
 ---
 
@@ -92,11 +90,11 @@ Resolved cards go face-up to a shared discard in the center — the **town squar
 
 Resolve each flipped pile in this order:
 
-1. **Voids.** Apply everything that cancels cards: Protect voids all Attacks in the pile *(Winter: each Protect voids only one)*; Snares, Night Patrol, Curfew, Cloak of Plain Cloth, Bad Batch, Rotten Beam, and Deep Forest apply as written; a Broken Door discards a Protect before anything else. Card text always beats season rules.
+1. **Voids.** Apply everything that cancels cards: Protect voids all Attacks in the pile *(Turning Year variant, Winter: each Protect voids only one)*; Snares, Night Patrol, Curfew, Cloak of Plain Cloth, Bad Batch, Rotten Beam, and Deep Forest apply as written; a Broken Door discards a Protect before anything else. Card text always beats season rules.
 2. **Wounds.** Each surviving Attack card stays face-up in front of the pile's owner as a **wound**. A card that deals more than one wound (a Calamity, a Hunting Bow, a Sneak Attack, anything sharpened by a Grindstone) adds a wound token beside it for each extra wound.
 3. **Heals.** Each Heal removes one wound from the pile's owner — a token first, then a card (to the town square). Attacks and Heals in the same pile net out — a Heal can save you from a killing blow revealed alongside it. Heals beyond your wounds are wasted; you cannot bank health.
 4. **Death check.** If the owner's wounds now equal their death number, they die — finish resolving the pile, then hold the funeral (§9.1).
-5. **Gold.** Each job card banks 1 gold to its trade's track — *no matter whose pile it was in, and no matter who placed it.* Apply Market Fair and other bonuses. Resolve signature gold effects.
+5. **Gold.** A pile visited by a Tax Collector earns nothing this round (see §8). Otherwise Alms is judged first (see §8), on the board as it stood. Then each job card banks 1 gold to its trade's track — *no matter whose pile it was in, and no matter who placed it.* Apply any bonuses (Trestle Market; Market Fair in the Turning Year variant). Resolve signature gold effects.
 6. **Words.** Truth cards (Inquest, Appraisal, Tracks in the Snow) are answered immediately, out loud, **truthfully**. This is a binding rule of the game, not a suggestion.
 7. **Pending.** Cards with "next round" effects stay face-up on the pile as reminders, then discard when spent.
 
@@ -115,19 +113,25 @@ Resolve each flipped pile in this order:
 
 ---
 
-## 7. The calendar
+## 7. The calendar (and the optional variants)
 
-The year escalates. Season rules apply to every round of that season. Six-round games play the full year; four-round games start at Harvest; the three-round **short year** (9 seats or more) plays one round per season.
+**In the standard game every round plays the same.** The seasons are names on the calendar and nothing more. The rules below are an optional variant, *The Turning Year*, for tables that want the year to escalate; when it's on, season rules apply to every round of that season. Six-round games (4–5 seats) play the full year; four-round games (6–8 seats) start at Harvest.
 
-| Season | Full year | Four rounds | Short year | Rule |
-|:--|:-:|:-:|:-:|:--|
-| **Spring** | 1–2 | — | 1 | No special rule. Learn faces. Tell your first lies. |
-| **Harvest** | 3–4 | 1–2 | 2 | **Market Fair:** every job card banks +1 gold. At the season's end, the **Reeve's Tax**: every track tied for richest loses 2. |
-| **Winter** | 5–6 | 3–4 | 3 | **The Hungry Winter:** each Protect voids only one Attack. |
+| Season | Full year | Four rounds | Rule |
+|:--|:-:|:-:|:--|
+| **Spring** | 1–2 | — | No special rule. Learn faces. Tell your first lies. |
+| **Harvest** | 3–4 | 1–2 | **Market Fair:** every job card banks +1 gold. At the season's end, the **Reeve's Tax**: every track tied for richest loses 2. |
+| **Winter** | 5–6 | 3–4 | **The Hungry Winter:** each Protect voids only one Attack. |
+
+**Two more optional leader rules**, also off by default, for tables that find the leader runs away: *the Reeve's tithe* — after every round each track pays 1 gold per 8 it holds (a strongboxed track pays nothing); and *the Reckoning* — at the start of the final round, every living seat holding the richest trade opens its envelope and plays the last round unmasked.
 
 ---
 
 ## 8. The trades & their signature cards
+
+Every envelope also holds one **Alms** card: *printed for its own trade. Alms is judged first in the gold step, on the board as it stood before this round's wares: if that trade is clearly last or second-to-last among the trades still in play — ties do nothing, so at the start of the game nobody qualifies — it gains 5 gold.* Alms is the village's catch-up, and like a signature card it proves its trade is at the table.
+
+Every envelope also holds one **Tax Collector**: *the crown's man visits this pile — every coin that would be earned from the cards in it this round (wares, Alms, and gold-gaining signature cards) goes to the crown instead.* Drop it where you expect a rival's wares to land; a Protect or a Heal in the same pile still works.
 
 Every envelope holds three signature cards — the only copies in the game. Playing one is powerful, and it's also a confession: it proves your trade is at the table, though never which chair it sits in.
 
@@ -157,7 +161,7 @@ Every envelope holds three signature cards — the only copies in the game. Play
 - **Inquest** — The pile's owner must truthfully answer: *"Did you place any Attack this round?"*
 
 **🔨 Carpenter**
-- **Palisade** — Voids all Attacks in this pile this round *and* next round, even in Winter.
+- **Palisade** — A second Protect: voids every Attack in this pile this round.
 - **Trestle Market** — Next round, every job card banks +1 *(stacks with Market Fair)*.
 - **Rotten Beam** — Next round, Protects revealed in this pile are voided.
 
@@ -182,7 +186,7 @@ Every envelope holds three signature cards — the only copies in the game. Play
 - **Tracks in the Snow** — The pile's owner must truthfully announce how many Attacks they have placed *so far this game*.
 
 **🪓 Woodsman**
-- **Felling Axe** — Attack; also discard every pending and persistent card on this pile (Palisade, Snare, Slow Poison…). Wounds and scoring cards are untouched.
+- **Felling Axe** — Attack; also discard every pending and persistent card on this pile (Snare, Slow Poison, Grindstone…). Wounds and scoring cards are untouched.
 - **Cordwood** — The Woodsman track gains 1 — or 2 during Winter.
 - **Deep Forest** — Next round, every card revealed in this pile has no effect, and job cards there bank nothing.
 
@@ -230,7 +234,7 @@ A Townsfolk is a seat run by chance instead of a player — a stranger at the ta
 
 **Its death.** A Townsfolk that takes enough wounds dies like anyone: reveal its role, lock its track, and shuffle its remaining deck face-down onto its seat as a grave the living must still feed each round. It seals no will and does not haunt.
 
-**It cannot win.** At scoring, a Townsfolk's track is ignored — though its rising gold will have muddied the board all game, and nobody will have known whose it was.
+**It can win.** A Townsfolk competes like any other seat at the final count — if the stranger out-earns the village, the stranger takes the year.
 
 ---
 
@@ -240,7 +244,7 @@ After the last round of Winter:
 
 1. **The final reveal.** All living players open their envelopes and show their roles at once.
 2. **Settle accounts.** Apply each player's scoring cards (+/−) and −1 per wound to their own trade's track.
-3. **Crown the winner.** The living player whose trade's track is highest wins; Townsfolk tracks are ignored. Ties go to the fewest wounds; if still tied, the winners share it.
+3. **Crown the winner.** The living seat — player or bot — whose trade's track is highest wins. Ties go to the fewest wounds; if still tied, the winners share it.
 4. **Open the wills.** A ghost whose crest names the winner rises to share the win.
 
 If everyone dies, the village stands empty and nobody wins.
@@ -272,7 +276,7 @@ If everyone dies, the village stands empty and nobody wins.
 - **What does a drunk have to show?** Every card in their hand, face-up, for a slow count of five. The role card stays in the envelope; wounds and scoring cards are already public.
 - **What if a pile's count looks wrong before the flip?** Count it openly; a haunted pile legitimately runs one card heavy.
 - **Do the Townsfolk's cards count when I'm counting Attacks still at large?** Yes. Treat the stranger's deck as unknown: everything in it is possible until it's revealed.
-- **Can a Townsfolk's trade end up the richest track?** Yes — and until it dies, nobody can prove which track is the stranger's. It just can't win.
+- **Can a Townsfolk's trade end up the richest track?** Yes — and until it dies, nobody can prove which track is the stranger's. If it is still the richest at the final count, the stranger wins.
 
 ---
 
@@ -280,14 +284,14 @@ If everyone dies, the village stands empty and nobody wins.
 
 - **Your own pile is a decoder ring.** You know the one card you placed in front of yourself. Subtract it from your pile's reveal, and what's left is exactly what the table did to you.
 - **Count everything.** The envelope contents are public. Every Attack that hasn't appeared is still in someone's hand.
-- **Nobody can kill alone — but every hit pays.** Four wounds of attacks against a defended player will never be enough on their own; murders take partners, and partners take gossip. (The thief's Sneak Attack is the one exception — which is why nobody trusts the thief.) Meanwhile every wound you leave on a rival is a coin off their score, so aim your attacks at the trade you suspect is winning rather than dumping them on a grave.
+- **Nobody can kill alone — but every hit pays.** Six wounds of attacks against a defended player is exactly enough if every one lands — so a lone assassin can succeed, but only against someone nobody heals. Partners make it certain, and partners take gossip. Meanwhile every wound you leave on a rival is a coin off their score, so aim your attacks at the trade you suspect is winning rather than dumping them on a grave.
 - **Earning is confessing.** Every coin on your track sharpens the table's guess. The winner is usually the player who got rich slowest.
 
 ---
 
 ## 15. The Mishap Deck
 
-Every Attack card in the game is a different way to get hurt. **Mishaps** deal 1 wound; **Calamities** deal 2. All of them are Attacks for every rule, void, and truth card. Each seat draws two Mishaps and one Calamity at setup, so the table always knows *how many* accidents are waiting — never *which*.
+Every Attack card in the game is a different way to get hurt. **Mishaps** deal 1 wound; **Calamities** deal 2. All of them are Attacks for every rule, void, and truth card. Each seat draws four Mishaps and one Calamity at setup, so the table always knows *how many* accidents are waiting — never *which*.
 
 **Mishaps (1 wound)**
 - **Bee Swarm** — Someone moved the hive. Someone always moves the hive.

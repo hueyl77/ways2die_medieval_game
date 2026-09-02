@@ -1,11 +1,15 @@
 import { CARDS, TRADES, def, isAttack, isJob, isHeal, MISHAP_KEYS, CALAMITY_KEYS, signatureKeys, type Trade } from './cards.ts';
 import { randInt, shuffle, pick } from './rng.ts';
+import { sceneCount } from './scenes.ts';
 import type { GameState, Seat, CardInst, Settings, Calendar, Season, LogEvent, ScoreRow } from './types.ts';
 
 export const DEFAULT_SETTINGS: Settings = {
-  gossipSeconds: 120, placementSeconds: 150, choiceSeconds: 30, revealSeconds: 45,
-  funeralSeconds: 60, extraTownsfolk: 0, revealPlacementsAtEnd: false,
+  gossipSeconds: 120, placementSeconds: 150, choiceSeconds: 30, revealSeconds: 45, revealStepSeconds: 20,
+  funeralSeconds: 60, extraTownsfolk: 0, tableSize: 4, seasonRules: false, leaderRules: false, revealPlacementsAtEnd: false,
 };
+/** Season rules are an optional variant; off, every round plays the same and the seasons are just names on the calendar. */
+const seasonal = (s: GameState) => !!s.settings.seasonRules;
+const stepMs = (s: GameState) => (s.settings.revealStepSeconds ?? 20) * 1000;
 
 export class RuleError extends Error {
   code: string;
@@ -15,9 +19,9 @@ export class RuleError extends Error {
 export function calendarFor(seatCount: number): Calendar {
   let rounds: number; let seasons: Season[]; let deathAt: number;
   if (seatCount <= 5) { rounds = 6; seasons = ['spring', 'spring', 'harvest', 'harvest', 'winter', 'winter']; deathAt = 3; }
-  else if (seatCount <= 8) { rounds = 4; seasons = ['harvest', 'harvest', 'winter', 'winter']; deathAt = 4; }
-  else { rounds = 3; seasons = ['spring', 'harvest', 'winter']; deathAt = 4; }
-  return { rounds, seasons, jobsKept: seatCount * rounds - 9, deathAt };
+  else { rounds = 4; seasons = ['harvest', 'harvest', 'winter', 'winter']; deathAt = 4; }   // 6–8 seats
+  // fixed cards per envelope: 4 Mishaps + 1 Calamity + 2 Heals + 1 Protect + 1 Alms + 1 Tax Collector + 3 signatures = 13
+  return { rounds, seasons, jobsKept: seatCount * rounds - 13, deathAt };
 }
 
 export interface SeatSpec { userId: string | null; name: string; crest: string; isTownsfolk: boolean }
@@ -47,33 +51,34 @@ function newCard(s: GameState, key: string, ownerSeat: number, zone: CardInst['z
 export function createGame(o: { id: string; code: string; hostUserId: string; seats: SeatSpec[]; settings?: Partial<Settings>; seed: number; now: number }): GameState {
   const settings = { ...DEFAULT_SETTINGS, ...(o.settings ?? {}) };
   const seatCount = o.seats.length;
-  if (seatCount < 4 || seatCount > 12) throw new RuleError('bad_seat_count');
+  if (seatCount < 4 || seatCount > 8) throw new RuleError('bad_seat_count');
   const calendar = calendarFor(seatCount);
   const s: GameState = {
     id: o.id, code: o.code, hostUserId: o.hostUserId, status: 'playing', seed: o.seed, rng: o.seed >>> 0,
-    settings, seatCount, calendar, round: 1, phase: 'gossip', phaseDeadline: o.now + settings.gossipSeconds * 1000,
-    crierSeat: 0, seats: [], cards: [], gold: Object.fromEntries(TRADES.map((t) => [t, 0])),
-    lockedTrades: [], shieldedTrades: [], absentTrades: [], succession: [], choices: [], roundLog: null, logs: [],
+    settings, seatCount, calendar, round: 1, phase: 'placement', phaseDeadline: o.now + settings.placementSeconds * 1000,
+    crierSeat: 0, revealStep: 0, revealSteps: 0, seats: [], cards: [], gold: Object.fromEntries(TRADES.map((t) => [t, 0])),
+    lockedTrades: [], shieldedTrades: [], absentTrades: [], succession: [], choices: [], taxedPiles: [], roundLog: null, logs: [],
     nextCardId: 1, winners: null, sharedBy: null, scoreRows: null, placementsThisRound: {},
   };
   const trades = shuffle(s, [...TRADES]);
   o.seats.forEach((spec, i) => {
     s.seats.push({
       index: i, userId: spec.userId, name: spec.name, crest: spec.crest, isTownsfolk: spec.isTownsfolk, alive: true,
-      woundTokens: 0, diedRound: null, revealedTrade: null, locked: false, ready: false, ack: false, afkRounds: 0,
+      woundTokens: 0, diedRound: null, revealedTrade: null, locked: false, ready: false, ack: false, skipReveal: false, afkRounds: 0,
       attacksPlaced: 0, trade: trades[i], heir: null, willSealed: false,
     });
   });
   s.absentTrades = trades.slice(seatCount);
   s.crierSeat = randInt(s, seatCount);
-  const mishaps = shuffle(s, [...MISHAP_KEYS]);
+  const mishaps = shuffle(s, [...MISHAP_KEYS, ...MISHAP_KEYS]);   // two copies of each of the 24 mishaps
   const calamities = shuffle(s, [...CALAMITY_KEYS]);
   for (const seat of s.seats) {
     const jobs = seat.isTownsfolk ? 27 : calendar.jobsKept;
     for (let j = 0; j < jobs; j++) newCard(s, `job:${seat.trade}`, seat.index);
-    newCard(s, 'heal', seat.index); newCard(s, 'heal', seat.index); newCard(s, 'protect', seat.index);
+    newCard(s, 'heal', seat.index); newCard(s, 'heal', seat.index); newCard(s, 'protect', seat.index); newCard(s, `alms:${seat.trade}`, seat.index); newCard(s, 'tax-collector', seat.index);
     for (const k of signatureKeys(seat.trade)) newCard(s, k, seat.index);
-    newCard(s, mishaps.pop()!, seat.index); newCard(s, mishaps.pop()!, seat.index); newCard(s, calamities.pop()!, seat.index);
+    for (let m = 0; m < 4; m++) newCard(s, mishaps.pop()!, seat.index);
+    newCard(s, calamities.pop()!, seat.index);
     if (isHuman(seat)) s.succession.push(seat.index);
   }
   s.roundLog = { round: 1, events: [{ t: 'round_start', round: 1, season: seasonOf(s) }], complete: false };
@@ -139,6 +144,11 @@ export function autoPlace(s: GameState, seat: number): void {
   for (let p = 0; p < s.seatCount; p++) placeCard(s, hand[p], seat, p);
   st.locked = true;
 }
+/** Trades held by living seats (what "still in play" means for Alms), lowest gold first. */
+export function claimedTrades(s: GameState): Trade[] {
+  const set = new Set<Trade>(); for (const st of s.seats) if (st.alive) set.add(st.trade);
+  return [...set].filter((t) => unlocked(s, t)).sort((a, b) => s.gold[a] - s.gold[b]);
+}
 
 // ---------------------------------------------------------------- resolution
 const isGrave = (s: GameState, p: number) => !s.seats[p].alive;
@@ -149,13 +159,13 @@ const voidCard = (s: GameState, c: CardInst, by: string) => { if (!c.meta.voided
 const discard = (s: GameState, c: CardInst, by: string) => { log(s, { t: 'discard', pileSeat: c.pileSeat!, cardId: c.id, cardKey: c.key, by }); c.zone = 'town_square'; c.pileSeat = null; };
 const neighbors = (s: GameState, p: number) => [(p + s.seatCount - 1) % s.seatCount, (p + 1) % s.seatCount];
 
-function addGold(s: GameState, t: Trade, delta: number, by: string, from?: Trade): boolean {
+function addGold(s: GameState, t: Trade, delta: number, by: string, from?: Trade, ctx?: { pileSeat?: number; cardId?: string }): boolean {
   if (!unlocked(s, t) || delta === 0) return false;
-  if (delta < 0 && s.shieldedTrades.includes(t)) { log(s, { t: 'gold', trade: t, delta: 0, by, absorbed: true }); return false; }
+  if (delta < 0 && s.shieldedTrades.includes(t)) { log(s, { t: 'gold', trade: t, delta: 0, by, absorbed: true, ...ctx }); return false; }
   const before = s.gold[t];
   s.gold[t] = Math.max(0, before + delta);
   const applied = s.gold[t] - before;
-  if (applied !== 0) log(s, { t: 'gold', trade: t, delta: applied, by, from });
+  if (applied !== 0) log(s, { t: 'gold', trade: t, delta: applied, by, from, ...ctx });
   return applied !== 0;
 }
 function richest(s: GameState, exclude: Trade[] = []): Trade[] {
@@ -198,6 +208,7 @@ export function beginResolve(s: GameState, now: number): void {
     else if (isHuman(st)) st.afkRounds = 0;
   }
   const season = seasonOf(s);
+  s.taxedPiles = [];
   // 1. shuffle + reveal every pile
   for (let p = 0; p < s.seatCount; p++) {
     const pile = shuffle(s, s.cards.filter((c) => c.zone === 'placed' && c.pileSeat === p));
@@ -219,21 +230,20 @@ export function beginResolve(s: GameState, now: number): void {
     const active = (key: string) => pend().some((c) => c.key === key && (c.meta.untilRound === null || c.meta.untilRound === s.round));
     const attacks = () => pile.filter((c) => c.zone === 'revealed' && isAttack(c.key) && live(c));
     if (active('sig:deep-forest')) { for (const c of pile) if (c.zone === 'revealed') voidCard(s, c, 'sig:deep-forest'); continue; }
+    if (pile.some((c) => c.key === 'tax-collector' && live(c))) s.taxedPiles.push(p);   // no gold is earned from this pile this round
     if (curfew) for (const c of attacks()) voidCard(s, c, 'sig:curfew');
     if (active('sig:cloak-of-plain-cloth')) for (const c of attacks()) voidCard(s, c, 'sig:cloak-of-plain-cloth');
-    if (active('sig:rotten-beam')) for (const c of pile) if (c.key === 'protect' && c.zone === 'revealed') voidCard(s, c, 'sig:rotten-beam');
-    // Palisade: revealed now → this round + next; pending from last round → active now
-    const palisade = pile.some((c) => c.key === 'sig:palisade' && live(c)) || active('sig:palisade');
-    if (palisade) for (const c of attacks()) if (!def(c.key).pierce) voidCard(s, c, 'sig:palisade');
-    for (const pr of pile.filter((c) => c.key === 'protect' && c.zone === 'revealed' && live(c))) {
+    const isProtect = (c: CardInst) => c.key === 'protect' || c.key === 'sig:palisade';   // Palisade is the Carpenter's second Protect
+    if (active('sig:rotten-beam')) for (const c of pile) if (isProtect(c) && c.zone === 'revealed') voidCard(s, c, 'sig:rotten-beam');
+    for (const pr of pile.filter((c) => isProtect(c) && c.zone === 'revealed' && live(c))) {
       const targets = attacks().filter((c) => !def(c.key).pierce);
-      if (season === 'winter') { if (targets[0]) voidCard(s, targets[0], 'protect'); }
-      else for (const c of targets) voidCard(s, c, 'protect');
+      if (season === 'winter' && seasonal(s)) { if (targets[0]) voidCard(s, targets[0], pr.key); }
+      else for (const c of targets) voidCard(s, c, pr.key);
       pr.meta.used = true;
     }
     // Snare (persistent from an earlier round) springs on the next attack revealed here
     const snare = pend().find((c) => c.key === 'sig:snare');
-    if (snare) { const a = attacks()[0]; if (a) { voidCard(s, a, 'sig:snare'); discard(s, snare, 'sig:snare'); addGold(s, 'hunter', 1, 'sig:snare'); } }
+    if (snare) { const a = attacks()[0]; if (a) { voidCard(s, a, 'sig:snare'); discard(s, snare, 'sig:snare'); if (!s.taxedPiles.includes(p)) addGold(s, 'hunter', 1, 'sig:snare', undefined, { pileSeat: p }); } }
     // Night Patrol: one here, one in each neighbor
     if (pile.some((c) => c.key === 'sig:night-patrol' && live(c))) {
       const a = attacks()[0]; if (a) voidCard(s, a, 'sig:night-patrol');
@@ -317,11 +327,34 @@ export function finishResolve(s: GameState, now: number, flags: { curfew: boolea
     if (!ch.answer) { ch.answer = ch.cardKey === 'sig:iron-strongbox' ? richest(s)[0] : poorest(s)[0]; log(s, { t: 'chosen', seat: ch.seat, cardKey: ch.cardKey, trade: ch.answer, auto: true }); }
     else log(s, { t: 'chosen', seat: ch.seat, cardKey: ch.cardKey, trade: ch.answer, auto: false });
   }
-  // 7. gold — jobs first
-  const jobBonus = (season === 'harvest' ? 1 : 0) + (flags.trestle ? 1 : 0);
+  // 7. gold — Alms first, judged on the board as it stood before this round's income.
+  // The card's trade must be clearly last or second-to-last among trades held by living seats:
+  // at most one other such trade may sit at or below it. Ties (everyone at 0, a three-way tie for last…) do nothing.
+  const boardBefore: Record<string, number> = { ...s.gold };
   for (let p = 0; p < s.seatCount; p++) {
     if (isGrave(s, p) && s.seats[p].diedRound !== s.round) continue;
-    for (const c of revealedIn(s, p)) if (isJob(c.key) && live(c)) addGold(s, def(c.key).trade!, 1 + jobBonus, c.key);
+    for (const c of revealedIn(s, p)) {
+      if (!c.key.startsWith('alms:') || !live(c)) continue;
+      if (s.taxedPiles.includes(p)) continue;   // the tax collector took it
+      const target = def(c.key).trade!;
+      const claimed = claimedTrades(s);
+      const rank = claimed.indexOf(target);
+      const atOrBelow = claimed.filter((t) => t !== target && boardBefore[t] <= boardBefore[target]).length;
+      const granted = rank >= 0 && atOrBelow <= 1;
+      log(s, { t: 'alms', pileSeat: p, trade: target, granted, rank });
+      if (granted) addGold(s, target, 5, 'alms', undefined, { pileSeat: p, cardId: c.id });
+    }
+  }
+  const jobBonus = (season === 'harvest' && seasonal(s) ? 1 : 0) + (flags.trestle ? 1 : 0);
+  const GAINS = new Set(['sig:bumper-crop', 'sig:gleaning', 'sig:cutpurse', 'sig:king-s-commission', 'sig:miller-s-toll', 'sig:physician-s-fee', 'sig:cordwood', 'sig:false-colors', 'sig:sunday-best']);
+  for (let p = 0; p < s.seatCount; p++) {
+    if (isGrave(s, p) && s.seats[p].diedRound !== s.round) continue;
+    if (s.taxedPiles.includes(p)) {
+      const taken = revealedIn(s, p).filter((c) => live(c) && (isJob(c.key) || c.key.startsWith('alms:') || GAINS.has(c.key))).length;
+      log(s, { t: 'tax', pileSeat: p, cards: taken });
+      continue;
+    }
+    for (const c of revealedIn(s, p)) if (isJob(c.key) && live(c)) addGold(s, def(c.key).trade!, 1 + jobBonus, c.key, undefined, { pileSeat: p, cardId: c.id });
   }
   // then signature gold effects clockwise from the Crier
   for (let i = 0; i < s.seatCount; i++) {
@@ -330,6 +363,7 @@ export function finishResolve(s: GameState, now: number, flags: { curfew: boolea
     const pile = revealedIn(s, p);
     for (const c of pile) {
       if (!live(c)) continue;
+      if (s.taxedPiles.includes(p) && GAINS.has(c.key)) continue;   // gains from a taxed pile go to the crown
       switch (c.key) {
         case 'sig:bumper-crop': addGold(s, 'farmer', 1, c.key); break;
         case 'sig:gleaning': addGold(s, poorest(s)[0], 2, c.key); break;
@@ -359,7 +393,7 @@ export function finishResolve(s: GameState, now: number, flags: { curfew: boolea
     }
   }
   // 9. pending: cards whose effect happens later stay on the pile
-  const PENDING: Record<string, number | null> = { 'sig:grindstone': 1, 'sig:curfew': 1, 'sig:cloak-of-plain-cloth': 1, 'sig:trestle-market': 1, 'sig:rotten-beam': 1, 'sig:deep-forest': 1, 'sig:slow-poison': 1, 'sig:palisade': 1, 'sig:snare': null };
+  const PENDING: Record<string, number | null> = { 'sig:grindstone': 1, 'sig:curfew': 1, 'sig:cloak-of-plain-cloth': 1, 'sig:trestle-market': 1, 'sig:rotten-beam': 1, 'sig:deep-forest': 1, 'sig:slow-poison': 1, 'sig:snare': null };
   for (let p = 0; p < s.seatCount; p++) {
     for (const c of revealedIn(s, p)) {
       if (!live(c) || !(c.key in PENDING)) continue;
@@ -375,25 +409,58 @@ export function finishResolve(s: GameState, now: number, flags: { curfew: boolea
   }
   // 10. season end
   const next = s.calendar.seasons[s.round];
-  if (season === 'harvest' && next !== 'harvest') {
+  if (seasonal(s) && season === 'harvest' && next !== 'harvest') {
     const r = richest(s).filter((t) => s.gold[t] > 0);
     log(s, { t: 'season_event', kind: 'reeves-tax', trades: r });
     for (const t of r) addGold(s, t, -2, 'reeves-tax');
+  }
+  // Optional leader rule (settings.leaderRules): the Reeve's tithe — each track pays 1 gold per 8 it holds
+  if (s.settings.leaderRules) for (const t of TRADES) {
+    if (!unlocked(s, t)) continue;
+    const due = Math.floor(s.gold[t] / 8);
+    if (due > 0) addGold(s, t, -due, 'tithe');
   }
   s.roundLog!.complete = true;
   s.logs.push(s.roundLog!);
   s.choices = [];
   s.phase = 'reveal';
-  s.phaseDeadline = now + (s.settings.revealSeconds + s.seatCount * 4) * 1000;
-  for (const st of s.seats) st.ack = false;
+  s.revealStep = 0;
+  s.revealSteps = Math.max(1, sceneCount(s.roundLog!));
+  s.phaseDeadline = now + stepMs(s);
+  for (const st of s.seats) { st.ack = false; st.skipReveal = false; }
 }
 
-// ---------------------------------------------------------------- reveal ack → funeral → next round
+// ---------------------------------------------------------------- reveal: one scene at a time, in lockstep
+const allRevealAcked = (s: GameState) => s.seats.filter(isHuman).every((x) => x.ack || x.skipReveal);
+
+/** A player clicked Next on the current scene. The table advances when everyone has. */
 export function acknowledge(s: GameState, seat: number, now: number): void {
   if (s.phase !== 'reveal') throw new RuleError('wrong_phase');
-  s.seats[seat].ack = true;
-  if (s.seats.filter(isHuman).every((x) => x.ack)) afterReveal(s, now);
+  const st = s.seats[seat];
+  if (st.isTownsfolk) throw new RuleError('not_a_player');
+  st.ack = true;
+  if (allRevealAcked(s)) advanceReveal(s, now);
 }
+export const revealNext = acknowledge;
+
+/** A player skips the rest of the reveal: they count as ready for every remaining scene. */
+export function revealSkip(s: GameState, seat: number, now: number): void {
+  if (s.phase !== 'reveal') throw new RuleError('wrong_phase');
+  const st = s.seats[seat];
+  if (st.isTownsfolk) throw new RuleError('not_a_player');
+  st.skipReveal = true; st.ack = true;
+  if (allRevealAcked(s)) advanceReveal(s, now);
+}
+
+export function advanceReveal(s: GameState, now: number): void {
+  if (s.phase !== 'reveal') return;
+  s.revealStep += 1;
+  if (s.revealStep >= s.revealSteps) { afterReveal(s, now); return; }
+  for (const st of s.seats) st.ack = st.skipReveal;
+  s.phaseDeadline = now + stepMs(s);
+  if (allRevealAcked(s)) advanceReveal(s, now);
+}
+export const revealWaitingOn = (s: GameState): number[] => s.seats.filter((x) => isHuman(x) && !x.ack && !x.skipReveal).map((x) => x.index);
 
 export function afterReveal(s: GameState, now: number): void {
   const pendingWills = deadHumans(s).filter((x) => !x.willSealed);
@@ -421,11 +488,20 @@ function nextRoundOrEnd(s: GameState, now: number): void {
   if (s.round >= s.calendar.rounds || livingHumans(s).length === 0) { finalScoring(s); return; }
   s.round += 1;
   s.crierSeat = (s.crierSeat + 1) % s.seatCount;
-  s.phase = 'gossip';
-  s.phaseDeadline = now + s.settings.gossipSeconds * 1000;
-  for (const st of s.seats) { st.ready = false; st.locked = false; st.ack = false; }
-  s.placementsThisRound = {};
+  for (const st of s.seats) { st.ready = false; st.ack = false; st.skipReveal = false; }
+  s.revealStep = 0; s.revealSteps = 0;
   s.roundLog = { round: s.round, events: [{ t: 'round_start', round: s.round, season: seasonOf(s) }], complete: false };
+  // Optional leader rule (settings.leaderRules): the Reckoning — at the start of the final round the richest trade is unmasked
+  if (s.settings.leaderRules && s.round === s.calendar.rounds) {
+    const living = s.seats.filter((x) => x.alive);
+    const max = Math.max(0, ...living.map((x) => s.gold[x.trade]));
+    if (max > 0) {
+      const top = living.filter((x) => s.gold[x.trade] === max);
+      for (const st of top) st.revealedTrade = st.trade;
+      log(s, { t: 'reckoning', seats: top.map((x) => ({ seat: x.index, trade: x.trade, gold: max })) });
+    }
+  }
+  startPlacement(s, now);   // no Ready step: gossip happens while cards are placed
 }
 
 export function finalScoring(s: GameState): void {
@@ -445,7 +521,7 @@ export function finalScoring(s: GameState): void {
     const w = woundsOf(s, st.index);
     const before = s.gold[st.trade];
     if (w > 0) addGold(s, st.trade, -w, 'wounds');
-    rows.push({ seat: st.index, trade: st.trade, base: before, wounds: w, scoring: 0, total: s.gold[st.trade], eligible: isHuman(st) });
+    rows.push({ seat: st.index, trade: st.trade, base: before, wounds: w, scoring: 0, total: s.gold[st.trade], eligible: true });   // every living seat, bots included, can win
   }
   const eligible = rows.filter((r) => r.eligible);
   let winners: number[] = [];
@@ -470,7 +546,7 @@ export function tick(s: GameState, now: number): boolean {
     case 'gossip': startPlacement(s, now); return true;
     case 'placement': beginResolve(s, now); return true;
     case 'choice': finishResolve(s, now, { curfew: pendingCurfew(s), trestle: pendingTrestle(s) }); return true;
-    case 'reveal': afterReveal(s, now); return true;
+    case 'reveal': advanceReveal(s, now); return true;
     case 'funeral': {
       for (const st of deadHumans(s)) if (!st.willSealed) { const opts = heirOptions(s, st.index); if (opts.length) { const h = pick(s, opts); st.heir = h; s.succession = s.succession.filter((i) => i !== h); } st.willSealed = true; }
       nextRoundOrEnd(s, now); return true;
@@ -478,6 +554,25 @@ export function tick(s: GameState, now: number): boolean {
     default: return false;
   }
 }
+
+/** A human leaves a running game: the seat plays on as a bot. Whatever the seat was blocking is re-checked. */
+export function convertToBot(s: GameState, seat: number, now: number): void {
+  const st = s.seats[seat];
+  if (st.isTownsfolk) return;
+  st.isTownsfolk = true; st.userId = null; st.name = `${st.name} (left)`;
+  st.ready = true; st.ack = true; st.skipReveal = true; st.willSealed = true;
+  s.succession = s.succession.filter((i) => i !== seat);
+  for (const ch of s.choices) if (ch.seat === seat && !ch.answer) { const c = crierHuman(s); if (c !== null) ch.seat = c; else ch.answer = ch.options[0]; }
+  if (s.status !== 'playing') return;
+  switch (s.phase) {
+    case 'gossip': if (livingHumans(s).length && livingHumans(s).every((x) => x.ready)) startPlacement(s, now); break;
+    case 'placement': if (livingHumans(s).length && livingHumans(s).every((x) => x.locked)) beginResolve(s, now); break;
+    case 'choice': if (s.choices.every((c) => c.answer)) finishResolve(s, now, { curfew: pendingCurfew(s), trestle: pendingTrestle(s) }); break;
+    case 'reveal': if (allRevealAcked(s)) advanceReveal(s, now); break;
+    case 'funeral': if (deadHumans(s).every((x) => x.willSealed)) nextRoundOrEnd(s, now); break;
+  }
+}
+export const humanCount = (s: GameState): number => s.seats.filter((x) => x.userId !== null).length;
 
 export function pileCount(s: GameState, p: number): number { return s.cards.filter((c) => c.zone === 'placed' && c.pileSeat === p).length; }
 export { CARDS };

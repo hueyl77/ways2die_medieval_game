@@ -1,0 +1,15 @@
+{
+ "defaults": {
+  "image_type": "card-art",
+  "art_style": "Western Cartoon",
+  "aspect_ratio": "ar_3_4",
+  "augment_prompt": true
+ },
+ "jobs": [
+  {
+   "id": "basic-tax-collector",
+   "request_id": "atwd-basic-tax-collector-v1",
+   "prompt": "A smug royal tax collector in a fine feathered hat and fur-trimmed coat sweeping a market stall's coins into a locked strongbox, a ledger under his arm, a glaring stallkeeper and muttering villagers behind. Medieval European village, 14th century. Comic and slightly grim tone, no gore, expressive characters, rich detail, centered composition for a playing card illustration, no text, no lettering, no border."
+  }
+ ]
+}

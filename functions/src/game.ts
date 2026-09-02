@@ -2,7 +2,7 @@
 // Bundled with esbuild (engine inlined; npm:@insforge/sdk external).
 import { createClient, createAdminClient } from 'npm:@insforge/sdk';
 import {
-  createGame, setReady, submitPlacement, answerChoice, acknowledge, sealWill, tick, projectFor,
+  createGame, setReady, submitPlacement, answerChoice, acknowledge, revealSkip, sealWill, tick, projectFor, convertToBot, humanCount,
   RuleError, DEFAULT_SETTINGS, CREST_COLORS, seedFrom, type GameState, type PlayerView, type Settings,
 } from '../../web/src/engine/index.ts';
 
@@ -22,15 +22,20 @@ const BOT_NAMES = ['Bot Marta', 'Bot Bram', 'Bot Odo', 'Bot Ysolde', 'Bot Piers'
 interface GameRow { id: string; code: string; host_user_id: string; status: string; phase: string; round: number; version: number; settings: Settings; snapshot: LobbySnapshot | GameState | null }
 
 const CODE_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+const clampInt = (v: unknown, lo: number, hi: number, d: number) => { const n = Number(v); return Number.isFinite(n) ? Math.min(hi, Math.max(lo, Math.round(n))) : d; };
+/** Seats at the table = max(table size, humans), capped at 8; the difference is bots. */
+const MAX_SEATS = 8;
+const tableSize = (snap: LobbySnapshot) => Math.min(MAX_SEATS, Math.max(4, snap.settings.tableSize ?? 4, snap.seats.length));
+const botCount = (snap: LobbySnapshot) => tableSize(snap) - snap.seats.length;
 function newCode(): string { let c = ''; for (let i = 0; i < 6; i++) c += CODE_ALPHABET[Math.floor(Math.random() * CODE_ALPHABET.length)]; return c; }
 function cleanName(n: unknown, fallback: string): string { const s = String(n ?? '').replace(/[^\p{L}\p{N} _'.-]/gu, '').trim().slice(0, 20); return s || fallback; }
 
 function lobbyView(row: GameRow, userId: string, now: number): PlayerView {
   const snap = row.snapshot as LobbySnapshot;
-  const blank = { alive: true, wounds: 0, woundCards: [], woundTokens: 0, diedRound: null, revealedTrade: null, locked: false, ack: false, scoringCards: [], pendingCards: [], pileCount: 0, gravePoolCount: 0, handCount: 0, willSealed: false };
+  const blank = { alive: true, wounds: 0, woundCards: [], woundTokens: 0, diedRound: null, revealedTrade: null, locked: false, ack: false, skipReveal: false, scoringCards: [], pendingCards: [], pileCount: 0, gravePoolCount: 0, handCount: 0, willSealed: false };
   const seats = [
     ...snap.seats.map((s, i) => ({ ...blank, index: i, userId: s.userId, name: s.name, crest: s.crest, isTownsfolk: false, ready: s.ready, isMe: s.userId === userId })),
-    ...Array.from({ length: snap.bots ?? 0 }, (_, i) => ({ ...blank, index: snap.seats.length + i, userId: null, name: BOT_NAMES[i % BOT_NAMES.length], crest: 'stranger', isTownsfolk: true, ready: true, isMe: false })),
+    ...Array.from({ length: botCount(snap) }, (_, i) => ({ ...blank, index: snap.seats.length + i, userId: null, name: BOT_NAMES[i % BOT_NAMES.length], crest: 'stranger', isTownsfolk: true, ready: true, isMe: false })),
   ];
   const meIdx = snap.seats.findIndex((s) => s.userId === userId);
   return {
@@ -127,7 +132,7 @@ export default async function handler(req: Request): Promise<Response> {
           return respond(fresh, snap, fresh.version);
         }
         if (snap.seats.some((s) => s.userId === userId)) return respond(fresh, snap, fresh.version);
-        if (snap.seats.length + (snap.bots ?? 0) >= 12) return json({ ok: false, error: 'full' }, 403);
+        if (snap.seats.length >= MAX_SEATS) return json({ ok: false, error: 'full' }, 403);
         const name = cleanName(body.name, defaultName);
         const used = new Set(snap.seats.map((s) => s.crest));
         const crest = CREST_COLORS.find((c) => !used.has(c)) ?? CREST_COLORS[snap.seats.length % CREST_COLORS.length];
@@ -171,16 +176,18 @@ export default async function handler(req: Request): Promise<Response> {
           next = { ...snap, seats: snap.seats.map((s) => (s.userId === userId ? { ...s, crest } : s)) };
         } else if (op === 'bot') {
           if (row.host_user_id !== userId) return json({ ok: false, error: 'not_host' }, 403);
-          const bots = snap.bots ?? 0;
           const action = String(body.action ?? 'add');
-          if (action === 'add' && snap.seats.length + bots >= 12) return json({ ok: false, error: 'full' }, 403);
-          next = { ...snap, bots: action === 'add' ? bots + 1 : Math.max(0, bots - 1) };
+          const size = tableSize(snap);
+          if (action === 'add' && size >= MAX_SEATS) return json({ ok: false, error: 'full' }, 403);
+          next = { ...snap, settings: { ...snap.settings, tableSize: action === 'add' ? size + 1 : Math.max(4, snap.seats.length, size - 1) } };
         } else if (op === 'settings') {
           if (row.host_user_id !== userId) return json({ ok: false, error: 'not_host' }, 403);
           const incoming = (body.settings as Partial<Settings>) ?? {};
-          const clamp = (v: unknown, lo: number, hi: number, d: number) => { const n = Number(v); return Number.isFinite(n) ? Math.min(hi, Math.max(lo, Math.round(n))) : d; };
+          const clamp = clampInt;
           next = { ...snap, settings: {
             ...snap.settings,
+            tableSize: clamp(incoming.tableSize, 4, MAX_SEATS, snap.settings.tableSize ?? 4),
+            revealStepSeconds: clamp(incoming.revealStepSeconds, 5, 120, snap.settings.revealStepSeconds ?? 20),
             gossipSeconds: clamp(incoming.gossipSeconds, 30, 600, snap.settings.gossipSeconds),
             placementSeconds: clamp(incoming.placementSeconds, 45, 600, snap.settings.placementSeconds),
             revealSeconds: clamp(incoming.revealSeconds, 15, 300, snap.settings.revealSeconds),
@@ -188,17 +195,16 @@ export default async function handler(req: Request): Promise<Response> {
             choiceSeconds: clamp(incoming.choiceSeconds, 10, 120, snap.settings.choiceSeconds),
             extraTownsfolk: clamp(incoming.extraTownsfolk, 0, 2, snap.settings.extraTownsfolk),
             revealPlacementsAtEnd: !!(incoming.revealPlacementsAtEnd ?? snap.settings.revealPlacementsAtEnd),
+            seasonRules: !!(incoming.seasonRules ?? snap.settings.seasonRules ?? false),
           } };
         } else if (op === 'start') {
           if (row.host_user_id !== userId) return json({ ok: false, error: 'not_host' }, 403);
           const humans = snap.seats.length;
           if (humans < 1) return json({ ok: false, error: 'need_a_player' }, 400);
-          const bots = Math.min(12 - humans, snap.bots ?? 0);
-          const strangers = Math.min(12 - humans - bots, Math.max(4 - humans - bots, 0));
+          const bots = botCount(snap);
           const specs = [
             ...snap.seats.map((s) => ({ userId: s.userId, name: s.name, crest: s.crest, isTownsfolk: false })),
             ...Array.from({ length: bots }, (_, i) => ({ userId: null, name: BOT_NAMES[i % BOT_NAMES.length], crest: 'stranger', isTownsfolk: true })),
-            ...Array.from({ length: strangers }, (_, i) => ({ userId: null, name: `Stranger ${i + 1}`, crest: 'stranger', isTownsfolk: true })),
           ];
           const seed = seedFrom(`${row.id}:${now}:${Math.random()}`);
           const state = createGame({ id: row.id, code: row.code, hostUserId: row.host_user_id, seats: specs, settings: snap.settings, seed, now });
@@ -218,6 +224,25 @@ export default async function handler(req: Request): Promise<Response> {
       const logsBefore = state.logs.length;
       let changed = false;
       if (state.status === 'playing') changed = tick(state, now) || changed;
+      // ---- leaving a running game: the seat plays on as a bot; a table with no humans left is deleted
+      if (op === 'leave') {
+        convertToBot(state, seat.index, now);
+        if (humanCount(state) === 0) { await admin.database.from('games').delete().eq('id', row.id); return json({ ok: true, state: null }); }
+        const extra: Partial<GameRow> = row.host_user_id === userId ? { host_user_id: state.seats.find((s) => s.userId)!.userId! } : {};
+        if (await save(row, state, extra)) {
+          await persistLogs(row, logsBefore, state);
+          await admin.database.from('game_members').delete().eq('game_id', row.id).eq('user_id', userId);
+          await admin.database.from('game_events').insert([{ game_id: row.id, user_id: userId, kind: 'leave', payload: { round: state.round, phase: state.phase, seat: seat.index } }]);
+          return json({ ok: true, state: null });
+        }
+        continue;
+      }
+      // ---- the last human at the table may cancel the game outright (removes it from everyone's saved sessions)
+      if (op === 'cancel') {
+        if (humanCount(state) !== 1) return json({ ok: false, error: 'not_alone' }, 403);
+        await admin.database.from('games').delete().eq('id', row.id);
+        return json({ ok: true, state: null });
+      }
       try {
         switch (op) {
           case 'state': break;
@@ -226,6 +251,7 @@ export default async function handler(req: Request): Promise<Response> {
           case 'choose': answerChoice(state, seat.index, String(body.choiceId), body.trade as never, now); changed = true; break;
           case 'will': sealWill(state, seat.index, Number(body.heir), now); changed = true; break;
           case 'continue': if (state.phase === 'reveal') { acknowledge(state, seat.index, now); changed = true; } break;
+          case 'skip': if (state.phase === 'reveal') { revealSkip(state, seat.index, now); changed = true; } break;
           case 'tick': break;
           default: return json({ ok: false, error: 'unknown_op' }, 400);
         }

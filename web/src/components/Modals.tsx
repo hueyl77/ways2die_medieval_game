@@ -64,3 +64,4 @@ export function EndScreen({ view, onHome }: { view: PlayerView; onHome: () => vo
     </div>
   );
 }
+

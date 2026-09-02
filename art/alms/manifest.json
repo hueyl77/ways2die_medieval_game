@@ -1,0 +1,15 @@
+{
+ "defaults": {
+  "image_type": "card-art",
+  "art_style": "Western Cartoon",
+  "aspect_ratio": "ar_3_4",
+  "augment_prompt": true
+ },
+ "jobs": [
+  {
+   "id": "basic-alms",
+   "request_id": "atwd-basic-alms-v1",
+   "prompt": "A hooded almoner at a church door tipping a wooden poor box, silver coins spilling into the cupped hands of a ragged, delighted tradesman while two better-dressed villagers look on enviously. Medieval European village, 14th century. Comic and slightly grim tone, no gore, expressive characters, rich detail, centered composition for a playing card illustration, no text, no lettering, no border."
+  }
+ ]
+}
