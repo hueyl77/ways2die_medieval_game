@@ -71,6 +71,7 @@ export default function Rules() {
             <div className="text-center"><CardFace cardKey="heal" width={104} /><div className="text-xs mt-1 font-ui">Heal × 2</div></div>
             <div className="text-center"><CardFace cardKey="protect" width={104} /><div className="text-xs mt-1 font-ui">Protect × 1</div></div>
             <div className="text-center"><CardFace cardKey="alms:carpenter" width={104} /><div className="text-xs mt-1 font-ui">Alms × 1 · for your trade</div></div>
+            <div className="text-center"><CardFace cardKey="tax-collector" width={104} /><div className="text-xs mt-1 font-ui">Tax Collector × 1</div></div>
             <div className="text-center"><CardFace cardKey="mishap:hidden-rake" width={104} /><div className="text-xs mt-1 font-ui">Mishap × 4 · 1 wound</div></div>
             <div className="text-center"><CardFace cardKey="calamity:trebuchet-practice" width={104} /><div className="text-xs mt-1 font-ui">Calamity × 1 · 2 wounds</div></div>
             <div className="text-center"><CardFace cardKey="sig:hearty-stew" width={104} /><div className="text-xs mt-1 font-ui">Signature × 3 · your trade's</div></div>
@@ -80,6 +81,7 @@ export default function Rules() {
             <li><b className="text-gold">Attacks</b> (Mishaps and Calamities) wound whoever's pile they're in. Which accidents you drew is your secret; the table only knows everyone holds four small ones and one big one.</li>
             <li><b className="text-gold">Heal</b> removes a wound from the pile's owner; <b className="text-gold">Protect</b> voids every attack in its pile that round.</li>
             <li><b className="text-gold">Alms</b> is the catch-up card, printed for your own trade. It is judged first, before the round's wares are counted: if your trade is clearly last or second-to-last among the trades still in play (ties — like everyone at 0 — do nothing), it gains 5 gold. Playing it also tells the table your trade is in the game.</li>
+            <li><b className="text-gold">Tax Collector</b> shuts a pile's takings: every coin that would be earned from the cards in that pile this round — wares, Alms, gold-gaining signature cards — goes to the crown instead. Drop it where you expect a rival's wares to land.</li>
             <li><b className="text-gold">Signature cards</b> are unique to your trade — powerful, and a confession: revealing one proves your trade is at the table (though never which chair).</li>
           </ul>
         </Section>
@@ -155,10 +157,10 @@ export default function Rules() {
         </Section>
 
         <Section id="seats" eyebrow="Seats & rounds" title="How long is a year?">
-          <p className="max-w-2xl text-sm mb-3">The host sets the table size (4–12). Seats without a player are filled by bots, who play random cards and can win if they out-earn you.</p>
+          <p className="max-w-2xl text-sm mb-3">The host sets the table size (4–8). Seats without a player are filled by bots, who play random cards and can win if they out-earn you.</p>
           <div className="overflow-x-auto"><table className="text-sm font-ui border-collapse">
             <thead><tr className="text-[11px] uppercase tracking-wider text-ink-2"><th className="text-left pr-6 pb-1">Seats</th><th className="text-left pr-6 pb-1">Rounds</th><th className="text-left pr-6 pb-1">Wares kept</th><th className="text-left pr-6 pb-1">You die at</th></tr></thead>
-            <tbody>{[4, 5, 6, 7, 8, 9, 10, 11, 12].map((n) => { const c = calendarPreview(n); return <tr key={n} className="border-t border-night-3"><td className="pr-6 py-1">{n}</td><td className="pr-6">{c.rounds}</td><td className="pr-6">{c.jobs}</td><td className="pr-6">{c.deathAt} wounds</td></tr>; })}</tbody>
+            <tbody>{[4, 5, 6, 7, 8].map((n) => { const c = calendarPreview(n); return <tr key={n} className="border-t border-night-3"><td className="pr-6 py-1">{n}</td><td className="pr-6">{c.rounds}</td><td className="pr-6">{c.jobs}</td><td className="pr-6">{c.deathAt} wounds</td></tr>; })}</tbody>
           </table></div>
         </Section>
       </main>

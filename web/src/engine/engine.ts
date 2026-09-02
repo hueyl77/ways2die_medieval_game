@@ -19,10 +19,9 @@ export class RuleError extends Error {
 export function calendarFor(seatCount: number): Calendar {
   let rounds: number; let seasons: Season[]; let deathAt: number;
   if (seatCount <= 5) { rounds = 6; seasons = ['spring', 'spring', 'harvest', 'harvest', 'winter', 'winter']; deathAt = 3; }
-  else if (seatCount <= 8) { rounds = 4; seasons = ['harvest', 'harvest', 'winter', 'winter']; deathAt = 4; }
-  else { rounds = 3; seasons = ['spring', 'harvest', 'winter']; deathAt = 4; }
-  // fixed cards per envelope: 4 Mishaps + 1 Calamity + 2 Heals + 1 Protect + 1 Alms + 3 signatures = 12
-  return { rounds, seasons, jobsKept: seatCount * rounds - 12, deathAt };
+  else { rounds = 4; seasons = ['harvest', 'harvest', 'winter', 'winter']; deathAt = 4; }   // 6–8 seats
+  // fixed cards per envelope: 4 Mishaps + 1 Calamity + 2 Heals + 1 Protect + 1 Alms + 1 Tax Collector + 3 signatures = 13
+  return { rounds, seasons, jobsKept: seatCount * rounds - 13, deathAt };
 }
 
 export interface SeatSpec { userId: string | null; name: string; crest: string; isTownsfolk: boolean }
@@ -52,13 +51,13 @@ function newCard(s: GameState, key: string, ownerSeat: number, zone: CardInst['z
 export function createGame(o: { id: string; code: string; hostUserId: string; seats: SeatSpec[]; settings?: Partial<Settings>; seed: number; now: number }): GameState {
   const settings = { ...DEFAULT_SETTINGS, ...(o.settings ?? {}) };
   const seatCount = o.seats.length;
-  if (seatCount < 4 || seatCount > 12) throw new RuleError('bad_seat_count');
+  if (seatCount < 4 || seatCount > 8) throw new RuleError('bad_seat_count');
   const calendar = calendarFor(seatCount);
   const s: GameState = {
     id: o.id, code: o.code, hostUserId: o.hostUserId, status: 'playing', seed: o.seed, rng: o.seed >>> 0,
     settings, seatCount, calendar, round: 1, phase: 'placement', phaseDeadline: o.now + settings.placementSeconds * 1000,
     crierSeat: 0, revealStep: 0, revealSteps: 0, seats: [], cards: [], gold: Object.fromEntries(TRADES.map((t) => [t, 0])),
-    lockedTrades: [], shieldedTrades: [], absentTrades: [], succession: [], choices: [], roundLog: null, logs: [],
+    lockedTrades: [], shieldedTrades: [], absentTrades: [], succession: [], choices: [], taxedPiles: [], roundLog: null, logs: [],
     nextCardId: 1, winners: null, sharedBy: null, scoreRows: null, placementsThisRound: {},
   };
   const trades = shuffle(s, [...TRADES]);
@@ -76,7 +75,7 @@ export function createGame(o: { id: string; code: string; hostUserId: string; se
   for (const seat of s.seats) {
     const jobs = seat.isTownsfolk ? 27 : calendar.jobsKept;
     for (let j = 0; j < jobs; j++) newCard(s, `job:${seat.trade}`, seat.index);
-    newCard(s, 'heal', seat.index); newCard(s, 'heal', seat.index); newCard(s, 'protect', seat.index); newCard(s, `alms:${seat.trade}`, seat.index);
+    newCard(s, 'heal', seat.index); newCard(s, 'heal', seat.index); newCard(s, 'protect', seat.index); newCard(s, `alms:${seat.trade}`, seat.index); newCard(s, 'tax-collector', seat.index);
     for (const k of signatureKeys(seat.trade)) newCard(s, k, seat.index);
     for (let m = 0; m < 4; m++) newCard(s, mishaps.pop()!, seat.index);
     newCard(s, calamities.pop()!, seat.index);
@@ -209,6 +208,7 @@ export function beginResolve(s: GameState, now: number): void {
     else if (isHuman(st)) st.afkRounds = 0;
   }
   const season = seasonOf(s);
+  s.taxedPiles = [];
   // 1. shuffle + reveal every pile
   for (let p = 0; p < s.seatCount; p++) {
     const pile = shuffle(s, s.cards.filter((c) => c.zone === 'placed' && c.pileSeat === p));
@@ -230,6 +230,7 @@ export function beginResolve(s: GameState, now: number): void {
     const active = (key: string) => pend().some((c) => c.key === key && (c.meta.untilRound === null || c.meta.untilRound === s.round));
     const attacks = () => pile.filter((c) => c.zone === 'revealed' && isAttack(c.key) && live(c));
     if (active('sig:deep-forest')) { for (const c of pile) if (c.zone === 'revealed') voidCard(s, c, 'sig:deep-forest'); continue; }
+    if (pile.some((c) => c.key === 'tax-collector' && live(c))) s.taxedPiles.push(p);   // no gold is earned from this pile this round
     if (curfew) for (const c of attacks()) voidCard(s, c, 'sig:curfew');
     if (active('sig:cloak-of-plain-cloth')) for (const c of attacks()) voidCard(s, c, 'sig:cloak-of-plain-cloth');
     const isProtect = (c: CardInst) => c.key === 'protect' || c.key === 'sig:palisade';   // Palisade is the Carpenter's second Protect
@@ -242,7 +243,7 @@ export function beginResolve(s: GameState, now: number): void {
     }
     // Snare (persistent from an earlier round) springs on the next attack revealed here
     const snare = pend().find((c) => c.key === 'sig:snare');
-    if (snare) { const a = attacks()[0]; if (a) { voidCard(s, a, 'sig:snare'); discard(s, snare, 'sig:snare'); addGold(s, 'hunter', 1, 'sig:snare'); } }
+    if (snare) { const a = attacks()[0]; if (a) { voidCard(s, a, 'sig:snare'); discard(s, snare, 'sig:snare'); if (!s.taxedPiles.includes(p)) addGold(s, 'hunter', 1, 'sig:snare', undefined, { pileSeat: p }); } }
     // Night Patrol: one here, one in each neighbor
     if (pile.some((c) => c.key === 'sig:night-patrol' && live(c))) {
       const a = attacks()[0]; if (a) voidCard(s, a, 'sig:night-patrol');
@@ -334,6 +335,7 @@ export function finishResolve(s: GameState, now: number, flags: { curfew: boolea
     if (isGrave(s, p) && s.seats[p].diedRound !== s.round) continue;
     for (const c of revealedIn(s, p)) {
       if (!c.key.startsWith('alms:') || !live(c)) continue;
+      if (s.taxedPiles.includes(p)) continue;   // the tax collector took it
       const target = def(c.key).trade!;
       const claimed = claimedTrades(s);
       const rank = claimed.indexOf(target);
@@ -344,8 +346,14 @@ export function finishResolve(s: GameState, now: number, flags: { curfew: boolea
     }
   }
   const jobBonus = (season === 'harvest' && seasonal(s) ? 1 : 0) + (flags.trestle ? 1 : 0);
+  const GAINS = new Set(['sig:bumper-crop', 'sig:gleaning', 'sig:cutpurse', 'sig:king-s-commission', 'sig:miller-s-toll', 'sig:physician-s-fee', 'sig:cordwood', 'sig:false-colors', 'sig:sunday-best']);
   for (let p = 0; p < s.seatCount; p++) {
     if (isGrave(s, p) && s.seats[p].diedRound !== s.round) continue;
+    if (s.taxedPiles.includes(p)) {
+      const taken = revealedIn(s, p).filter((c) => live(c) && (isJob(c.key) || c.key.startsWith('alms:') || GAINS.has(c.key))).length;
+      log(s, { t: 'tax', pileSeat: p, cards: taken });
+      continue;
+    }
     for (const c of revealedIn(s, p)) if (isJob(c.key) && live(c)) addGold(s, def(c.key).trade!, 1 + jobBonus, c.key, undefined, { pileSeat: p, cardId: c.id });
   }
   // then signature gold effects clockwise from the Crier
@@ -355,6 +363,7 @@ export function finishResolve(s: GameState, now: number, flags: { curfew: boolea
     const pile = revealedIn(s, p);
     for (const c of pile) {
       if (!live(c)) continue;
+      if (s.taxedPiles.includes(p) && GAINS.has(c.key)) continue;   // gains from a taxed pile go to the crown
       switch (c.key) {
         case 'sig:bumper-crop': addGold(s, 'farmer', 1, c.key); break;
         case 'sig:gleaning': addGold(s, poorest(s)[0], 2, c.key); break;

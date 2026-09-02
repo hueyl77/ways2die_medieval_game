@@ -28,7 +28,7 @@ export default function Home() {
       </header>
       <div className="grid md:grid-cols-2 gap-4">
         <Panel title="Open a table">
-          <p className="text-sm text-ink-2 mb-3">Create a room and share the code. Three to twelve players; the village fills empty chairs with strangers.</p>
+          <p className="text-sm text-ink-2 mb-3">Create a room and share the code. Up to eight seats; the host fills empty chairs with bots.</p>
           <Button onClick={() => void create()} disabled={busy}>Create a room</Button>
         </Panel>
         <Panel title="Join a table">

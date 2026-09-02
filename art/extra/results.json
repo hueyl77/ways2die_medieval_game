@@ -1,0 +1,11 @@
+{
+ "basic-tax-collector": {
+  "request_id": "atwd-basic-tax-collector-v1",
+  "job_id": "d2a32fb8-74c9-4e99-b2a3-5bcf2fc12710",
+  "status": "succeeded",
+  "credits": 0.5,
+  "error": null,
+  "url": "https://storage.googleapis.com/ludo-assets/api/9193b1b63c3f37485fdb3e09ca956840.webp",
+  "file": "art/extra/basic-tax-collector.webp"
+ }
+}

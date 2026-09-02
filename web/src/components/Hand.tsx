@@ -16,4 +16,4 @@ export function Hand({ view, cards, selected, assignments, onSelect, onDragStart
     </div>
   );
 }
-function typeOf(key: string): string { return key.startsWith('sig:') || key.startsWith('alms:') ? 'signature' : key.startsWith('mishap:') || key.startsWith('calamity:') ? 'attack' : key.startsWith('job:') ? 'job' : key; }
+function typeOf(key: string): string { return key.startsWith('sig:') || key.startsWith('alms:') || key === 'tax-collector' ? 'signature' : key.startsWith('mishap:') || key.startsWith('calamity:') ? 'attack' : key.startsWith('job:') ? 'job' : key; }

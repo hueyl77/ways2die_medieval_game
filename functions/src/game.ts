@@ -23,8 +23,9 @@ interface GameRow { id: string; code: string; host_user_id: string; status: stri
 
 const CODE_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 const clampInt = (v: unknown, lo: number, hi: number, d: number) => { const n = Number(v); return Number.isFinite(n) ? Math.min(hi, Math.max(lo, Math.round(n))) : d; };
-/** Seats at the table = max(table size, humans), capped at 12; the difference is bots. */
-const tableSize = (snap: LobbySnapshot) => Math.min(12, Math.max(4, snap.settings.tableSize ?? 4, snap.seats.length));
+/** Seats at the table = max(table size, humans), capped at 8; the difference is bots. */
+const MAX_SEATS = 8;
+const tableSize = (snap: LobbySnapshot) => Math.min(MAX_SEATS, Math.max(4, snap.settings.tableSize ?? 4, snap.seats.length));
 const botCount = (snap: LobbySnapshot) => tableSize(snap) - snap.seats.length;
 function newCode(): string { let c = ''; for (let i = 0; i < 6; i++) c += CODE_ALPHABET[Math.floor(Math.random() * CODE_ALPHABET.length)]; return c; }
 function cleanName(n: unknown, fallback: string): string { const s = String(n ?? '').replace(/[^\p{L}\p{N} _'.-]/gu, '').trim().slice(0, 20); return s || fallback; }
@@ -131,7 +132,7 @@ export default async function handler(req: Request): Promise<Response> {
           return respond(fresh, snap, fresh.version);
         }
         if (snap.seats.some((s) => s.userId === userId)) return respond(fresh, snap, fresh.version);
-        if (snap.seats.length >= 12) return json({ ok: false, error: 'full' }, 403);
+        if (snap.seats.length >= MAX_SEATS) return json({ ok: false, error: 'full' }, 403);
         const name = cleanName(body.name, defaultName);
         const used = new Set(snap.seats.map((s) => s.crest));
         const crest = CREST_COLORS.find((c) => !used.has(c)) ?? CREST_COLORS[snap.seats.length % CREST_COLORS.length];
@@ -177,7 +178,7 @@ export default async function handler(req: Request): Promise<Response> {
           if (row.host_user_id !== userId) return json({ ok: false, error: 'not_host' }, 403);
           const action = String(body.action ?? 'add');
           const size = tableSize(snap);
-          if (action === 'add' && size >= 12) return json({ ok: false, error: 'full' }, 403);
+          if (action === 'add' && size >= MAX_SEATS) return json({ ok: false, error: 'full' }, 403);
           next = { ...snap, settings: { ...snap.settings, tableSize: action === 'add' ? size + 1 : Math.max(4, snap.seats.length, size - 1) } };
         } else if (op === 'settings') {
           if (row.host_user_id !== userId) return json({ ok: false, error: 'not_host' }, 403);
@@ -185,7 +186,7 @@ export default async function handler(req: Request): Promise<Response> {
           const clamp = clampInt;
           next = { ...snap, settings: {
             ...snap.settings,
-            tableSize: clamp(incoming.tableSize, 4, 12, snap.settings.tableSize ?? 4),
+            tableSize: clamp(incoming.tableSize, 4, MAX_SEATS, snap.settings.tableSize ?? 4),
             revealStepSeconds: clamp(incoming.revealStepSeconds, 5, 120, snap.settings.revealStepSeconds ?? 20),
             gossipSeconds: clamp(incoming.gossipSeconds, 30, 600, snap.settings.gossipSeconds),
             placementSeconds: clamp(incoming.placementSeconds, 45, 600, snap.settings.placementSeconds),

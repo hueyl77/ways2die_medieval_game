@@ -124,7 +124,7 @@ function PileScene({ s, view, fast, coinLabels }: { s: Extract<Scene, { kind: 'p
   return (
     <div className="text-center">
       <h2 className="font-display text-3xl text-parchment mb-1">{s.grave ? `${owner.name}'s grave` : `In front of ${owner.name}`}</h2>
-      <p className="text-ink-2 text-sm mb-4">{s.grave ? 'Cards left on a grave have no effect.' : `${s.cards.length} cards, shuffled — nobody knows who placed what.`}</p>
+      <p className="text-ink-2 text-sm mb-4">{s.grave ? 'Cards left on a grave have no effect.' : `${s.cards.length} cards, shuffled — nobody knows who placed what.`}{s.taxed && <span className="text-blood"> The Tax Collector is here: nothing in this pile earns gold.</span>}</p>
       <div className="flex flex-wrap justify-center gap-3">
         {s.cards.map((c, idx) => (
           <motion.div key={c.id} data-reveal-card={c.id} className="relative pt-7" initial={{ rotateY: 90, opacity: 0 }} animate={{ rotateY: 0, opacity: 1 }} transition={{ delay: (fast ? 0.05 : 0.14) * idx, duration: 0.3 }}>

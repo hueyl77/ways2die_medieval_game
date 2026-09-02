@@ -6,7 +6,7 @@ import { CARDS, TRADE_INFO } from './cards.ts';
 export interface GoldDelta { trade: string; delta: number }
 export interface SceneLine { text: string; gold?: GoldDelta[] }
 export type Scene =
-  | { kind: 'pile'; pileSeat: number; grave: boolean; cards: { id: string; key: string }[]; voided: Map<string, string>; discarded: Map<string, string>; cardGold: Map<string, GoldDelta> }
+  | { kind: 'pile'; pileSeat: number; grave: boolean; cards: { id: string; key: string }[]; voided: Map<string, string>; discarded: Map<string, string>; cardGold: Map<string, GoldDelta>; taxed: boolean }
   | { kind: 'list'; title: string; lines: SceneLine[]; tone: 'blood' | 'heal' | 'gold' | 'moon' | 'parchment' }
   | { kind: 'death'; seat: number; trade: string; name: string }
   | { kind: 'hand'; seat: number; cards: string[] };
@@ -31,7 +31,7 @@ export function buildScenes(log: RoundLog, name: (seat: number) => string): Scen
   for (const e of ev) if (e.t === 'reveal') {
     const cardGold = new Map<string, GoldDelta>();
     for (const g of goldEv) if (g.cardId && g.pileSeat === e.pileSeat && g.by.startsWith('job:') && g.delta) cardGold.set(g.cardId, { trade: g.trade, delta: g.delta });
-    scenes.push({ kind: 'pile', pileSeat: e.pileSeat, grave: e.grave, cards: e.cards, voided: voidsFor(e.pileSeat), discarded: discFor(e.pileSeat), cardGold });
+    scenes.push({ kind: 'pile', pileSeat: e.pileSeat, grave: e.grave, cards: e.cards, voided: voidsFor(e.pileSeat), discarded: discFor(e.pileSeat), cardGold, taxed: ev.some((x) => x.t === 'tax' && x.pileSeat === e.pileSeat) });
   }
   const wounds: SceneLine[] = ev.filter((e) => e.t === 'wound' || e.t === 'heal' || e.t === 'poison_set').map((e) => ({ text:
     e.t === 'wound' ? `${name(e.seat)} takes ${e.amount} wound${e.amount > 1 ? 's' : ''} — ${cardName(e.cardKey)} (${e.total} total)`
@@ -45,6 +45,7 @@ export function buildScenes(log: RoundLog, name: (seat: number) => string): Scen
   for (const e of ev) {
     if (e.t === 'gold' && e.by.startsWith('job:') && !e.absorbed) { const w = wares.get(e.trade) ?? { total: 0, count: 0, each: e.delta }; w.total += e.delta; w.count += 1; wares.set(e.trade, w); continue; }
     if (e.t === 'gold' && (e.by === 'reeves-tax' || e.by === 'tithe')) continue; // shown in their own scenes
+    if (e.t === 'tax') { gold.push({ text: `Tax Collector in front of ${name(e.pileSeat)}: ${e.cards} card${e.cards === 1 ? '' : 's'} earned nothing — the crown took it` }); continue; }
     if (e.t === 'alms') { gold.push({ text: e.granted ? `Alms for the ${tradeName(e.trade)} (in front of ${name(e.pileSeat)}): among the poorest, +5 gold` : `Alms for the ${tradeName(e.trade)} (in front of ${name(e.pileSeat)}): not clearly among the two poorest — nothing` }); continue; }
     if (e.t === 'gold' && e.by === 'alms') { const last = gold[gold.length - 1]; if (last && last.text.startsWith('Alms')) { last.gold = [{ trade: e.trade, delta: e.delta }]; continue; } }
     if (e.t === 'gold') gold.push({ text: e.absorbed ? `${tradeName(e.trade)} is shielded — ${cardName(e.by)} takes nothing` : `${tradeName(e.trade)} ${e.delta > 0 ? '+' : ''}${e.delta} · ${e.by === 'wounds' ? 'wounds' : cardName(e.by)}${e.from ? ` (from ${tradeName(e.from)})` : ''}`, gold: e.delta ? [{ trade: e.trade, delta: e.delta }] : [] });

@@ -62,7 +62,7 @@ Game end: the final reveal (all envelopes open at once), scoring (wounds −1 ea
 - Create a room → 6-character join code + shareable link.
 - Join by code. Host sees the seat list; players can pick a crest color and mark ready.
 - Host settings: Townsfolk count (auto-fill to 4 seats; optional extras), gossip timer, placement timer, private/public.
-- Start requires 3–12 humans; the app fills to 4 seats with Townsfolk per the rulebook table (rounds, seasons, job cards kept, death threshold).
+- Start requires 3–8 humans; the app fills to 4 seats with Townsfolk per the rulebook table (rounds, seasons, job cards kept, death threshold).
 
 ### 6.3 Game engine (P0) — server-authoritative
 - Dealing: envelopes (trades) shuffled and dealt to seats; unused trades stay hidden; job cards trimmed to the table's count; 4 Mishaps + 1 Calamity per seat from the shared mishap deck; 3 signature cards per trade; crests for the succession.

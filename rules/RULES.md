@@ -2,7 +2,7 @@
 
 *Honest trades, unfortunate accidents.*
 
-**3–12 players · 45–75 minutes · ages 12+**
+**3–8 players · 45–75 minutes · ages 12+**
 
 A medieval village of honest tradespeople — a blacksmith, an innkeeper, a jeweler, a thief. Everyone works, everyone earns, and everyone smiles across the market square. But the neighbors keep having accidents — bees, geese, falling roof tiles, the occasional trebuchet — and nobody ever saw who arranged them. Earn more than anyone, survive the year, and never let them find out which trade is yours.
 
@@ -20,12 +20,13 @@ The game is played in rounds. Each round, every player places one card face-down
 
 ## 2. Components
 
-- **12 trade envelopes**, each containing 35 cards:
+- **12 trade envelopes**, each containing 36 cards:
   - 1 role card (role cards have a distinct back)
   - 27 job cards (that trade's wares)
   - 2 Heal cards
   - 1 Protect card
   - 1 Alms card for that trade (poor relief — see §8)
+  - 1 Tax Collector card (see §8)
   - 3 signature cards unique to the trade (see §8)
 - **The Mishap deck**: 60 Attack cards — 48 **Mishaps** (1 wound; two copies of each of 24 accidents) and 12 **Calamities** (2 wounds). See §15.
 - **Gold board** with 12 trade tracks and 12 gold markers
@@ -49,15 +50,11 @@ The twelve trades: **Blacksmith, Farmer, Thief, Innkeeper, City Guard, Carpenter
 
    | Seats | Rounds | Seasons | Job cards kept | Hand size | You die at |
    |:-:|:-:|:--|:-:|:-:|:-:|
-   | 4 | 6 | Spring · Harvest · Winter — 2 rounds each | 12 | 24 | 3 wounds |
-   | 5 | 6 | Spring · Harvest · Winter — 2 rounds each | 18 | 30 | 3 wounds |
-   | 6 | 4 | Harvest · Winter — 2 rounds each | 12 | 24 | 4 wounds |
-   | 7 | 4 | Harvest · Winter — 2 rounds each | 16 | 28 | 4 wounds |
-   | 8 | 4 | Harvest · Winter — 2 rounds each | 20 | 32 | 4 wounds |
-   | 9 | 3 | Spring · Harvest · Winter — 1 round each | 15 | 27 | 4 wounds |
-   | 10 | 3 | Spring · Harvest · Winter — 1 round each | 18 | 30 | 4 wounds |
-   | 11 | 3 | Spring · Harvest · Winter — 1 round each | 21 | 33 | 4 wounds |
-   | 12 | 3 | Spring · Harvest · Winter — 1 round each | 24 | 36 | 4 wounds |
+   | 4 | 6 | Spring · Harvest · Winter — 2 rounds each | 11 | 24 | 3 wounds |
+   | 5 | 6 | Spring · Harvest · Winter — 2 rounds each | 17 | 30 | 3 wounds |
+   | 6 | 4 | Harvest · Winter — 2 rounds each | 11 | 24 | 4 wounds |
+   | 7 | 4 | Harvest · Winter — 2 rounds each | 15 | 28 | 4 wounds |
+   | 8 | 4 | Harvest · Winter — 2 rounds each | 19 | 32 | 4 wounds |
 
 4. Shuffle all 12 envelopes and deal one to every seat, players and Townsfolk alike. **Return the rest to the box unopened** — nobody knows which trades are absent.
 5. Privately open your envelope. Memorize your role card and **return it to the envelope**; keep the envelope face-down in front of you for the whole game. Set aside job cards above your "job cards kept" number and return them to the box face-down. Take everything else into your hand. Then shuffle the Mishaps and deal four face-down to every seat, shuffle the Calamities and deal one to every seat, and return the rest to the box unseen; add yours to your hand. Prepare any Townsfolk seat as described in §10.
@@ -97,7 +94,7 @@ Resolve each flipped pile in this order:
 2. **Wounds.** Each surviving Attack card stays face-up in front of the pile's owner as a **wound**. A card that deals more than one wound (a Calamity, a Hunting Bow, a Sneak Attack, anything sharpened by a Grindstone) adds a wound token beside it for each extra wound.
 3. **Heals.** Each Heal removes one wound from the pile's owner — a token first, then a card (to the town square). Attacks and Heals in the same pile net out — a Heal can save you from a killing blow revealed alongside it. Heals beyond your wounds are wasted; you cannot bank health.
 4. **Death check.** If the owner's wounds now equal their death number, they die — finish resolving the pile, then hold the funeral (§9.1).
-5. **Gold.** Alms is judged first (see §8), on the board as it stood. Then each job card banks 1 gold to its trade's track — *no matter whose pile it was in, and no matter who placed it.* Apply any bonuses (Trestle Market; Market Fair in the Turning Year variant). Resolve signature gold effects.
+5. **Gold.** A pile visited by a Tax Collector earns nothing this round (see §8). Otherwise Alms is judged first (see §8), on the board as it stood. Then each job card banks 1 gold to its trade's track — *no matter whose pile it was in, and no matter who placed it.* Apply any bonuses (Trestle Market; Market Fair in the Turning Year variant). Resolve signature gold effects.
 6. **Words.** Truth cards (Inquest, Appraisal, Tracks in the Snow) are answered immediately, out loud, **truthfully**. This is a binding rule of the game, not a suggestion.
 7. **Pending.** Cards with "next round" effects stay face-up on the pile as reminders, then discard when spent.
 
@@ -118,13 +115,13 @@ Resolve each flipped pile in this order:
 
 ## 7. The calendar (and the optional variants)
 
-**In the standard game every round plays the same.** The seasons are names on the calendar and nothing more. The rules below are an optional variant, *The Turning Year*, for tables that want the year to escalate; when it's on, season rules apply to every round of that season. Six-round games play the full year; four-round games start at Harvest; the three-round **short year** (9 seats or more) plays one round per season.
+**In the standard game every round plays the same.** The seasons are names on the calendar and nothing more. The rules below are an optional variant, *The Turning Year*, for tables that want the year to escalate; when it's on, season rules apply to every round of that season. Six-round games (4–5 seats) play the full year; four-round games (6–8 seats) start at Harvest.
 
-| Season | Full year | Four rounds | Short year | Rule |
-|:--|:-:|:-:|:-:|:--|
-| **Spring** | 1–2 | — | 1 | No special rule. Learn faces. Tell your first lies. |
-| **Harvest** | 3–4 | 1–2 | 2 | **Market Fair:** every job card banks +1 gold. At the season's end, the **Reeve's Tax**: every track tied for richest loses 2. |
-| **Winter** | 5–6 | 3–4 | 3 | **The Hungry Winter:** each Protect voids only one Attack. |
+| Season | Full year | Four rounds | Rule |
+|:--|:-:|:-:|:--|
+| **Spring** | 1–2 | — | No special rule. Learn faces. Tell your first lies. |
+| **Harvest** | 3–4 | 1–2 | **Market Fair:** every job card banks +1 gold. At the season's end, the **Reeve's Tax**: every track tied for richest loses 2. |
+| **Winter** | 5–6 | 3–4 | **The Hungry Winter:** each Protect voids only one Attack. |
 
 **Two more optional leader rules**, also off by default, for tables that find the leader runs away: *the Reeve's tithe* — after every round each track pays 1 gold per 8 it holds (a strongboxed track pays nothing); and *the Reckoning* — at the start of the final round, every living seat holding the richest trade opens its envelope and plays the last round unmasked.
 
@@ -133,6 +130,8 @@ Resolve each flipped pile in this order:
 ## 8. The trades & their signature cards
 
 Every envelope also holds one **Alms** card: *printed for its own trade. Alms is judged first in the gold step, on the board as it stood before this round's wares: if that trade is clearly last or second-to-last among the trades still in play — ties do nothing, so at the start of the game nobody qualifies — it gains 5 gold.* Alms is the village's catch-up, and like a signature card it proves its trade is at the table.
+
+Every envelope also holds one **Tax Collector**: *the crown's man visits this pile — every coin that would be earned from the cards in it this round (wares, Alms, and gold-gaining signature cards) goes to the crown instead.* Drop it where you expect a rival's wares to land; a Protect or a Heal in the same pile still works.
 
 Every envelope holds three signature cards — the only copies in the game. Playing one is powerful, and it's also a confession: it proves your trade is at the table, though never which chair it sits in.
 

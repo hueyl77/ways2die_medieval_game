@@ -80,6 +80,7 @@ export type LogEvent =
   | { t: 'season_event'; kind: 'reeves-tax'; trades: Trade[] }
   | { t: 'reckoning'; seats: { seat: number; trade: Trade; gold: number }[] }
   | { t: 'alms'; pileSeat: number; trade: Trade; granted: boolean; rank: number }
+  | { t: 'tax'; pileSeat: number; cards: number }
   | { t: 'banner'; text: string }
   | { t: 'final_reveal'; seats: { seat: number; trade: Trade }[] }
   | { t: 'final_score'; rows: ScoreRow[]; winners: number[]; sharedBy: number[] };
@@ -124,6 +125,7 @@ export interface GameState extends Record<string, unknown> {
   absentTrades: Trade[];           // secret
   succession: number[];            // seat indexes whose crest is still in the stack
   choices: Choice[];
+  taxedPiles: number[];            // piles visited by a Tax Collector this round
   roundLog: RoundLog | null;
   logs: RoundLog[];
   nextCardId: number;

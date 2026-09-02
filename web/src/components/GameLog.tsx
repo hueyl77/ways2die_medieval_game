@@ -32,6 +32,7 @@ export function describeRound(events: LogEvent[], name: (seat: number) => string
       case 'chosen': out.push({ text: `${name(e.seat)} chose ${tradeName(e.trade)} for ${cardName(e.cardKey)}${e.auto ? ' (by default)' : ''}.`, tone: 'text-gold' }); break;
       case 'season_event': out.push({ text: `The Reeve's Tax fell on ${e.trades.length ? e.trades.map(tradeName).join(', ') : 'nobody'}.`, tone: 'text-gold' }); break;
       case 'alms': out.push({ text: e.granted ? `Alms in front of ${name(e.pileSeat)} named the ${tradeName(e.trade)} — among the poorest trades in play, so it gained 5 gold.` : `Alms in front of ${name(e.pileSeat)} named the ${tradeName(e.trade)}, but it was not clearly among the two poorest trades in play (judged before this round's gold), so nothing happened.`, tone: 'text-gold' }); break;
+      case 'tax': out.push({ text: `A Tax Collector in front of ${name(e.pileSeat)} seized everything earned there (${e.cards} card${e.cards === 1 ? '' : 's'}).`, tone: 'text-gold' }); break;
       case 'reckoning': out.push({ text: `⚖ The Reckoning: ${e.seats.map((x) => `${name(x.seat)} holds the richest trade, ${tradeName(x.trade)} (${x.gold} gold)`).join('; ')}. Their envelope is open for the final round.`, tone: 'text-blood font-bold' }); break;
       case 'banner': out.push({ text: e.text, tone: 'text-parchment' }); break;
       case 'final_reveal': out.push({ text: `The final reveal: ${e.seats.map((x) => `${name(x.seat)} — ${tradeName(x.trade)}`).join('; ')}.`, tone: 'text-gold font-bold' }); break;

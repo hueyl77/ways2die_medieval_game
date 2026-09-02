@@ -36,7 +36,7 @@ function checkInvariants(s: GameState) {
 function playGame(seatCount: number, humans: number, seed: number, verbose = false): GameState {
   const seats = Array.from({ length: seatCount }, (_, i) => ({ userId: i < humans ? `u${i}` : null, name: i < humans ? `P${i}` : `Townsfolk ${i}`, crest: `c${i}`, isTownsfolk: i >= humans }));
   const s = createGame({ id: `g${seed}`, code: `C${seed}`, hostUserId: 'u0', seats, seed, now: 0 });
-  for (const st of s.seats) { const h = handOf(s, st.index); assert(h.filter((c) => c.key.startsWith('mishap:')).length === 4 && h.filter((c) => c.key.startsWith('calamity:')).length === 1 && h.filter((c) => c.key === `alms:${st.trade}`).length === 1, 'kit is not 4 mishaps + 1 calamity + 1 alms', s); }
+  for (const st of s.seats) { const h = handOf(s, st.index); assert(h.filter((c) => c.key.startsWith('mishap:')).length === 4 && h.filter((c) => c.key.startsWith('calamity:')).length === 1 && h.filter((c) => c.key === `alms:${st.trade}`).length === 1 && h.filter((c) => c.key === 'tax-collector').length === 1, 'kit is not 4 mishaps + 1 calamity + 1 alms + 1 tax collector', s); }
   const r = { rng: seed ^ 0x9e3779b9 };
   let now = 1000; let guard = 0;
   while (s.phase !== 'ended') {
@@ -81,7 +81,7 @@ function playGame(seatCount: number, humans: number, seed: number, verbose = fal
 
 const t0 = Date.now();
 let games = 0, deaths = 0, seatsTotal = 0, noWinner = 0, attacksVoided = 0, attacksPlayed = 0;
-const sizes = [[4, 3], [4, 4], [5, 5], [6, 6], [8, 8], [9, 9], [12, 12], [4, 3], [5, 5]];
+const sizes = [[4, 3], [4, 4], [5, 5], [6, 6], [8, 8], [7, 5], [8, 4], [4, 3], [5, 5]];
 for (let n = 0; n < 60; n++) {
   const [seatCount, humans] = sizes[n % sizes.length];
   const s = playGame(seatCount, humans, seedFrom(`sim-${n}`), n < 3);
