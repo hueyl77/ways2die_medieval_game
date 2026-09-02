@@ -22,6 +22,7 @@ export const api = {
   mine: () => game('mine'),
   state: (gameId: string) => game('state', { gameId }),
   leave: (gameId: string) => game('leave', { gameId }),
+  cancel: (gameId: string) => game('cancel', { gameId }),
   lobbyReady: (gameId: string, ready: boolean) => game('ready', { gameId, ready }),
   crest: (gameId: string, crest: string) => game('crest', { gameId, crest }),
   settings: (gameId: string, settings: Partial<Settings>) => game('settings', { gameId, settings }),
@@ -32,12 +33,13 @@ export const api = {
   choose: (gameId: string, choiceId: string, trade: string) => game('choose', { gameId, choiceId, trade }),
   will: (gameId: string, heir: number) => game('will', { gameId, heir }),
   acknowledge: (gameId: string) => game('continue', { gameId }),
+  skip: (gameId: string) => game('skip', { gameId }),
   tick: (gameId: string) => game('tick', { gameId }),
 };
 
 export const ERROR_TEXT: Record<string, string> = {
   not_found: 'No room with that code.', game_started: 'That game has already started.', full: 'That room is full (12 seats).',
-  need_a_player: 'Someone has to sit down first.', not_host: 'Only the host can do that.', stale: 'The table moved on — try again.',
+  need_a_player: 'Someone has to sit down first.', not_alone: 'Only the last player at the table can cancel the game.', not_host: 'Only the host can do that.', stale: 'The table moved on — try again.',
   invalid_placement: 'Place exactly one card in front of every seat.', unauthorized: 'Please sign in again.',
 };
 export const errorText = (e: unknown) => (e instanceof ApiError ? ERROR_TEXT[e.code] ?? e.message ?? e.code : String(e));

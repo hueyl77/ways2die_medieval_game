@@ -104,13 +104,15 @@ insert into realtime.channels (pattern, description, enabled) values ('game:%','
 | `join` | `{ code, crest? }` | any user | seats the user; rejoin if already seated |
 | `leave` | `{ gameId }` | seated, lobby only | removes seat |
 | `settings` | `{ gameId, settings }` | host, lobby | update timers/townsfolk |
-| `start` | `{ gameId }` | host | validates 3–12 humans, fills Townsfolk to 4 seats, runs `createGame`, phase `gossip` |
+| `start` | `{ gameId }` | host | seats = max(table size 4–12, humans); empty seats become bots (Townsfolk); runs `createGame`, phase `gossip` |
 | `state` | `{ gameId }` | member | projection for caller |
 | `ready` | `{ gameId }` | living member | gossip ready; all ready → `placement` |
 | `place` | `{ gameId, placements: {pileSeat: cardId}, haunt?: cardId→pileSeat }` | living or ghost | validates and stores; sets `locked`; all locked → resolve |
 | `choose` | `{ gameId, choiceId, value }` | pile owner (or Crier for Townsfolk) | answers a pending choice (Strongbox track, tie-break, False Colors) |
 | `will` | `{ gameId, heirSeat }` | dead, unsealed | seals the will |
-| `continue` | `{ gameId }` | member | acknowledges the reveal; all ack (or timeout) → next round |
+| `continue` | `{ gameId }` | member | "Next" on the current reveal scene; when every human has clicked (or skipped, or the scene timer expires) the table advances one scene; after the last scene → funerals / next round |
+| `skip` | `{ gameId }` | member | skips the rest of the reveal for that player (counts as Next on every remaining scene) |
+| `bot` | `{ gameId, action: 'add' \| 'remove' }` | host, lobby | grows/shrinks the table size; empty seats become bots at start |
 | `chat` | *(not an op)* | — | realtime publish from the client |
 | `tick` | `{ gameId }` | any member | applies deadline effects (AFK auto-play, timeouts); called by clients when a deadline passes |
 
@@ -132,14 +134,14 @@ Concurrency: ops carry the client's `version`; if it doesn't match, respond `409
 Inputs: seats (`{ seatIndex, userId|null, name, isTownsfolk }`), settings, seed.
 - Seat count → calendar row (rounds, seasons, jobs kept, death threshold) from the rulebook table.
 - Shuffle the 12 trades; deal one per seat; the rest are `absent` (secret).
-- Per seat: `jobsKept` job cards of its trade, 2 heals, 1 protect, 3 signatures; from the shared mishap deck 2 Mishaps + 1 Calamity; unused mishaps → `box`.
+- Per seat: `jobsKept` job cards of its trade, 2 heals, 1 protect, 3 signatures; from the shared mishap deck 4 Mishaps + 1 Calamity; unused mishaps → `box`.
 - Townsfolk: same cards, `zone: hand`, played by `randomPlacement()` each round.
 - Succession: crest set = the human seats' crests.
 - Round 1, season per calendar, phase `gossip`.
 
 ### 5.2 Round state machine
 ```
-gossip ──(all ready | timer)──▶ placement ──(all locked | timer)──▶ resolve (server, atomic)
+placement (gossip happens here; no Ready step) ──(all locked | timer)──▶ resolve (server, atomic)
    ▲                                                                       │
    │                     ┌── funeral(s): dead seats seal wills (timer → random heir)
    └── cleanup/next ◀── reveal (clients animate; all `continue` | timer) ◀┘
@@ -157,7 +159,7 @@ Choice cards create `pendingChoices` during resolve; resolution pauses at that s
 7. **Words**: Inquest / Appraisal / Tracks in the Snow computed from the true state (Townsfolk piles: no effect); Strong Ale → `revealHand(seat, 5s)` event.
 8. **Pending**: Grindstone, Curfew, Cloak, Trestle Market, Rotten Beam, Deep Forest, Slow Poison, Palisade(next round), Snare(persistent) recorded on the pile for next round; expired ones discarded.
 9. Locked tracks (dead trades) ignore all gold changes. Townsfolk trades cannot win.
-10. Season events at rounds 2/4 (or per short year): Reeve's Tax on every track tied for richest.
+10. Season events (only when `settings.seasonRules` — the optional Turning Year variant — is on): Market Fair (+1 per wares in Harvest), Reeve's Tax at the end of Harvest, and the Hungry Winter (a Protect voids one Attack). Off by default: every round plays the same.
 
 ### 5.4 Persistence
 The engine's state is serializable JSON and is stored whole in `games.snapshot` (jsonb; ~60–150 KB for a 12-seat game) as the single source of truth, with `games.version` for optimistic concurrency (`UPDATE … WHERE version = loaded`; a lost race returns 409 and the client refetches). Round logs are appended to `rounds` and every player op to `game_events` for the playtest export. The per-card `cards`/`seats` tables in §3 were dropped from v1 in favour of this snapshot-only design; §3 below is superseded by `migrations/*_init.sql`.
@@ -176,7 +178,7 @@ Basics: `heal`, `protect`, `job:<trade>`; mishaps `mishap:<slug>` (24, 1 wound),
 - **Auth**: `AuthProvider` with `{ user, loading }`; routes `/login`, `/signup`, `/reset`; guarded routes.
 - **Lobby**: `/` create/join; `/room/:code` seat list, settings, ready, start.
 - **Table**: `/game/:id` — `useGame(id)` subscribes to `game:<id>` and refetches `state` on `state_changed`; `useChat(id)` subscribes/publishes `chat:<id>`.
-- **Animation**: `RevealPlayer` consumes `roundLog.events` sequentially with Framer Motion (pile flip → per-card effect → wound/heal/gold tweens → banner), ~0.6 s per pile at 5 seats, faster at 12 (two piles in parallel). Skippable per client; the server never waits on animation except through `continue`/timeout.
+- **Animation**: `engine/scenes.ts` turns `roundLog.events` into an ordered list of scenes (one per pile, then wounds, deaths, the ledger, truth cards, pendings, season events). The server stores the current scene index (`revealStep`) and advances it in lockstep: every human clicks Next (`continue`), or skips the rest (`skip`), or the per-scene timer (`revealStepSeconds`, default 20 s) expires. `RevealPlayer` renders the current scene with Framer Motion; "Faster" only changes the local stagger.
 - **Placement**: `dnd` via pointer events (no library), tap-select fallback; keyboard: 1–9 select card, seat letters to place.
 - **Assets**: `public/cards/<art>.webp` at 420×560; card back for face-down.
 
@@ -200,7 +202,7 @@ cd web && npm run build && npx -y @insforge/cli deployments deploy .   # env: VI
 npm run test:engine           # node: 2,000 random games, invariants + snapshot determinism
 ```
 
-Invariants checked by the simulation: hand sizes = piles × remaining rounds; every seat holds exactly 2 mishaps + 1 calamity at setup; no card duplicated across zones; gold never negative; wounds ≥ 0; dead seats never place; game always terminates; projection never contains another seat's hand or `placed_by_seat`.
+Invariants checked by the simulation: hand sizes = piles × remaining rounds; every seat holds exactly 4 mishaps + 1 calamity at setup; no card duplicated across zones; gold never negative; wounds ≥ 0; dead seats never place; game always terminates; projection never contains another seat's hand or `placed_by_seat`.
 
 ## 10. Art pipeline
 Ludo.ai batch (Western Cartoon, `card-art`, 3:4) → `art/full/*.webp` → `sips` downscale to 420 px → `web/public/cards/`. `engine/cards.ts` maps each card key to its art id; missing art falls back to a typed placeholder card.

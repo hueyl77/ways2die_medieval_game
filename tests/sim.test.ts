@@ -1,5 +1,5 @@
 // Random-play simulation: plays many games end to end and checks invariants.
-import { createGame, setReady, submitPlacement, answerChoice, acknowledge, sealWill, tick, handOf, gravePoolOf, heirOptions, projectFor, isAttack, TRADES, type GameState } from '../web/src/engine/index.ts';
+import { createGame, setReady, submitPlacement, answerChoice, acknowledge, revealSkip, sealWill, tick, handOf, gravePoolOf, heirOptions, projectFor, isAttack, convertToBot, TRADES, type GameState } from '../web/src/engine/index.ts';
 import { seedFrom, randInt, pick } from '../web/src/engine/rng.ts';
 import type { Trade } from '../web/src/engine/cards.ts';
 
@@ -13,7 +13,7 @@ function checkInvariants(s: GameState) {
   for (const t of TRADES) assert(s.gold[t] >= 0, 'negative gold ' + t, s);
   for (const st of s.seats) {
     assert(st.woundTokens >= 0, 'negative tokens', s);
-    if (st.alive && !st.isTownsfolk && s.phase === 'gossip') {
+    if (st.alive && !st.isTownsfolk && s.phase === 'placement' && !st.locked) {
       const expected = s.seatCount * (s.calendar.rounds - s.round + 1);
       assert(handOf(s, st.index).length === expected, `hand size ${handOf(s, st.index).length} != ${expected} for seat ${st.index}`, s);
     }
@@ -36,12 +36,15 @@ function checkInvariants(s: GameState) {
 function playGame(seatCount: number, humans: number, seed: number, verbose = false): GameState {
   const seats = Array.from({ length: seatCount }, (_, i) => ({ userId: i < humans ? `u${i}` : null, name: i < humans ? `P${i}` : `Townsfolk ${i}`, crest: `c${i}`, isTownsfolk: i >= humans }));
   const s = createGame({ id: `g${seed}`, code: `C${seed}`, hostUserId: 'u0', seats, seed, now: 0 });
+  for (const st of s.seats) { const h = handOf(s, st.index); assert(h.filter((c) => c.key.startsWith('mishap:')).length === 4 && h.filter((c) => c.key.startsWith('calamity:')).length === 1, 'kit is not 4 mishaps + 1 calamity', s); }
   const r = { rng: seed ^ 0x9e3779b9 };
   let now = 1000; let guard = 0;
   while (s.phase !== 'ended') {
     assert(guard++ < 5000, 'game did not terminate', s);
     now += 1000;
     checkInvariants(s);
+    // now and then a player walks away mid-game (never u0, so the game keeps a human)
+    if (randInt(r, 40) === 0) { const c = s.seats.filter((x) => x.userId && x.userId !== 'u0'); if (c.length) convertToBot(s, pick(r, c).index, now); }
     if (s.phase === 'gossip') {
       for (const st of s.seats) if (st.alive && !st.isTownsfolk && s.phase === 'gossip') setReady(s, st.index, now);
     } else if (s.phase === 'placement') {
@@ -64,7 +67,7 @@ function playGame(seatCount: number, humans: number, seed: number, verbose = fal
     } else if (s.phase === 'choice') {
       for (const ch of [...s.choices]) if (!ch.answer && s.phase === 'choice') answerChoice(s, ch.seat, ch.id, pick(r, ch.options) as Trade, now);
     } else if (s.phase === 'reveal') {
-      for (const st of s.seats) if (!st.isTownsfolk && s.phase === 'reveal') acknowledge(s, st.index, now);
+      for (const st of s.seats) if (!st.isTownsfolk && s.phase === 'reveal' && !st.ack) { if (randInt(r, 6) === 0) revealSkip(s, st.index, now); else if (randInt(r, 8) === 0) tick(s, s.phaseDeadline! + 1); else acknowledge(s, st.index, now); }
     } else if (s.phase === 'funeral') {
       for (const st of s.seats) if (!st.alive && !st.isTownsfolk && !st.willSealed && s.phase === 'funeral') { const opts = heirOptions(s, st.index); if (opts.length && randInt(r, 4)) sealWill(s, st.index, pick(r, opts), now); }
       if (s.phase === 'funeral') tick(s, s.phaseDeadline! + 1);
