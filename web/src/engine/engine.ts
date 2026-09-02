@@ -227,14 +227,12 @@ export function beginResolve(s: GameState, now: number): void {
     if (active('sig:deep-forest')) { for (const c of pile) if (c.zone === 'revealed') voidCard(s, c, 'sig:deep-forest'); continue; }
     if (curfew) for (const c of attacks()) voidCard(s, c, 'sig:curfew');
     if (active('sig:cloak-of-plain-cloth')) for (const c of attacks()) voidCard(s, c, 'sig:cloak-of-plain-cloth');
-    if (active('sig:rotten-beam')) for (const c of pile) if (c.key === 'protect' && c.zone === 'revealed') voidCard(s, c, 'sig:rotten-beam');
-    // Palisade: revealed now → this round + next; pending from last round → active now
-    const palisade = pile.some((c) => c.key === 'sig:palisade' && live(c)) || active('sig:palisade');
-    if (palisade) for (const c of attacks()) if (!def(c.key).pierce) voidCard(s, c, 'sig:palisade');
-    for (const pr of pile.filter((c) => c.key === 'protect' && c.zone === 'revealed' && live(c))) {
+    const isProtect = (c: CardInst) => c.key === 'protect' || c.key === 'sig:palisade';   // Palisade is the Carpenter's second Protect
+    if (active('sig:rotten-beam')) for (const c of pile) if (isProtect(c) && c.zone === 'revealed') voidCard(s, c, 'sig:rotten-beam');
+    for (const pr of pile.filter((c) => isProtect(c) && c.zone === 'revealed' && live(c))) {
       const targets = attacks().filter((c) => !def(c.key).pierce);
-      if (season === 'winter' && seasonal(s)) { if (targets[0]) voidCard(s, targets[0], 'protect'); }
-      else for (const c of targets) voidCard(s, c, 'protect');
+      if (season === 'winter' && seasonal(s)) { if (targets[0]) voidCard(s, targets[0], pr.key); }
+      else for (const c of targets) voidCard(s, c, pr.key);
       pr.meta.used = true;
     }
     // Snare (persistent from an earlier round) springs on the next attack revealed here
@@ -365,7 +363,7 @@ export function finishResolve(s: GameState, now: number, flags: { curfew: boolea
     }
   }
   // 9. pending: cards whose effect happens later stay on the pile
-  const PENDING: Record<string, number | null> = { 'sig:grindstone': 1, 'sig:curfew': 1, 'sig:cloak-of-plain-cloth': 1, 'sig:trestle-market': 1, 'sig:rotten-beam': 1, 'sig:deep-forest': 1, 'sig:slow-poison': 1, 'sig:palisade': 1, 'sig:snare': null };
+  const PENDING: Record<string, number | null> = { 'sig:grindstone': 1, 'sig:curfew': 1, 'sig:cloak-of-plain-cloth': 1, 'sig:trestle-market': 1, 'sig:rotten-beam': 1, 'sig:deep-forest': 1, 'sig:slow-poison': 1, 'sig:snare': null };
   for (let p = 0; p < s.seatCount; p++) {
     for (const c of revealedIn(s, p)) {
       if (!live(c) || !(c.key in PENDING)) continue;

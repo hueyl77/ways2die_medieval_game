@@ -64,8 +64,8 @@ export function useCardPreview() {
   };
 }
 
-export function CardFace({ cardKey, width = 96, selected = false, dimmed = false, voided = false, onClick, tag, className = '', preview = true }:
-  { cardKey: string; width?: number; selected?: boolean; dimmed?: boolean; voided?: boolean; onClick?: () => void; tag?: ReactNode; className?: string; preview?: boolean }) {
+export function CardFace({ cardKey, width = 96, selected = false, dimmed = false, voided = false, onClick, onPointerDown, tag, className = '', preview = true }:
+  { cardKey: string; width?: number; selected?: boolean; dimmed?: boolean; voided?: boolean; onClick?: () => void; onPointerDown?: (e: React.PointerEvent<HTMLDivElement>) => void; tag?: ReactNode; className?: string; preview?: boolean }) {
   const d = def(cardKey);
   const { anchor, hide, handlers } = useCardPreview();
   return (
@@ -73,9 +73,10 @@ export function CardFace({ cardKey, width = 96, selected = false, dimmed = false
       <motion.div
         layout whileHover={onClick ? { y: -6 } : undefined}
         onClick={() => { hide(); onClick?.(); }}
+        onPointerDown={(e) => { hide(); onPointerDown?.(e); }}
         {...(preview ? handlers : {})}
         tabIndex={preview ? 0 : undefined}
-        className={`relative select-none rounded-md shadow-card outline-none ${onClick ? 'cursor-pointer' : ''} ${selected ? 'ring-4 ring-gold' : ''} ${dimmed ? 'opacity-40' : ''} ${className}`}
+        className={`relative select-none rounded-md shadow-card outline-none ${onPointerDown ? 'touch-none cursor-grab active:cursor-grabbing' : onClick ? 'cursor-pointer' : ''} ${selected ? 'ring-4 ring-gold' : ''} ${dimmed ? 'opacity-40' : ''} ${className}`}
         style={{ width }} aria-label={`${d.name}. ${d.text}`}
       >
         <CardArt cardKey={cardKey} width={width} />

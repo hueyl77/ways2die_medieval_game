@@ -4,8 +4,8 @@ import { TRADE_INFO } from '../lib/cards';
 import { CardFace, CardBack } from './Card';
 import { Crest } from './ui';
 
-export function Table({ view, assignments, hauntTarget, onSeatClick, selectable }:
-  { view: PlayerView; assignments: Record<number, string>; hauntTarget: number | null; onSeatClick: (seat: number) => void; selectable: boolean }) {
+export function Table({ view, assignments, hauntTarget, onSeatClick, selectable, dropSeat = null }:
+  { view: PlayerView; assignments: Record<number, string>; hauntTarget: number | null; onSeatClick: (seat: number) => void; selectable: boolean; dropSeat?: number | null }) {
   const n = view.seatCount;
   const myIndex = view.me.seat ?? 0;
   const keyOf = (id: string) => view.me.hand.find((c) => c.id === id)?.key ?? view.me.gravePool.find((c) => c.id === id)?.key;
@@ -19,7 +19,7 @@ export function Table({ view, assignments, hauntTarget, onSeatClick, selectable 
         const isCrier = view.crierSeat === s.index;
         return (
           <motion.div key={s.index} layout className="absolute -translate-x-1/2 -translate-y-1/2" style={{ left: `${x}%`, top: `${y}%` }}>
-            <SeatTile seat={s} view={view} assignedKey={assigned ? keyOf(assigned) : undefined} isCrier={isCrier} hauntTarget={hauntTarget === s.index} onClick={selectable ? () => onSeatClick(s.index) : undefined} />
+            <SeatTile seat={s} view={view} assignedKey={assigned ? keyOf(assigned) : undefined} isCrier={isCrier} hauntTarget={hauntTarget === s.index} dropTarget={dropSeat === s.index} onClick={selectable ? () => onSeatClick(s.index) : undefined} />
           </motion.div>
         );
       })}
@@ -27,12 +27,12 @@ export function Table({ view, assignments, hauntTarget, onSeatClick, selectable 
   );
 }
 
-function SeatTile({ seat, view, assignedKey, isCrier, hauntTarget, onClick }:
-  { seat: SeatView; view: PlayerView; assignedKey?: string; isCrier: boolean; hauntTarget: boolean; onClick?: () => void }) {
+function SeatTile({ seat, view, assignedKey, isCrier, hauntTarget, dropTarget, onClick }:
+  { seat: SeatView; view: PlayerView; assignedKey?: string; isCrier: boolean; hauntTarget: boolean; dropTarget: boolean; onClick?: () => void }) {
   const dead = !seat.alive;
   const status = view.phase === 'gossip' ? (seat.ready ? 'ready' : '') : view.phase === 'placement' ? (seat.locked ? 'locked' : dead ? '' : 'placing') : view.phase === 'reveal' ? (seat.ack ? 'done' : 'watching') : '';
   return (
-    <div onClick={onClick} className={`w-[132px] rounded-md border p-1.5 text-center transition ${onClick ? 'cursor-pointer hover:border-gold' : ''} ${seat.isMe ? 'border-gold/70 bg-night-2' : 'border-night-3 bg-night-2/90'} ${hauntTarget ? 'ring-2 ring-moon' : ''} ${dead ? 'opacity-90' : ''}`}>
+    <div onClick={onClick} data-seat={seat.index} className={`w-[132px] rounded-md border p-1.5 text-center transition ${onClick ? 'cursor-pointer hover:border-gold' : ''} ${seat.isMe ? 'border-gold/70 bg-night-2' : 'border-night-3 bg-night-2/90'} ${hauntTarget ? 'ring-2 ring-moon' : ''} ${dropTarget ? 'ring-4 ring-gold scale-105 bg-night-3' : ''} ${dead ? 'opacity-90' : ''}`}>
       <div className="flex items-center justify-center gap-1.5">
         <Crest color={seat.crest} size={14} />
         <span className={`font-ui text-xs font-bold truncate ${seat.isMe ? 'text-gold' : ''}`}>{seat.name}</span>

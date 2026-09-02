@@ -157,7 +157,7 @@ Every envelope holds three signature cards — the only copies in the game. Play
 - **Inquest** — The pile's owner must truthfully answer: *"Did you place any Attack this round?"*
 
 **🔨 Carpenter**
-- **Palisade** — Voids all Attacks in this pile this round *and* next round, even in Winter.
+- **Palisade** — A second Protect: voids every Attack in this pile this round.
 - **Trestle Market** — Next round, every job card banks +1 *(stacks with Market Fair)*.
 - **Rotten Beam** — Next round, Protects revealed in this pile are voided.
 
@@ -182,7 +182,7 @@ Every envelope holds three signature cards — the only copies in the game. Play
 - **Tracks in the Snow** — The pile's owner must truthfully announce how many Attacks they have placed *so far this game*.
 
 **🪓 Woodsman**
-- **Felling Axe** — Attack; also discard every pending and persistent card on this pile (Palisade, Snare, Slow Poison…). Wounds and scoring cards are untouched.
+- **Felling Axe** — Attack; also discard every pending and persistent card on this pile (Snare, Slow Poison, Grindstone…). Wounds and scoring cards are untouched.
 - **Cordwood** — The Woodsman track gains 1 — or 2 during Winter.
 - **Deep Forest** — Next round, every card revealed in this pile has no effect, and job cards there bank nothing.
 

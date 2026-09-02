@@ -16,7 +16,7 @@ export function GoldBoard({ view, override, flash }: { view: PlayerView; overrid
           const hit = flash && flash.trade === t ? flash : null;
           const mine = view.me.trade === t;
           return (
-            <li key={t} className={`relative flex items-center gap-2 text-sm ${locked ? 'opacity-40 line-through' : ''}`}>
+            <li key={t} data-gold-trade={t} className={`relative flex items-center gap-2 text-sm ${locked ? 'opacity-40 line-through' : ''}`}>
               <span className="w-5 text-center">{TRADE_INFO[t].emoji}</span>
               <span className={`w-24 font-ui ${mine ? 'text-gold' : ''}`}>{TRADE_INFO[t].name}{shielded ? ' 🔒' : ''}</span>
               <div className="flex-1 h-3 bg-night-3 rounded-sm overflow-hidden">
