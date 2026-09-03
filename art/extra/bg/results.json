@@ -88,5 +88,41 @@
   "error": null,
   "url": "https://storage.googleapis.com/ludo-assets/api/99f7abceb6b7912dd90a96f79fb0e345.webp",
   "file": "extra/bg/scene-golden.webp"
+ },
+ "vista-evening": {
+  "request_id": "atwd-bg-vista-evening-v1",
+  "job_id": "b5f1b68d-8bb7-4978-95a4-9c16c935fdae",
+  "status": "succeeded",
+  "credits": 0.5,
+  "error": null,
+  "url": "https://storage.googleapis.com/ludo-assets/api/8ce955701c5d1e41d967df73a320f46a.webp",
+  "file": "extra/bg/vista-evening.webp"
+ },
+ "vista-day": {
+  "request_id": "atwd-bg-vista-day-v1",
+  "job_id": "f0c9b079-bfb2-484a-b254-132ecd9bd709",
+  "status": "succeeded",
+  "credits": 0.5,
+  "error": null,
+  "url": "https://storage.googleapis.com/ludo-assets/api/641b13b6179bc14db2791222e85047c4.webp",
+  "file": "extra/bg/vista-day.webp"
+ },
+ "vista-dawn": {
+  "request_id": "atwd-bg-vista-dawn-v1",
+  "job_id": "96d109e0-2b51-4f7c-b1ba-71044135f6fd",
+  "status": "succeeded",
+  "credits": 0.5,
+  "error": null,
+  "url": "https://storage.googleapis.com/ludo-assets/api/c7227b850c6659e2d18c1cec3a0b920f.webp",
+  "file": "extra/bg/vista-dawn.webp"
+ },
+ "vista-storybook": {
+  "request_id": "atwd-bg-vista-storybook-v1",
+  "job_id": "00f82c04-3c96-4c2b-9f80-2ac3d13c7492",
+  "status": "succeeded",
+  "credits": 0.5,
+  "error": null,
+  "url": "https://storage.googleapis.com/ludo-assets/api/5d5dc6ddea0053f5c2650d721b16a6a7.webp",
+  "file": "extra/bg/vista-storybook.webp"
  }
 }

@@ -38,9 +38,9 @@ export default function Login() {
 
   return (
     <div className="min-h-full grid place-items-center p-6 relative">
-      {/* the square at dusk, dimmed so the forms stay readable */}
-      <div className="absolute inset-0 bg-cover" style={{ backgroundImage: "url('/bg/login.jpg')", backgroundPosition: 'center 40%' }} />
-      <div className="absolute inset-0" style={{ background: 'linear-gradient(to bottom, rgba(20,22,28,.55) 0%, rgba(20,22,28,.7) 60%, rgba(20,22,28,.9) 100%)' }} />
+      {/* the town from the hills at evening, dimmed so the forms stay readable */}
+      <div className="absolute inset-0 bg-cover" style={{ backgroundImage: "url('/bg/login.jpg')", backgroundPosition: 'center 60%' }} />
+      <div className="absolute inset-0" style={{ background: 'linear-gradient(to bottom, rgba(20,22,28,.62) 0%, rgba(20,22,28,.6) 45%, rgba(20,22,28,.88) 100%)' }} />
       <div className="w-full max-w-md relative">
         <div className="text-center mb-8">
           <div className="text-4xl mb-2">💀</div>
