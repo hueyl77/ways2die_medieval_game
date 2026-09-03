@@ -78,7 +78,7 @@ export function createGame(o: { id: string; code: string; hostUserId: string; se
     for (const k of signatureKeys(seat.trade)) newCard(s, k, seat.index);
     for (let m = 0; m < 3; m++) newCard(s, mishaps.pop()!, seat.index);
     newCard(s, calamities.pop()!, seat.index);
-    if (isHuman(seat)) s.succession.push(seat.index);
+    s.succession.push(seat.index);   // every seat's crest joins the succession: a ghost may name a bot as heir
   }
   s.roundLog = { round: 1, events: [{ t: 'round_start', round: 1, season: seasonOf(s) }], complete: false };
   return s;
@@ -482,7 +482,7 @@ export function afterReveal(s: GameState, now: number): void {
 }
 
 export function heirOptions(s: GameState, seat: number): number[] {
-  return s.succession.filter((i) => i !== seat && s.seats[i].alive && isHuman(s.seats[i]));
+  return s.succession.filter((i) => i !== seat && s.seats[i].alive);
 }
 
 export function sealWill(s: GameState, seat: number, heir: number, now: number): void {
@@ -496,11 +496,10 @@ export function sealWill(s: GameState, seat: number, heir: number, now: number):
   if (deadHumans(s).every((x) => x.willSealed)) nextRoundOrEnd(s, now);
 }
 
-/** The year ends early once at most one villager is left alive (a sole survivor wins outright), or when no humans remain.
- *  In the bot-hunt test mode the year plays on after the last human dies, so the ghost can watch and haunt. */
+/** The year ends early once at most one villager is left alive: a sole survivor wins outright.
+ *  It does not end when the last human dies; ghosts still haunt and have heirs riding on the outcome. */
 export function yearIsOver(s: GameState): boolean {
-  const testMode = (s.settings.huntSeat ?? null) !== null;
-  return s.seats.filter((x) => x.alive).length <= 1 || (!testMode && livingHumans(s).length === 0);
+  return s.seats.filter((x) => x.alive).length <= 1;
 }
 
 function nextRoundOrEnd(s: GameState, now: number): void {

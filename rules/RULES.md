@@ -58,7 +58,7 @@ The eight trades: **Blacksmith, Farmer, Thief, Innkeeper, City Guard, Jeweler, A
 
 4. Shuffle all 8 envelopes and deal one to every seat, players and Townsfolk alike. **Return the rest to the box unopened**: nobody knows which trades are absent.
 5. Privately open your envelope. Memorize your role card and **return it to the envelope**; keep the envelope face-down in front of you for the whole game. Set aside job cards above your "job cards kept" number and return them to the box face-down. Take everything else into your hand. Then shuffle the Mishaps and deal three face-down to every seat, shuffle the Calamities and deal one to every seat, and return the rest to the box unseen; add yours to your hand. Prepare any Townsfolk seat as described in §10.
-6. Each player takes a crest marker. Place the **matching crest cards** face-down in a stack in the center, this is the **succession**. It is touched only when someone dies. Townsfolk take no crest.
+6. Each player takes a crest marker. Place the **matching crest cards** face-down in a stack in the center, this is the **succession**. It is touched only when someone dies. Townsfolk take a crest too, so a ghost may name one as heir.
 7. Give the Crier token to the player who most recently sold something.
 
 *Tip: hands are large. Keep yours sorted in a face-down spread, you're hiding it from the table, not from yourself.*
@@ -186,7 +186,7 @@ When you take your final wound:
 
 1. Open your envelope and reveal your role card. Your trade's track **locks** (§6).
 2. Your remaining hand is shuffled **face-down onto your seat**: this starts your **grave pool**.
-3. **Seal your will.** Take the succession stack, browse it privately, and choose the crest of one **living** player, your secret heir. Seal exactly one crest inside your envelope: choose in secret, seal in view, so the table sees one card go in without seeing its face. Return the stack to the center. Keep your envelope in front of you; it can never be changed. Your heir is not told. If no living player's crest remains, you die without a will.
+3. **Seal your will.** Take the succession stack, browse it privately, and choose the crest of one **living** seat, player or Townsfolk, your secret heir. Seal exactly one crest inside your envelope: choose in secret, seal in view, so the table sees one card go in without seeing its face. Return the stack to the center. Keep your envelope in front of you; it can never be changed. Your heir is not told. If no living player's crest remains, you die without a will.
 
 ### 9.2 The grave
 Your seat stays in the game. Every living player must still place one card on each grave every round, the grave is the village's only dump, and what people throw away there is public information. Grave piles are shuffled (by the ghost) and revealed like any other, but **their cards have no effect**. After the reveal, they join that grave's pool face-down.

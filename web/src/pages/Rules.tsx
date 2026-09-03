@@ -140,7 +140,7 @@ export default function Rules() {
         <Section id="death" eyebrow="Death & ghosts" title="The village keeps its ghosts">
           <div className="grid md:grid-cols-3 gap-4">
             <Step n={1} title="The funeral">Your envelope opens: your trade is announced and its track locks. Your remaining hand becomes your <b>grave pool</b>, and your seat stays at the table as a grave that the living must still place a card on every round.</Step>
-            <Step n={2} title="Seal your will">Secretly choose a living player as your heir. If they win the year, you rise to share it. They will never know, and each player can be someone's heir only once.</Step>
+            <Step n={2} title="Seal your will">Secretly choose a living villager, player or bot, as your heir. If they win the year, you rise to share it. They will never know, and each player can be someone's heir only once.</Step>
             <Step n={3} title="Haunt">You're a ghost now: keep talking, and each round you may slip one card from your grave pool into any living pile. The table sees which pile the grave visited, never what it sent.</Step>
           </div>
         </Section>
