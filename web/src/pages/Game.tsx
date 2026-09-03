@@ -104,7 +104,7 @@ export default function Game() {
     <div className="h-full grid grid-rows-[auto_1fr_auto] lg:grid-cols-[minmax(0,1fr)_320px] lg:grid-rows-[auto_1fr_auto] relative overflow-hidden">
       <header className="lg:col-span-2 flex flex-wrap items-center gap-x-6 gap-y-1 px-4 py-2 border-b border-night-3 bg-night-2/60">
         <div><Eyebrow>Room {view.code}</Eyebrow><div className="font-display text-lg leading-tight">{view.phase === 'ended' ? 'The year is over' : <>Round {view.round} of {view.calendar.rounds} · <span className="capitalize">{view.season}</span></>}</div></div>
-        <div className="text-sm text-ink-2 flex-1 min-w-[200px]">{PHASE_TEXT[view.phase]}</div>
+        <div className="text-sm text-ink-2 flex-1 min-w-[200px]">{isGhost && view.phase === 'placement' ? "You are a ghost: pick a card from your grave pool and a living seat to haunt, or rest quietly." : PHASE_TEXT[view.phase]}</div>
         {secondsLeft !== null && view.phase !== 'ended' && <div className={`font-ui tabular-nums text-xl ${secondsLeft <= 10 ? 'text-blood' : 'text-gold'}`}>{Math.floor(secondsLeft / 60)}:{String(secondsLeft % 60).padStart(2, '0')}</div>}
         {myTrade && <div className="text-sm">{isGhost ? '👻 You are a ghost' : <>You are the <span className="text-gold font-bold">{TRADE_INFO[myTrade].emoji} {TRADE_INFO[myTrade].name}</span> <span className="text-ink-2">(keep it secret)</span></>}</div>}
         <Button variant="ghost" onClick={() => window.open('/rules', '_blank', 'noopener')} title="Open the rules in a new window">📜 Rules</Button>

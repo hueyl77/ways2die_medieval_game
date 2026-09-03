@@ -31,9 +31,13 @@ export default function Room() {
   const cal = calendarPreview(seatsTotal);
 
   return (
-    <div className="min-h-full max-w-3xl mx-auto p-6">
+    <div className="min-h-full relative">
+      {/* the square at evening: a different view from the login page and the table */}
+      <div className="absolute inset-0 bg-cover" style={{ backgroundImage: "url('/bg/lobby.jpg')", backgroundPosition: 'center 35%' }} />
+      <div className="absolute inset-0" style={{ background: 'linear-gradient(to bottom, rgba(20,22,28,.6) 0%, rgba(20,22,28,.72) 55%, rgba(20,22,28,.9) 100%)' }} />
+      <div className="relative max-w-3xl mx-auto p-6">
       <header className="flex items-center justify-between mb-6">
-        <div><Eyebrow>Room code</Eyebrow><h1 className="font-display text-4xl tracking-[0.3em]">{view.code}</h1></div>
+        <div><Eyebrow className="text-parchment/75">Room code</Eyebrow><h1 className="font-display text-4xl tracking-[0.3em]">{view.code}</h1></div>
         <div className="flex gap-2">
           <Button variant="ghost" onClick={() => window.open('/rules', '_blank', 'noopener')} title="Open the rules in a new window">📜 Rules</Button>
           <Button variant="ghost" onClick={() => navigator.clipboard.writeText(`${window.location.origin}/room/${view.code}`)}>Copy invite link</Button>
@@ -88,6 +92,7 @@ export default function Room() {
           </Panel>
         </div>
       </div>
+    </div>
     </div>
   );
 }
