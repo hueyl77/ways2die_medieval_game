@@ -21,9 +21,13 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-full max-w-3xl mx-auto p-6">
+    <div className="min-h-full relative">
+      {/* the village square in evening light: its own scene, distinct from the login, room and table art */}
+      <div className="absolute inset-0 bg-cover" style={{ backgroundImage: "url('/bg/home.jpg')", backgroundPosition: 'center 40%' }} />
+      <div className="absolute inset-0" style={{ background: 'linear-gradient(to bottom, rgba(20,22,28,.6) 0%, rgba(20,22,28,.72) 55%, rgba(20,22,28,.9) 100%)' }} />
+      <div className="relative max-w-3xl mx-auto p-6">
       <header className="flex items-center justify-between mb-8">
-        <div><Eyebrow>The village square</Eyebrow><h1 className="font-display text-3xl">Welcome, {displayName}</h1>{user?.guest && <p className="text-xs text-ink-2 font-ui mt-1">Playing as a guest. Your tables are remembered on this device only.</p>}</div>
+        <div><Eyebrow className="text-parchment/75">The village square</Eyebrow><h1 className="font-display text-3xl">Welcome, {displayName}</h1>{user?.guest && <p className="text-xs text-parchment/75 font-ui mt-1">Playing as a guest. Your tables are remembered on this device only.</p>}</div>
         <div className="flex gap-2"><Button variant="ghost" onClick={() => window.open('/rules', '_blank', 'noopener')}>📜 Rules</Button><Button variant="ghost" onClick={() => void signOut()}>{user?.guest ? 'Leave' : 'Sign out'}</Button></div>
       </header>
       <div className="grid md:grid-cols-2 gap-4">
@@ -51,6 +55,7 @@ export default function Home() {
           </ul>
         </Panel>
       )}
+    </div>
     </div>
   );
 }
