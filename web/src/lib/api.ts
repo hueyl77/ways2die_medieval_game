@@ -1,14 +1,16 @@
 import { insforge } from './insforge';
+import { getGuest, type Guest } from './guest';
 import type { PlayerView, Settings } from '../engine/types.ts';
 
-export interface ApiOk { ok: true; state: PlayerView | null; games?: GameSummary[] }
+export interface ApiOk { ok: true; state: PlayerView | null; games?: GameSummary[]; guest?: Guest }
 export interface ApiErr { ok: false; error: string; message?: string }
 export interface GameSummary { id: string; code: string; status: string; phase: string; round: number; seat: number; updated_at: string }
 
 export class ApiError extends Error { code: string; constructor(code: string, message?: string) { super(message ?? code); this.code = code; } }
 
 export async function game(op: string, args: Record<string, unknown> = {}): Promise<ApiOk> {
-  const { data, error } = await insforge.functions.invoke('game', { body: { op, ...args } });
+  const guest = getGuest();   // guests carry their signed token in the body; signed-in users are known from their bearer token
+  const { data, error } = await insforge.functions.invoke('game', { body: { op, ...args, ...(guest ? { guest: guest.token } : {}) } });
   if (error) throw new ApiError((error as { message?: string }).message ?? 'network', (error as { message?: string }).message);
   const res = data as ApiOk | ApiErr;
   if (!res || !('ok' in res)) throw new ApiError('bad_response');
@@ -17,6 +19,7 @@ export async function game(op: string, args: Record<string, unknown> = {}): Prom
 }
 
 export const api = {
+  guest: (name: string) => game('guest', { name }),
   create: (name: string, settings?: Partial<Settings>) => game('create', { name, settings }),
   join: (code: string, name: string) => game('join', { code, name }),
   mine: () => game('mine'),

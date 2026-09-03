@@ -5,7 +5,7 @@ import { api, errorText, type GameSummary } from '../lib/api';
 import { Button, Input, Panel, Eyebrow } from '../components/ui';
 
 export default function Home() {
-  const { displayName, signOut } = useAuth();
+  const { displayName, signOut, user } = useAuth();
   const nav = useNavigate();
   const [code, setCode] = useState(''); const [err, setErr] = useState<string | null>(null); const [busy, setBusy] = useState(false);
   const [mine, setMine] = useState<GameSummary[]>([]);
@@ -23,8 +23,8 @@ export default function Home() {
   return (
     <div className="min-h-full max-w-3xl mx-auto p-6">
       <header className="flex items-center justify-between mb-8">
-        <div><Eyebrow>The village square</Eyebrow><h1 className="font-display text-3xl">Welcome, {displayName}</h1></div>
-        <div className="flex gap-2"><Button variant="ghost" onClick={() => window.open('/rules', '_blank', 'noopener')}>📜 Rules</Button><Button variant="ghost" onClick={() => void signOut()}>Sign out</Button></div>
+        <div><Eyebrow>The village square</Eyebrow><h1 className="font-display text-3xl">Welcome, {displayName}</h1>{user?.guest && <p className="text-xs text-ink-2 font-ui mt-1">Playing as a guest. Your tables are remembered on this device only.</p>}</div>
+        <div className="flex gap-2"><Button variant="ghost" onClick={() => window.open('/rules', '_blank', 'noopener')}>📜 Rules</Button><Button variant="ghost" onClick={() => void signOut()}>{user?.guest ? 'Leave' : 'Sign out'}</Button></div>
       </header>
       <div className="grid md:grid-cols-2 gap-4">
         <Panel title="Open a table">
