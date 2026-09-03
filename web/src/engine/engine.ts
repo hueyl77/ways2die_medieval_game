@@ -5,8 +5,7 @@ import type { GameState, Seat, CardInst, Settings, Calendar, Season, LogEvent, S
 
 export const DEFAULT_SETTINGS: Settings = {
   gossipSeconds: 120, placementSeconds: 150, choiceSeconds: 30, revealSeconds: 45, revealStepSeconds: 20,
-  funeralSeconds: 60, extraTownsfolk: 0, tableSize: 4, seasonRules: false, leaderRules: false, revealPlacementsAtEnd: false,
-};
+  funeralSeconds: 60, extraTownsfolk: 0, tableSize: 4, seasonRules: false, leaderRules: false, revealPlacementsAtEnd: false, huntSeat: null };
 /** Season rules are an optional variant; off, every round plays the same and the seasons are just names on the calendar. */
 const seasonal = (s: GameState) => !!s.settings.seasonRules;
 const stepMs = (s: GameState) => (s.settings.revealStepSeconds ?? 20) * 1000;
@@ -141,7 +140,14 @@ export function autoPlace(s: GameState, seat: number): void {
   const st = s.seats[seat];
   if (!st.alive || st.locked) return;
   const hand = shuffle(s, handOf(s, seat));
-  for (let p = 0; p < s.seatCount; p++) placeCard(s, hand[p], seat, p);
+  // Test mode: a bot with an attack in hand always drops its heaviest one in front of the hunted seat
+  const hunt = s.settings.huntSeat ?? null;
+  const placed = new Set<number>();
+  if (hunt !== null && hunt !== seat && st.isTownsfolk && s.seats[hunt]?.alive) {
+    const attacks = hand.filter((c) => isAttack(c.key)).sort((a, b) => (def(b.key).wounds ?? 0) - (def(a.key).wounds ?? 0));
+    if (attacks.length) { const pick = attacks[0]; hand.splice(hand.indexOf(pick), 1); placeCard(s, pick, seat, hunt); placed.add(hunt); }
+  }
+  for (let p = 0; p < s.seatCount; p++) if (!placed.has(p)) placeCard(s, hand.shift()!, seat, p);
   st.locked = true;
 }
 /** Trades held by living seats (what "still in play" means for Alms), lowest gold first. */
@@ -490,9 +496,11 @@ export function sealWill(s: GameState, seat: number, heir: number, now: number):
   if (deadHumans(s).every((x) => x.willSealed)) nextRoundOrEnd(s, now);
 }
 
-/** The year ends early once at most one villager is left alive (a sole survivor wins outright), or when no humans remain. */
+/** The year ends early once at most one villager is left alive (a sole survivor wins outright), or when no humans remain.
+ *  In the bot-hunt test mode the year plays on after the last human dies, so the ghost can watch and haunt. */
 export function yearIsOver(s: GameState): boolean {
-  return s.seats.filter((x) => x.alive).length <= 1 || livingHumans(s).length === 0;
+  const testMode = (s.settings.huntSeat ?? null) !== null;
+  return s.seats.filter((x) => x.alive).length <= 1 || (!testMode && livingHumans(s).length === 0);
 }
 
 function nextRoundOrEnd(s: GameState, now: number): void {

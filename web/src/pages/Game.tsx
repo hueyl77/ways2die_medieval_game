@@ -18,8 +18,8 @@ import { Button, Eyebrow } from '../components/ui';
 import { TRADE_INFO, def } from '../lib/cards';
 
 const PHASE_TEXT: Record<string, string> = {
-  gossip: 'Gossip — accuse, deny, lie. Click Ready when you are done talking.',
-  placement: 'Placement — talk it over, then put exactly one card in front of every seat, including yourself.',
+  gossip: 'Gossip: accuse, deny, lie. Click Ready when you are done talking.',
+  placement: 'Placement: talk it over, then put exactly one card in front of every seat, including yourself.',
   choice: 'A choice is being made…',
   reveal: 'The reveal.',
   funeral: 'A funeral. The dead are sealing their wills.',
@@ -116,7 +116,7 @@ export default function Game() {
       <main className="relative min-h-0 min-w-0 p-2">
         {reckoning && reckoning.t === 'reckoning' && view.phase !== 'reveal' && view.phase !== 'ended' && (
           <div className="absolute top-2 inset-x-2 z-10 mx-auto max-w-2xl bg-blood-deep/90 border border-blood rounded-md px-4 py-2 text-center text-sm shadow-card">
-            <span className="font-display text-base">⚖ The Reckoning.</span> {reckoning.seats.map((x) => `${view.seats[x.seat].name} holds the richest trade — ${TRADE_INFO[x.trade].name} (${x.gold} gold)`).join('; ')}. The envelope is open for the final round.
+            <span className="font-display text-base">⚖ The Reckoning.</span> {reckoning.seats.map((x) => `${view.seats[x.seat].name} holds the richest trade: ${TRADE_INFO[x.trade].name} (${x.gold} gold)`).join('; ')}. The envelope is open for the final round.
           </div>
         )}
         <Table view={view} assignments={effective} hauntTarget={haunt?.pileSeat ?? null} onSeatClick={onSeatClick} selectable={view.phase === 'placement' && !locked} dropSeat={dnd.hoverSeat} focusSeat={focusSeat} />
@@ -155,7 +155,7 @@ export default function Game() {
             {!locked && <Button variant="ghost" disabled={busy} onClick={() => void act(() => api.place(view.id, {}, null))}>Rest quietly</Button>}
             <span className="text-sm text-moon">{haunt ? `Haunting ${view.seats[haunt.pileSeat].name} with ${def(view.me.gravePool.find((c) => c.id === haunt.cardId)!.key).name}` : 'Pick a card from your grave pool, then a living seat.'}</span>
           </>)}
-          {view.phase === 'reveal' && <span className="text-sm text-ink-2">The reveal — scene {Math.min(view.revealStep + 1, view.revealSteps)} of {view.revealSteps}. The table moves on when everyone has clicked Next.</span>}
+          {view.phase === 'reveal' && <span className="text-sm text-ink-2">The reveal: scene {Math.min(view.revealStep + 1, view.revealSteps)} of {view.revealSteps}. The table moves on when everyone has clicked Next.</span>}
           {view.phase === 'choice' && <span className="text-sm text-ink-2">{view.me.choices.length ? 'Your choice is needed.' : 'Waiting for a choice…'}</span>}
           {view.phase === 'funeral' && <span className="text-sm text-ink-2">{isGhost && !me?.willSealed ? 'Seal your will.' : 'The dead are sealing their wills…'}</span>}
           {error && <span className="text-sm text-blood ml-auto">{error}</span>}
