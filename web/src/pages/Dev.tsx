@@ -76,6 +76,10 @@ export default function Dev() {
   const isGhost = view.me.isGhost;
   const now = Date.now();
   const showReveal = view.phase === 'reveal' && !!view.roundLog?.complete;
+  // deaths the reveal has not reached yet: keep their envelopes shut, their tracks open and the ghost label off until then
+  const pendingDeaths = showReveal && woundAnim ? view.seats.filter((x) => !x.alive && woundAnim.alive[x.index]) : [];
+  const unlockTrades = pendingDeaths.map((x) => x.revealedTrade).filter((t): t is NonNullable<typeof t> => !!t);
+  const ghostShown = isGhost && !pendingDeaths.some((x) => x.index === view.me.seat);
   const secondsLeft = view.phaseDeadline ? Math.max(0, Math.ceil((view.phaseDeadline - Date.now()) / 1000)) : null;
   const allAssigned = view.seats.every((x) => assignments[x.index]);
 
@@ -94,7 +98,7 @@ export default function Dev() {
     <div className="h-full grid grid-rows-[auto_1fr_auto] lg:grid-cols-[minmax(0,1fr)_320px] relative overflow-hidden">
       <header className="lg:col-span-2 flex flex-wrap items-center gap-4 px-4 py-2 border-b border-night-3 bg-night-2/60">
         <div><Eyebrow>{CLEAN ? 'A Million Ways to Die in Medieval' : 'Dev harness'}</Eyebrow><div className="font-display text-lg">{view.phase === 'ended' ? 'The year is over' : <>Round {view.round}/{view.calendar.rounds} · <span className="capitalize">{view.season}</span> · {view.phase}</>}</div></div>
-        <div className="text-sm">{isGhost ? '👻 ghost' : view.me.trade && <>You are the <span className="text-gold">{TRADE_INFO[view.me.trade].emoji} {TRADE_INFO[view.me.trade].name}</span></>}</div>
+        <div className="text-sm">{ghostShown ? '👻 ghost' : view.me.trade && <>You are the <span className="text-gold">{TRADE_INFO[view.me.trade].emoji} {TRADE_INFO[view.me.trade].name}</span></>}</div>
         {!CLEAN && <div className="ml-auto flex gap-2">
           <Button variant="ghost" onClick={() => { stateRef.current = makeGame(5); setAssignments({}); bump(); }}>New 5-seat game</Button>
           <Button variant="ghost" onClick={() => { stateRef.current = makeGame(8); setAssignments({}); bump(); }}>New 8-seat game</Button>
@@ -110,7 +114,7 @@ export default function Dev() {
         {view.phase === 'funeral' && isGhost && !me.willSealed && view.succession.length > 0 && <FuneralModal view={view} busy={false} onSeal={(h) => { sealWill(stateRef.current, me.index, h, now); settle(); }} />}
         {view.phase === 'ended' && <EndScreen view={view} onHome={() => { stateRef.current = makeGame(5); bump(); }} />}
       </main>
-      <aside className="hidden lg:flex flex-col gap-4 p-3 border-l border-night-3 bg-night-2/40 min-h-0 row-span-2"><GoldBoard view={view} override={showReveal ? goldAnim?.gold ?? null : null} flash={showReveal ? goldAnim?.flash ?? null : null} /><Calendar view={view} /><div className="flex-1 min-h-0 flex flex-col"><div className="font-ui text-[11px] tracking-[0.2em] uppercase text-gold">Log</div><GameLog view={view} /></div></aside>
+      <aside className="hidden lg:flex flex-col gap-4 p-3 border-l border-night-3 bg-night-2/40 min-h-0 row-span-2"><GoldBoard view={view} override={showReveal ? goldAnim?.gold ?? null : null} unlock={unlockTrades} flash={showReveal ? goldAnim?.flash ?? null : null} /><Calendar view={view} /><div className="flex-1 min-h-0 flex flex-col"><div className="font-ui text-[11px] tracking-[0.2em] uppercase text-gold">Log</div><GameLog view={view} /></div></aside>
       <footer className="min-w-0 border-t border-night-3 bg-night-2/60 px-3 py-2">
         <div className="flex items-center gap-3 flex-wrap mb-1">
           {view.phase === 'gossip' && me.alive && <Button onClick={() => { setReady(stateRef.current, me.index, now); settle(); }}>Ready</Button>}

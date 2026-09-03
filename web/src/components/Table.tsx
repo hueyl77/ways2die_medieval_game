@@ -40,6 +40,7 @@ function SeatTile({ seat, view, assignedKey, isCrier, hauntTarget, dropTarget, f
   const wounds = anim ? (anim.wounds[seat.index] ?? seat.wounds) : seat.wounds;
   const flash = anim?.flash && anim.flash.seat === seat.index ? anim.flash : null;
   const dead = !alive;
+  const shownTrade = anim && alive && !seat.alive ? null : seat.revealedTrade;   // the envelope stays shut until the death scene
   const status = view.phase === 'gossip' ? (seat.ready ? 'ready' : '') : view.phase === 'placement' ? (seat.locked ? 'locked' : dead ? '' : 'placing') : view.phase === 'reveal' ? (seat.ack ? 'done' : 'watching') : '';
   return (
     <div onClick={onClick} data-seat={seat.index} className={`relative w-[132px] rounded-md border p-1.5 text-center transition ${onClick ? 'cursor-pointer hover:border-gold' : ''} ${seat.isMe ? 'border-gold/70 bg-night-2' : 'border-night-3 bg-night-2/90'} ${hauntTarget ? 'ring-2 ring-moon' : ''} ${focus ? 'ring-4 ring-gold scale-110 shadow-[0_0_36px_rgba(216,168,79,.55)] bg-night-2' : ''} ${dropTarget ? 'ring-4 ring-gold scale-105 bg-night-3' : ''} ${dead ? 'opacity-90' : ''}`}>
@@ -49,7 +50,7 @@ function SeatTile({ seat, view, assignedKey, isCrier, hauntTarget, dropTarget, f
         {isCrier && <span title="Crier" className="text-[10px]">📯</span>}
       </div>
       <div className="text-[10px] font-ui uppercase tracking-wider text-ink-2 h-3">
-        {dead ? `☠ ${seat.revealedTrade ? TRADE_INFO[seat.revealedTrade].name : 'dead'}` : seat.revealedTrade ? <span className="text-gold">👑 {TRADE_INFO[seat.revealedTrade].name}</span> : status}
+        {dead ? `☠ ${shownTrade ? TRADE_INFO[shownTrade].name : 'dead'}` : shownTrade ? <span className="text-gold">👑 {TRADE_INFO[shownTrade].name}</span> : status}
       </div>
       <div className="mt-1 flex items-center justify-center gap-1 h-[74px]">
         {dead ? (

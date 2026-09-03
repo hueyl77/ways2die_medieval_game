@@ -94,6 +94,10 @@ export default function Game() {
   if (meSeat === null) return <div className="p-6">You are not at this table. <Button variant="ghost" onClick={() => nav('/')}>Home</Button></div>;
 
   const showReveal = view.phase === 'reveal' && !!view.roundLog?.complete;
+  // deaths the reveal has not reached yet: keep their envelopes shut, their tracks open and the ghost label off until then
+  const pendingDeaths = showReveal && woundAnim ? view.seats.filter((x) => !x.alive && woundAnim.alive[x.index]) : [];
+  const unlockTrades = pendingDeaths.map((x) => x.revealedTrade).filter((t): t is NonNullable<typeof t> => !!t);
+  const ghostShown = isGhost && !pendingDeaths.some((x) => x.index === view.me.seat);
   const humansAtTable = view.seats.filter((s) => s.userId).length;
   const reckoning = view.roundLog?.events.find((e) => e.t === 'reckoning');
   const myTrade = view.me.trade;
@@ -107,7 +111,7 @@ export default function Game() {
         <div><Eyebrow>Room {view.code}</Eyebrow><div className="font-display text-lg leading-tight">{view.phase === 'ended' ? 'The year is over' : <>Round {view.round} of {view.calendar.rounds} · <span className="capitalize">{view.season}</span></>}</div></div>
         <div className="text-sm text-ink-2 flex-1 min-w-[200px]">{isGhost && view.phase === 'placement' ? "You are a ghost: pick a card from your grave pool and a living seat to haunt, or rest quietly." : PHASE_TEXT[view.phase]}</div>
         {secondsLeft !== null && view.phase !== 'ended' && <div className={`font-ui tabular-nums text-xl ${secondsLeft <= 10 ? 'text-blood' : 'text-gold'}`}>{Math.floor(secondsLeft / 60)}:{String(secondsLeft % 60).padStart(2, '0')}</div>}
-        {myTrade && <div className="text-sm">{isGhost ? '👻 You are a ghost' : <>You are the <span className="text-gold font-bold">{TRADE_INFO[myTrade].emoji} {TRADE_INFO[myTrade].name}</span> <span className="text-ink-2">(keep it secret)</span></>}</div>}
+        {myTrade && <div className="text-sm">{ghostShown ? '👻 You are a ghost' : <>You are the <span className="text-gold font-bold">{TRADE_INFO[myTrade].emoji} {TRADE_INFO[myTrade].name}</span> <span className="text-ink-2">(keep it secret)</span></>}</div>}
         <Button variant="ghost" onClick={() => window.open('/rules', '_blank', 'noopener')} title="Open the rules in a new window">📜 Rules</Button>
         {view.status === 'finished' ? <Button variant="ghost" onClick={() => nav('/')}>Back to the square</Button>
           : humansAtTable <= 1 ? <Button variant="danger" disabled={busy} onClick={() => { if (window.confirm('Cancel this game? It will be removed from your saved tables.')) void act(() => api.cancel(view.id)).then(() => nav('/')); }}>Cancel game</Button>
@@ -129,7 +133,7 @@ export default function Game() {
       </main>
 
       <aside className="hidden lg:flex flex-col gap-4 p-3 border-l border-night-3 bg-night-2/40 min-h-0 row-span-2">
-        <GoldBoard view={view} override={showReveal ? goldAnim?.gold ?? null : null} flash={showReveal ? goldAnim?.flash ?? null : null} />
+        <GoldBoard view={view} override={showReveal ? goldAnim?.gold ?? null : null} unlock={unlockTrades} flash={showReveal ? goldAnim?.flash ?? null : null} />
         <Calendar view={view} />
         <div className="flex-1 min-h-0 flex flex-col">
           <div className="flex gap-1 font-ui text-[11px] tracking-[0.2em] uppercase">
