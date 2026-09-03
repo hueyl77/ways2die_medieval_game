@@ -4,7 +4,7 @@ import type { PlayerView } from '../engine/types.ts';
 import { Eyebrow } from './ui';
 
 export interface GoldFlash { trade: string; delta: number; id: number }
-export function GoldBoard({ view, override, flash }: { view: PlayerView; override?: Record<string, number> | null; flash?: GoldFlash | null }) {
+export function GoldBoard({ view, override, flash, unlock = [] }: { view: PlayerView; override?: Record<string, number> | null; flash?: GoldFlash | null; unlock?: string[] }) {
   const gold = override ?? view.gold;
   const max = Math.max(6, ...Object.values(view.gold), ...Object.values(gold));
   return (
@@ -12,7 +12,7 @@ export function GoldBoard({ view, override, flash }: { view: PlayerView; overrid
       <Eyebrow>Gold board</Eyebrow>
       <ul className="mt-2 space-y-1">
         {ACTIVE_TRADES.map((t) => {
-          const g = gold[t] ?? 0; const locked = view.lockedTrades.includes(t); const shielded = view.shieldedTrades.includes(t);
+          const g = gold[t] ?? 0; const locked = view.lockedTrades.includes(t) && !unlock.includes(t); const shielded = view.shieldedTrades.includes(t);
           const hit = flash && flash.trade === t ? flash : null;
           const mine = view.me.trade === t;
           return (

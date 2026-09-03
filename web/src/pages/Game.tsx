@@ -11,7 +11,7 @@ import { Table } from '../components/Table';
 import { Hand } from '../components/Hand';
 import { GoldBoard, Calendar } from '../components/GoldBoard';
 import { Chat } from '../components/Chat';
-import { RevealPlayer, type GoldAnim } from '../components/RevealPlayer';
+import { RevealPlayer, type GoldAnim, type WoundAnim } from '../components/RevealPlayer';
 import { GameLog } from '../components/GameLog';
 import { ChoiceModal, FuneralModal, EndScreen } from '../components/Modals';
 import { Button, Eyebrow } from '../components/ui';
@@ -42,6 +42,7 @@ export default function Game() {
   const [focusSeat, setFocusSeat] = useState<number | null>(null);   // whose pile the reveal is showing
   const [seenLogs, setSeenLogs] = useState(0);
   const [goldAnim, setGoldAnim] = useState<GoldAnim | null>(null);
+  const [woundAnim, setWoundAnim] = useState<WoundAnim | null>(null);   // the reveal's running wound counts per seat
   const [tab, setTab] = useState<'gossip' | 'log'>('gossip');
 
   useEffect(() => { if (view?.phase !== 'placement') { setAssignments({}); setSelected(null); setHaunt(null); } }, [view?.phase, view?.round]);
@@ -93,6 +94,10 @@ export default function Game() {
   if (meSeat === null) return <div className="p-6">You are not at this table. <Button variant="ghost" onClick={() => nav('/')}>Home</Button></div>;
 
   const showReveal = view.phase === 'reveal' && !!view.roundLog?.complete;
+  // deaths the reveal has not reached yet: keep their envelopes shut, their tracks open and the ghost label off until then
+  const pendingDeaths = showReveal && woundAnim ? view.seats.filter((x) => !x.alive && woundAnim.alive[x.index]) : [];
+  const unlockTrades = pendingDeaths.map((x) => x.revealedTrade).filter((t): t is NonNullable<typeof t> => !!t);
+  const ghostShown = isGhost && !pendingDeaths.some((x) => x.index === view.me.seat);
   const humansAtTable = view.seats.filter((s) => s.userId).length;
   const reckoning = view.roundLog?.events.find((e) => e.t === 'reckoning');
   const myTrade = view.me.trade;
@@ -106,7 +111,7 @@ export default function Game() {
         <div><Eyebrow>Room {view.code}</Eyebrow><div className="font-display text-lg leading-tight">{view.phase === 'ended' ? 'The year is over' : <>Round {view.round} of {view.calendar.rounds} · <span className="capitalize">{view.season}</span></>}</div></div>
         <div className="text-sm text-ink-2 flex-1 min-w-[200px]">{isGhost && view.phase === 'placement' ? "You are a ghost: pick a card from your grave pool and a living seat to haunt, or rest quietly." : PHASE_TEXT[view.phase]}</div>
         {secondsLeft !== null && view.phase !== 'ended' && <div className={`font-ui tabular-nums text-xl ${secondsLeft <= 10 ? 'text-blood' : 'text-gold'}`}>{Math.floor(secondsLeft / 60)}:{String(secondsLeft % 60).padStart(2, '0')}</div>}
-        {myTrade && <div className="text-sm">{isGhost ? '👻 You are a ghost' : <>You are the <span className="text-gold font-bold">{TRADE_INFO[myTrade].emoji} {TRADE_INFO[myTrade].name}</span> <span className="text-ink-2">(keep it secret)</span></>}</div>}
+        {myTrade && <div className="text-sm">{ghostShown ? '👻 You are a ghost' : <>You are the <span className="text-gold font-bold">{TRADE_INFO[myTrade].emoji} {TRADE_INFO[myTrade].name}</span> <span className="text-ink-2">(keep it secret)</span></>}</div>}
         <Button variant="ghost" onClick={() => window.open('/rules', '_blank', 'noopener')} title="Open the rules in a new window">📜 Rules</Button>
         {view.status === 'finished' ? <Button variant="ghost" onClick={() => nav('/')}>Back to the square</Button>
           : humansAtTable <= 1 ? <Button variant="danger" disabled={busy} onClick={() => { if (window.confirm('Cancel this game? It will be removed from your saved tables.')) void act(() => api.cancel(view.id)).then(() => nav('/')); }}>Cancel game</Button>
@@ -119,16 +124,16 @@ export default function Game() {
             <span className="font-display text-base">⚖ The Reckoning.</span> {reckoning.seats.map((x) => `${view.seats[x.seat].name} holds the richest trade: ${TRADE_INFO[x.trade].name} (${x.gold} gold)`).join('; ')}. The envelope is open for the final round.
           </div>
         )}
-        <Table view={view} assignments={effective} hauntTarget={haunt?.pileSeat ?? null} onSeatClick={onSeatClick} selectable={view.phase === 'placement' && !locked} dropSeat={dnd.hoverSeat} focusSeat={focusSeat} />
+        <Table view={view} assignments={effective} hauntTarget={haunt?.pileSeat ?? null} onSeatClick={onSeatClick} selectable={view.phase === 'placement' && !locked} dropSeat={dnd.hoverSeat} focusSeat={focusSeat} woundAnim={showReveal ? woundAnim : null} />
         {dnd.drag && createPortal(<div className="fixed z-[95] pointer-events-none" style={{ left: dnd.drag.x - 55, top: dnd.drag.y - 75, transform: 'rotate(-4deg)' }}><CardArt cardKey={(view.me.hand.find((c) => c.id === dnd.drag!.cardId) ?? view.me.gravePool.find((c) => c.id === dnd.drag!.cardId))?.key ?? 'protect'} width={110} /></div>, document.body)}
-        {showReveal && view.roundLog && <RevealPlayer log={view.roundLog} view={view} onFocusSeat={setFocusSeat} secondsLeft={secondsLeft} busy={busy} onNext={() => void act(() => api.acknowledge(view.id))} onSkip={() => void act(() => api.skip(view.id))} onGold={setGoldAnim} />}
+        {showReveal && view.roundLog && <RevealPlayer log={view.roundLog} view={view} onFocusSeat={setFocusSeat} onWounds={setWoundAnim} secondsLeft={secondsLeft} busy={busy} onNext={() => void act(() => api.acknowledge(view.id))} onSkip={() => void act(() => api.skip(view.id))} onGold={setGoldAnim} />}
         {view.phase === 'choice' && view.me.choices.length > 0 && <ChoiceModal view={view} busy={busy} onChoose={(cid, t) => void act(() => api.choose(view.id, cid, t))} />}
         {view.phase === 'funeral' && isGhost && !me?.willSealed && view.succession.length > 0 && <FuneralModal view={view} busy={busy} onSeal={(h) => void act(() => api.will(view.id, h))} />}
         {view.phase === 'ended' && <EndScreen view={view} onHome={() => nav('/')} />}
       </main>
 
       <aside className="hidden lg:flex flex-col gap-4 p-3 border-l border-night-3 bg-night-2/40 min-h-0 row-span-2">
-        <GoldBoard view={view} override={showReveal ? goldAnim?.gold ?? null : null} flash={showReveal ? goldAnim?.flash ?? null : null} />
+        <GoldBoard view={view} override={showReveal ? goldAnim?.gold ?? null : null} unlock={unlockTrades} flash={showReveal ? goldAnim?.flash ?? null : null} />
         <Calendar view={view} />
         <div className="flex-1 min-h-0 flex flex-col">
           <div className="flex gap-1 font-ui text-[11px] tracking-[0.2em] uppercase">
