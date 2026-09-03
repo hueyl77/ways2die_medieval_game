@@ -143,7 +143,7 @@ Every envelope holds three signature cards, the only copies in the game. Playing
 **🌾 Farmer**
 - **Hearty Stew**: The pile's owner heals 2.
 - **Bumper Crop**: The Farmer track gains 1; the pile's owner heals 1.
-- **Gleaning**: The poorest track gains 2 *(ties: the pile's owner picks)*.
+- **Gleaning**: The poorest track that holds any gold gains 2, judged like Alms on the board as it stood before this round's income *(ties: the pile's owner picks; if no track has gold yet, nothing happens)*.
 
 **🗡 Thief**
 - **Cutpurse**: Move 2 gold from the richest track other than the Thief track to the Thief track.

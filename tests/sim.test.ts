@@ -1,5 +1,5 @@
 // Random-play simulation: plays many games end to end and checks invariants.
-import { createGame, setReady, submitPlacement, answerChoice, acknowledge, revealSkip, sealWill, tick, handOf, gravePoolOf, heirOptions, projectFor, isAttack, convertToBot, TRADES, type GameState } from '../web/src/engine/index.ts';
+import { createGame, setReady, submitPlacement, answerChoice, acknowledge, revealSkip, sealWill, tick, handOf, gravePoolOf, heirOptions, projectFor, isAttack, convertToBot, poorestWithGold, TRADES, type GameState } from '../web/src/engine/index.ts';
 import { seedFrom, randInt, pick } from '../web/src/engine/rng.ts';
 import type { Trade } from '../web/src/engine/cards.ts';
 
@@ -100,6 +100,16 @@ for (let n = 0; n < 60; n++) {
   assert(JSON.stringify(s.winners) === '[0]', 'lone survivor should win: ' + JSON.stringify(s.winners), s);
   assert(s.sharedBy.includes(1), 'the ghost whose will named the survivor should share the win', s);
   assert(s.scoreRows?.length === 1, 'only the survivor is scored', s);
+}
+// Gleaning: only tracks holding gold qualify, ties are all offered, and an empty board offers nobody
+{
+  const seats = Array.from({ length: 5 }, (_, i) => ({ userId: `u${i}`, name: `P${i}`, crest: `c${i}`, isTownsfolk: false }));
+  const s = createGame({ id: 'glean', code: 'GLEAN0', hostUserId: 'u0', seats, seed: 3, now: 0 });
+  assert(poorestWithGold(s).length === 0, 'an empty board should offer no Gleaning target', s);
+  s.gold.farmer = 3; s.gold.thief = 1; s.gold.jeweler = 1;
+  assert(JSON.stringify(poorestWithGold(s)) === JSON.stringify(['thief', 'jeweler']), 'tied poorest tracks with gold: ' + JSON.stringify(poorestWithGold(s)), s);
+  s.gold.thief = 2;
+  assert(JSON.stringify(poorestWithGold(s)) === JSON.stringify(['jeweler']), 'single poorest track with gold', s);
 }
 // determinism
 const a = JSON.stringify(playGame(5, 5, 4242)); const b = JSON.stringify(playGame(5, 5, 4242));
