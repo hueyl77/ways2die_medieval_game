@@ -23,6 +23,7 @@ export default function Room() {
   if (joinErr) return <div className="p-6 text-blood">{joinErr} <Button variant="ghost" onClick={() => nav('/')}>Back</Button></div>;
   if (!view) return <div className="grid h-full place-items-center text-ink-2">Finding the table…</div>;
   const isHost = view.hostUserId === user?.id;
+  const hunted = view.settings.huntSeat !== null && view.settings.huntSeat !== undefined;
   const me = view.seats.find((s) => s.isMe);
   const humans = view.seats.filter((s) => !s.isTownsfolk).length;
   const bots = view.seats.filter((s) => s.isTownsfolk).length;
@@ -30,9 +31,13 @@ export default function Room() {
   const cal = calendarPreview(seatsTotal);
 
   return (
-    <div className="min-h-full max-w-3xl mx-auto p-6">
+    <div className="min-h-full relative">
+      {/* the square at evening: a different view from the login page and the table */}
+      <div className="absolute inset-0 bg-cover" style={{ backgroundImage: "url('/bg/lobby.jpg')", backgroundPosition: 'center 35%' }} />
+      <div className="absolute inset-0" style={{ background: 'linear-gradient(to bottom, rgba(20,22,28,.6) 0%, rgba(20,22,28,.72) 55%, rgba(20,22,28,.9) 100%)' }} />
+      <div className="relative max-w-3xl mx-auto p-6">
       <header className="flex items-center justify-between mb-6">
-        <div><Eyebrow>Room code</Eyebrow><h1 className="font-display text-4xl tracking-[0.3em]">{view.code}</h1></div>
+        <div><Eyebrow className="text-parchment/75">Room code</Eyebrow><h1 className="font-display text-4xl tracking-[0.3em]">{view.code}</h1></div>
         <div className="flex gap-2">
           <Button variant="ghost" onClick={() => window.open('/rules', '_blank', 'noopener')} title="Open the rules in a new window">📜 Rules</Button>
           <Button variant="ghost" onClick={() => navigator.clipboard.writeText(`${window.location.origin}/room/${view.code}`)}>Copy invite link</Button>
@@ -57,7 +62,7 @@ export default function Room() {
             {isHost && <Button variant="ghost" disabled={busy || seatsTotal >= 8} onClick={() => void act(() => api.bot(view.id, 'add'))}>Add a bot</Button>}
             {isHost && <Button disabled={busy} onClick={() => void act(() => api.start(view.id))}>Start the year</Button>}
           </div>
-          <p className="text-xs text-ink-2 mt-2">The host sets the table size (4–8). Seats without a player are filled by bots, who play random cards — and can win if they out-earn you.</p>
+          <p className="text-xs text-ink-2 mt-2">The host sets the table size (4 to 8). Seats without a player are filled by bots, who play random cards, and can win if they out-earn you.</p>
           <div className="mt-4"><Eyebrow>Your crest</Eyebrow>
             <div className="flex flex-wrap gap-2 mt-2">
               {CREST_COLORS.map((c) => { const taken = view.seats.some((s) => s.crest === c && !s.isMe); return (
@@ -80,9 +85,14 @@ export default function Room() {
               <span className="text-ink-2" title="Market Fair (+1 per wares in Harvest), the Reeve's Tax, and the Hungry Winter">Season rules (variant)</span>
               {isHost ? <button className={`px-2 rounded-sm font-ui text-xs uppercase ${view.settings.seasonRules ? 'bg-gold text-night' : 'bg-night-3'}`} onClick={() => act(() => api.settings(view.id, { seasonRules: !view.settings.seasonRules }))}>{view.settings.seasonRules ? 'On' : 'Off'}</button> : <span className="font-ui">{view.settings.seasonRules ? 'On' : 'Off'}</span>}
             </div>
+            <div className="flex items-center justify-between py-1 text-sm">
+              <span className="text-ink-2" title="Every bot puts its heaviest attack in front of you each round, so you can see what dying is like">Test: bots attack me</span>
+              {isHost ? <button className={`px-2 rounded-sm font-ui text-xs uppercase ${hunted ? 'bg-blood text-parchment' : 'bg-night-3'}`} onClick={() => act(() => api.settings(view.id, { huntSeat: hunted ? null : (view.me.seat ?? 0) }))}>{hunted ? 'On' : 'Off'}</button> : <span className="font-ui">{hunted ? 'On' : 'Off'}</span>}
+            </div>
           </Panel>
         </div>
       </div>
+    </div>
     </div>
   );
 }

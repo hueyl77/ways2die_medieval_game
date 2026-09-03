@@ -16,8 +16,8 @@ export function Panel({ title, children, className = '' }: { title?: ReactNode; 
     </section>
   );
 }
-export function Eyebrow({ children }: { children: ReactNode }) {
-  return <div className="font-ui text-[11px] tracking-[0.2em] uppercase text-ink-2">{children}</div>;
+export function Eyebrow({ children, className = 'text-ink-2' }: { children: ReactNode; className?: string }) {
+  return <div className={`font-ui text-[11px] tracking-[0.2em] uppercase ${className}`}>{children}</div>;
 }
 export const CREST_HEX: Record<string, string> = {
   crimson: '#B23A48', azure: '#3B6EA8', emerald: '#2F8F5B', gold: '#D8A84F', violet: '#7B4FA6', umber: '#8A5A2B',

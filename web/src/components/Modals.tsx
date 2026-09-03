@@ -21,7 +21,8 @@ export function ChoiceModal({ view, onChoose, busy }: { view: PlayerView; onChoo
   );
 }
 
-export function FuneralModal({ view, onSeal, busy }: { view: PlayerView; onSeal: (heir: number) => void; busy: boolean }) {
+// onHide sets the dialogue aside so the ghost can study the table (wounds, gold) before naming an heir; the footer brings it back.
+export function FuneralModal({ view, onSeal, onHide, busy }: { view: PlayerView; onSeal: (heir: number) => void; onHide: () => void; busy: boolean }) {
   return (
     <Overlay>
       <div className="text-center text-4xl mb-2">🪦</div>
@@ -32,6 +33,7 @@ export function FuneralModal({ view, onSeal, busy }: { view: PlayerView; onSeal:
           <Button key={i} variant="ghost" disabled={busy} onClick={() => onSeal(i)}><Crest color={s.crest} size={14} /> <span className="ml-2">{s.name}</span></Button>
         ); })}
       </div>
+      <div className="text-center mt-4"><Button variant="ghost" onClick={onHide}>Look at the table first</Button></div>
     </Overlay>
   );
 }
@@ -45,12 +47,12 @@ export function EndScreen({ view, onHome }: { view: PlayerView; onHome: () => vo
         <div className="text-center mb-6">
           <div className="text-5xl mb-2">{winners.length ? '👑' : '🕯️'}</div>
           <h2 className="font-display text-4xl text-gold">{winners.length ? `${winners.map((w) => view.seats[w].name).join(' & ')} ${winners.length > 1 ? 'share the year' : 'wins the year'}` : 'The village stands empty'}</h2>
-          {view.sharedBy && view.sharedBy.length > 0 && <p className="text-moon mt-2">From beyond the grave, {view.sharedBy.map((s) => view.seats[s].name).join(' and ')} rise to share it — their wills named the winner.</p>}
+          {view.sharedBy && view.sharedBy.length > 0 && <p className="text-moon mt-2">From beyond the grave, {view.sharedBy.map((s) => view.seats[s].name).join(' and ')} rise to share it: their wills named the winner.</p>}
         </div>
         <div className="bg-night-2 border border-night-3 rounded-md p-4 mb-4">
           <h3 className="font-display text-xl text-parchment mb-2">The final reveal</h3>
           <ul className="grid sm:grid-cols-2 gap-1 text-sm">
-            {view.seats.map((s) => <li key={s.index} className={`${s.alive ? '' : 'opacity-60'}`}><Crest color={s.crest} size={12} /> <span className="ml-1">{s.name}</span> — <span className="text-gold">{s.revealedTrade ? `${TRADE_INFO[s.revealedTrade].emoji} ${TRADE_INFO[s.revealedTrade].name}` : 'unknown'}</span>{!s.alive && ' ☠'}{view.me.heir !== null && s.index === view.me.heir ? ' (your heir)' : ''}</li>)}
+            {view.seats.map((s) => <li key={s.index} className={`${s.alive ? '' : 'opacity-60'}`}><Crest color={s.crest} size={12} /> <span className="ml-1">{s.name}</span>: <span className="text-gold">{s.revealedTrade ? `${TRADE_INFO[s.revealedTrade].emoji} ${TRADE_INFO[s.revealedTrade].name}` : 'unknown'}</span>{!s.alive && ' ☠'}{view.me.heir !== null && s.index === view.me.heir ? ' (your heir)' : ''}</li>)}
           </ul>
         </div>
         <table className="w-full text-sm bg-night-2 border border-night-3 rounded-md overflow-hidden">

@@ -11,15 +11,15 @@ import { Table } from '../components/Table';
 import { Hand } from '../components/Hand';
 import { GoldBoard, Calendar } from '../components/GoldBoard';
 import { Chat } from '../components/Chat';
-import { RevealPlayer, type GoldAnim } from '../components/RevealPlayer';
+import { RevealPlayer, type GoldAnim, type WoundAnim } from '../components/RevealPlayer';
 import { GameLog } from '../components/GameLog';
 import { ChoiceModal, FuneralModal, EndScreen } from '../components/Modals';
 import { Button, Eyebrow } from '../components/ui';
 import { TRADE_INFO, def } from '../lib/cards';
 
 const PHASE_TEXT: Record<string, string> = {
-  gossip: 'Gossip — accuse, deny, lie. Click Ready when you are done talking.',
-  placement: 'Placement — talk it over, then put exactly one card in front of every seat, including yourself.',
+  gossip: 'Gossip: accuse, deny, lie. Click Ready when you are done talking.',
+  placement: 'Placement: talk it over, then put exactly one card in front of every seat, including yourself.',
   choice: 'A choice is being made…',
   reveal: 'The reveal.',
   funeral: 'A funeral. The dead are sealing their wills.',
@@ -42,9 +42,11 @@ export default function Game() {
   const [focusSeat, setFocusSeat] = useState<number | null>(null);   // whose pile the reveal is showing
   const [seenLogs, setSeenLogs] = useState(0);
   const [goldAnim, setGoldAnim] = useState<GoldAnim | null>(null);
+  const [woundAnim, setWoundAnim] = useState<WoundAnim | null>(null);   // the reveal's running wound counts per seat
   const [tab, setTab] = useState<'gossip' | 'log'>('gossip');
+  const [willAside, setWillAside] = useState(false);   // the funeral dialogue set aside so the ghost can read the table
 
-  useEffect(() => { if (view?.phase !== 'placement') { setAssignments({}); setSelected(null); setHaunt(null); } }, [view?.phase, view?.round]);
+  useEffect(() => { if (view?.phase !== 'placement') { setAssignments({}); setSelected(null); setHaunt(null); } setWillAside(false); }, [view?.phase, view?.round]);
 
   // narrate truth answers and deaths into the chat as they happen
   useEffect(() => {
@@ -93,6 +95,10 @@ export default function Game() {
   if (meSeat === null) return <div className="p-6">You are not at this table. <Button variant="ghost" onClick={() => nav('/')}>Home</Button></div>;
 
   const showReveal = view.phase === 'reveal' && !!view.roundLog?.complete;
+  // deaths the reveal has not reached yet: keep their envelopes shut, their tracks open and the ghost label off until then
+  const pendingDeaths = showReveal && woundAnim ? view.seats.filter((x) => !x.alive && woundAnim.alive[x.index]) : [];
+  const unlockTrades = pendingDeaths.map((x) => x.revealedTrade).filter((t): t is NonNullable<typeof t> => !!t);
+  const ghostShown = isGhost && !pendingDeaths.some((x) => x.index === view.me.seat);
   const humansAtTable = view.seats.filter((s) => s.userId).length;
   const reckoning = view.roundLog?.events.find((e) => e.t === 'reckoning');
   const myTrade = view.me.trade;
@@ -104,9 +110,9 @@ export default function Game() {
     <div className="h-full grid grid-rows-[auto_1fr_auto] lg:grid-cols-[minmax(0,1fr)_320px] lg:grid-rows-[auto_1fr_auto] relative overflow-hidden">
       <header className="lg:col-span-2 flex flex-wrap items-center gap-x-6 gap-y-1 px-4 py-2 border-b border-night-3 bg-night-2/60">
         <div><Eyebrow>Room {view.code}</Eyebrow><div className="font-display text-lg leading-tight">{view.phase === 'ended' ? 'The year is over' : <>Round {view.round} of {view.calendar.rounds} · <span className="capitalize">{view.season}</span></>}</div></div>
-        <div className="text-sm text-ink-2 flex-1 min-w-[200px]">{PHASE_TEXT[view.phase]}</div>
+        <div className="text-sm text-ink-2 flex-1 min-w-[200px]">{isGhost && view.phase === 'placement' ? "You are a ghost: pick a card from your grave pool and a living seat to haunt, or rest quietly." : PHASE_TEXT[view.phase]}</div>
         {secondsLeft !== null && view.phase !== 'ended' && <div className={`font-ui tabular-nums text-xl ${secondsLeft <= 10 ? 'text-blood' : 'text-gold'}`}>{Math.floor(secondsLeft / 60)}:{String(secondsLeft % 60).padStart(2, '0')}</div>}
-        {myTrade && <div className="text-sm">{isGhost ? '👻 You are a ghost' : <>You are the <span className="text-gold font-bold">{TRADE_INFO[myTrade].emoji} {TRADE_INFO[myTrade].name}</span> <span className="text-ink-2">(keep it secret)</span></>}</div>}
+        {myTrade && <div className="text-sm">{ghostShown ? '👻 You are a ghost' : <>You are the <span className="text-gold font-bold">{TRADE_INFO[myTrade].emoji} {TRADE_INFO[myTrade].name}</span> <span className="text-ink-2">(keep it secret)</span></>}</div>}
         <Button variant="ghost" onClick={() => window.open('/rules', '_blank', 'noopener')} title="Open the rules in a new window">📜 Rules</Button>
         {view.status === 'finished' ? <Button variant="ghost" onClick={() => nav('/')}>Back to the square</Button>
           : humansAtTable <= 1 ? <Button variant="danger" disabled={busy} onClick={() => { if (window.confirm('Cancel this game? It will be removed from your saved tables.')) void act(() => api.cancel(view.id)).then(() => nav('/')); }}>Cancel game</Button>
@@ -116,19 +122,19 @@ export default function Game() {
       <main className="relative min-h-0 min-w-0 p-2">
         {reckoning && reckoning.t === 'reckoning' && view.phase !== 'reveal' && view.phase !== 'ended' && (
           <div className="absolute top-2 inset-x-2 z-10 mx-auto max-w-2xl bg-blood-deep/90 border border-blood rounded-md px-4 py-2 text-center text-sm shadow-card">
-            <span className="font-display text-base">⚖ The Reckoning.</span> {reckoning.seats.map((x) => `${view.seats[x.seat].name} holds the richest trade — ${TRADE_INFO[x.trade].name} (${x.gold} gold)`).join('; ')}. The envelope is open for the final round.
+            <span className="font-display text-base">⚖ The Reckoning.</span> {reckoning.seats.map((x) => `${view.seats[x.seat].name} holds the richest trade: ${TRADE_INFO[x.trade].name} (${x.gold} gold)`).join('; ')}. The envelope is open for the final round.
           </div>
         )}
-        <Table view={view} assignments={effective} hauntTarget={haunt?.pileSeat ?? null} onSeatClick={onSeatClick} selectable={view.phase === 'placement' && !locked} dropSeat={dnd.hoverSeat} focusSeat={focusSeat} />
+        <Table view={view} assignments={isGhost ? (haunt ? { [haunt.pileSeat]: haunt.cardId } : {}) : effective} hauntTarget={haunt?.pileSeat ?? null} onSeatClick={onSeatClick} selectable={view.phase === 'placement' && !locked} dropSeat={dnd.hoverSeat} focusSeat={focusSeat} woundAnim={showReveal ? woundAnim : null} />
         {dnd.drag && createPortal(<div className="fixed z-[95] pointer-events-none" style={{ left: dnd.drag.x - 55, top: dnd.drag.y - 75, transform: 'rotate(-4deg)' }}><CardArt cardKey={(view.me.hand.find((c) => c.id === dnd.drag!.cardId) ?? view.me.gravePool.find((c) => c.id === dnd.drag!.cardId))?.key ?? 'protect'} width={110} /></div>, document.body)}
-        {showReveal && view.roundLog && <RevealPlayer log={view.roundLog} view={view} onFocusSeat={setFocusSeat} secondsLeft={secondsLeft} busy={busy} onNext={() => void act(() => api.acknowledge(view.id))} onSkip={() => void act(() => api.skip(view.id))} onGold={setGoldAnim} />}
+        {showReveal && view.roundLog && <RevealPlayer log={view.roundLog} view={view} onFocusSeat={setFocusSeat} onWounds={setWoundAnim} secondsLeft={secondsLeft} busy={busy} onNext={() => void act(() => api.acknowledge(view.id))} onSkip={() => void act(() => api.skip(view.id))} onGold={setGoldAnim} />}
         {view.phase === 'choice' && view.me.choices.length > 0 && <ChoiceModal view={view} busy={busy} onChoose={(cid, t) => void act(() => api.choose(view.id, cid, t))} />}
-        {view.phase === 'funeral' && isGhost && !me?.willSealed && view.succession.length > 0 && <FuneralModal view={view} busy={busy} onSeal={(h) => void act(() => api.will(view.id, h))} />}
+        {view.phase === 'funeral' && isGhost && !me?.willSealed && view.succession.length > 0 && !willAside && <FuneralModal view={view} busy={busy} onSeal={(h) => void act(() => api.will(view.id, h))} onHide={() => setWillAside(true)} />}
         {view.phase === 'ended' && <EndScreen view={view} onHome={() => nav('/')} />}
       </main>
 
       <aside className="hidden lg:flex flex-col gap-4 p-3 border-l border-night-3 bg-night-2/40 min-h-0 row-span-2">
-        <GoldBoard view={view} override={showReveal ? goldAnim?.gold ?? null : null} flash={showReveal ? goldAnim?.flash ?? null : null} />
+        <GoldBoard view={view} override={showReveal ? goldAnim?.gold ?? null : null} unlock={unlockTrades} flash={showReveal ? goldAnim?.flash ?? null : null} />
         <Calendar view={view} />
         <div className="flex-1 min-h-0 flex flex-col">
           <div className="flex gap-1 font-ui text-[11px] tracking-[0.2em] uppercase">
@@ -155,9 +161,10 @@ export default function Game() {
             {!locked && <Button variant="ghost" disabled={busy} onClick={() => void act(() => api.place(view.id, {}, null))}>Rest quietly</Button>}
             <span className="text-sm text-moon">{haunt ? `Haunting ${view.seats[haunt.pileSeat].name} with ${def(view.me.gravePool.find((c) => c.id === haunt.cardId)!.key).name}` : 'Pick a card from your grave pool, then a living seat.'}</span>
           </>)}
-          {view.phase === 'reveal' && <span className="text-sm text-ink-2">The reveal — scene {Math.min(view.revealStep + 1, view.revealSteps)} of {view.revealSteps}. The table moves on when everyone has clicked Next.</span>}
+          {view.phase === 'reveal' && <span className="text-sm text-ink-2">The reveal: scene {Math.min(view.revealStep + 1, view.revealSteps)} of {view.revealSteps}. The table moves on when everyone has clicked Next.</span>}
           {view.phase === 'choice' && <span className="text-sm text-ink-2">{view.me.choices.length ? 'Your choice is needed.' : 'Waiting for a choice…'}</span>}
-          {view.phase === 'funeral' && <span className="text-sm text-ink-2">{isGhost && !me?.willSealed ? 'Seal your will.' : 'The dead are sealing their wills…'}</span>}
+          {view.phase === 'funeral' && isGhost && !me?.willSealed && willAside && <Button disabled={busy} onClick={() => setWillAside(false)}>Seal your will</Button>}
+          {view.phase === 'funeral' && <span className="text-sm text-ink-2">{isGhost && !me?.willSealed ? (willAside ? 'Study the table, then name your heir.' : 'Seal your will.') : 'The dead are sealing their wills…'}</span>}
           {error && <span className="text-sm text-blood ml-auto">{error}</span>}
         </div>
         <Hand view={view} cards={isGhost ? view.me.gravePool : view.me.hand} selected={selected ?? haunt?.cardId ?? null} assignments={effective} onSelect={(cid) => { if (canDrag && !dnd.justDropped()) setSelected((s) => (s === cid ? null : cid)); }} onDragStart={canDrag ? dnd.startDrag : undefined} />

@@ -5,8 +5,7 @@ import type { GameState, Seat, CardInst, Settings, Calendar, Season, LogEvent, S
 
 export const DEFAULT_SETTINGS: Settings = {
   gossipSeconds: 120, placementSeconds: 150, choiceSeconds: 30, revealSeconds: 45, revealStepSeconds: 20,
-  funeralSeconds: 60, extraTownsfolk: 0, tableSize: 4, seasonRules: false, leaderRules: false, revealPlacementsAtEnd: false,
-};
+  funeralSeconds: 60, extraTownsfolk: 0, tableSize: 4, seasonRules: false, leaderRules: false, revealPlacementsAtEnd: false, huntSeat: null };
 /** Season rules are an optional variant; off, every round plays the same and the seasons are just names on the calendar. */
 const seasonal = (s: GameState) => !!s.settings.seasonRules;
 const stepMs = (s: GameState) => (s.settings.revealStepSeconds ?? 20) * 1000;
@@ -79,7 +78,7 @@ export function createGame(o: { id: string; code: string; hostUserId: string; se
     for (const k of signatureKeys(seat.trade)) newCard(s, k, seat.index);
     for (let m = 0; m < 3; m++) newCard(s, mishaps.pop()!, seat.index);
     newCard(s, calamities.pop()!, seat.index);
-    if (isHuman(seat)) s.succession.push(seat.index);
+    s.succession.push(seat.index);   // every seat's crest joins the succession: a ghost may name a bot as heir
   }
   s.roundLog = { round: 1, events: [{ t: 'round_start', round: 1, season: seasonOf(s) }], complete: false };
   return s;
@@ -141,7 +140,14 @@ export function autoPlace(s: GameState, seat: number): void {
   const st = s.seats[seat];
   if (!st.alive || st.locked) return;
   const hand = shuffle(s, handOf(s, seat));
-  for (let p = 0; p < s.seatCount; p++) placeCard(s, hand[p], seat, p);
+  // Test mode: a bot with an attack in hand always drops its heaviest one in front of the hunted seat
+  const hunt = s.settings.huntSeat ?? null;
+  const placed = new Set<number>();
+  if (hunt !== null && hunt !== seat && st.isTownsfolk && s.seats[hunt]?.alive) {
+    const attacks = hand.filter((c) => isAttack(c.key)).sort((a, b) => (def(b.key).wounds ?? 0) - (def(a.key).wounds ?? 0));
+    if (attacks.length) { const pick = attacks[0]; hand.splice(hand.indexOf(pick), 1); placeCard(s, pick, seat, hunt); placed.add(hunt); }
+  }
+  for (let p = 0; p < s.seatCount; p++) if (!placed.has(p)) placeCard(s, hand.shift()!, seat, p);
   st.locked = true;
 }
 /** Trades held by living seats (what "still in play" means for Alms), lowest gold first. */
@@ -172,6 +178,13 @@ function richest(s: GameState, exclude: Trade[] = []): Trade[] {
   const cands = ACTIVE_TRADES.filter((t) => unlocked(s, t) && !exclude.includes(t));
   const max = Math.max(...cands.map((t) => s.gold[t]));
   return cands.filter((t) => s.gold[t] === max);
+}
+/** Gleaning's candidates: the poorest open track(s) that hold at least 1 gold. Absent trades sitting at 0 never qualify. */
+export function poorestWithGold(s: GameState): Trade[] {
+  const cands = ACTIVE_TRADES.filter((t) => unlocked(s, t) && s.gold[t] >= 1);
+  if (!cands.length) return [];
+  const min = Math.min(...cands.map((t) => s.gold[t]));
+  return cands.filter((t) => s.gold[t] === min);
 }
 function poorest(s: GameState): Trade[] {
   const cands = ACTIVE_TRADES.filter((t) => unlocked(s, t));
@@ -295,11 +308,18 @@ export function beginResolve(s: GameState, now: number): void {
   for (let p = 0; p < s.seatCount; p++) {
     if (isGrave(s, p) && s.seats[p].diedRound !== s.round) continue;
     for (const c of revealedIn(s, p)) {
-      if (!live(c) || (c.key !== 'sig:iron-strongbox' && c.key !== 'sig:false-colors')) continue;
+      if (!live(c) || (c.key !== 'sig:iron-strongbox' && c.key !== 'sig:false-colors' && c.key !== 'sig:gleaning')) continue;
+      let options = ACTIVE_TRADES.filter((t) => unlocked(s, t));
+      if (c.key === 'sig:gleaning') {
+        // judged like Alms, on the board as it stood before this round's income; only a tie needs the owner's say
+        const cands = poorestWithGold(s); c.meta.gleaning = cands.join(',');   // card meta holds scalars: '' means judged with nobody to give to
+        if (cands.length < 2) continue;
+        options = cands;
+      }
       const owner = s.seats[p];
       const answerer = owner.alive && isHuman(owner) ? p : crierHuman(s);
       if (answerer === null) continue;
-      s.choices.push({ id: `${s.round}-${c.id}`, seat: answerer, cardId: c.id, cardKey: c.key, kind: 'track', options: ACTIVE_TRADES.filter((t) => unlocked(s, t)), answer: null });
+      s.choices.push({ id: `${s.round}-${c.id}`, seat: answerer, cardId: c.id, cardKey: c.key, kind: 'track', options, answer: null });
       log(s, { t: 'choice_wait', seat: answerer, cardKey: c.key });
     }
   }
@@ -326,7 +346,7 @@ const pendingTrestle = (s: GameState) => s.cards.some((c) => c.zone === 'pending
 export function finishResolve(s: GameState, now: number, flags: { curfew: boolean; trestle: boolean }): void {
   const season = seasonOf(s);
   for (const ch of s.choices) {
-    if (!ch.answer) { ch.answer = ch.cardKey === 'sig:iron-strongbox' ? richest(s)[0] : poorest(s)[0]; log(s, { t: 'chosen', seat: ch.seat, cardKey: ch.cardKey, trade: ch.answer, auto: true }); }
+    if (!ch.answer) { ch.answer = ch.cardKey === 'sig:iron-strongbox' ? richest(s)[0] : ch.cardKey === 'sig:gleaning' ? ch.options[0] : poorest(s)[0]; log(s, { t: 'chosen', seat: ch.seat, cardKey: ch.cardKey, trade: ch.answer, auto: true }); }
     else log(s, { t: 'chosen', seat: ch.seat, cardKey: ch.cardKey, trade: ch.answer, auto: false });
   }
   // 7. gold — Alms first, judged on the board as it stood before this round's income.
@@ -369,7 +389,12 @@ export function finishResolve(s: GameState, now: number, flags: { curfew: boolea
       if (s.taxedPiles.includes(p) && GAINS.has(c.key)) continue;   // gains from a taxed pile go to the crown
       switch (c.key) {
         case 'sig:bumper-crop': addGold(s, 'farmer', 1, c.key); break;
-        case 'sig:gleaning': addGold(s, poorest(s)[0], 2, c.key); break;
+        case 'sig:gleaning': {
+          const cands = typeof c.meta.gleaning === 'string' ? (c.meta.gleaning.split(',').filter(Boolean) as Trade[]) : poorestWithGold(s);
+          const target = s.choices.find((ch) => ch.cardId === c.id)?.answer ?? cands[0];
+          if (target && unlocked(s, target)) addGold(s, target, 2, c.key);   // no track holding gold yet: the gleaners go home empty-handed
+          break;
+        }
         case 'sig:cutpurse': { const r = richest(s, ['thief'])[0]; if (r && unlocked(s, 'thief')) { const amt = Math.min(2, s.gold[r]); if (amt > 0 && addGold(s, r, -amt, c.key)) addGold(s, 'thief', amt, c.key, r); } break; }
         case 'sig:paste-gems': addGold(s, richest(s)[0], -2, c.key); break;
         case 'sig:king-s-commission': addGold(s, 'jeweler', 2, c.key); break;
@@ -476,7 +501,7 @@ export function afterReveal(s: GameState, now: number): void {
 }
 
 export function heirOptions(s: GameState, seat: number): number[] {
-  return s.succession.filter((i) => i !== seat && s.seats[i].alive && isHuman(s.seats[i]));
+  return s.succession.filter((i) => i !== seat && s.seats[i].alive);
 }
 
 export function sealWill(s: GameState, seat: number, heir: number, now: number): void {
@@ -490,9 +515,10 @@ export function sealWill(s: GameState, seat: number, heir: number, now: number):
   if (deadHumans(s).every((x) => x.willSealed)) nextRoundOrEnd(s, now);
 }
 
-/** The year ends early once at most one villager is left alive (a sole survivor wins outright), or when no humans remain. */
+/** The year ends early once at most one villager is left alive: a sole survivor wins outright.
+ *  It does not end when the last human dies; ghosts still haunt and have heirs riding on the outcome. */
 export function yearIsOver(s: GameState): boolean {
-  return s.seats.filter((x) => x.alive).length <= 1 || livingHumans(s).length === 0;
+  return s.seats.filter((x) => x.alive).length <= 1;
 }
 
 function nextRoundOrEnd(s: GameState, now: number): void {

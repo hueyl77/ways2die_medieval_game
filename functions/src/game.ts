@@ -5,6 +5,7 @@ import {
   createGame, setReady, submitPlacement, answerChoice, acknowledge, revealSkip, sealWill, tick, projectFor, convertToBot, humanCount,
   RuleError, DEFAULT_SETTINGS, CREST_COLORS, seedFrom, type GameState, type PlayerView, type Settings,
 } from '../../web/src/engine/index.ts';
+import { checkNickname, safeName } from '../../web/src/engine/names.ts';
 
 declare const Deno: { env: { get(k: string): string | undefined } };
 
@@ -28,7 +29,32 @@ const MAX_SEATS = 8;
 const tableSize = (snap: LobbySnapshot) => Math.min(MAX_SEATS, Math.max(4, snap.settings.tableSize ?? 4, snap.seats.length));
 const botCount = (snap: LobbySnapshot) => tableSize(snap) - snap.seats.length;
 function newCode(): string { let c = ''; for (let i = 0; i < 6; i++) c += CODE_ALPHABET[Math.floor(Math.random() * CODE_ALPHABET.length)]; return c; }
-function cleanName(n: unknown, fallback: string): string { const s = String(n ?? '').replace(/[^\p{L}\p{N} _'.-]/gu, '').trim().slice(0, 20); return s || fallback; }
+function cleanName(n: unknown, fallback: string): string { return safeName(n, fallback); }   // shape rules + profanity filter; foul names fall back
+
+// ---------------------------------------------------------------- guests
+// A guest is a nickname vouched for by this function: an HMAC-signed token the client keeps and sends back in each request body.
+const GUEST_TTL_MS = 30 * 24 * 3600 * 1000;
+interface GuestClaims { id: string; name: string; exp: number }
+const enc = (s: string) => new TextEncoder().encode(s);
+const b64u = (b: Uint8Array) => btoa(String.fromCharCode(...b)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+const unb64u = (s: string) => Uint8Array.from(atob(s.replace(/-/g, '+').replace(/_/g, '/')), (c) => c.charCodeAt(0));
+const guestKey = (apiKey: string) => crypto.subtle.importKey('raw', enc('guest-token:' + apiKey), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign', 'verify']);
+async function signGuest(apiKey: string, claims: GuestClaims): Promise<string> {
+  const body = b64u(enc(JSON.stringify(claims)));
+  const sig = new Uint8Array(await crypto.subtle.sign('HMAC', await guestKey(apiKey), enc(body)));
+  return `${body}.${b64u(sig)}`;
+}
+async function verifyGuest(apiKey: string, token: unknown): Promise<GuestClaims | null> {
+  if (typeof token !== 'string') return null;
+  const [body, sig] = token.split('.');
+  if (!body || !sig) return null;
+  try {
+    if (!(await crypto.subtle.verify('HMAC', await guestKey(apiKey), unb64u(sig), enc(body)))) return null;
+    const c = JSON.parse(new TextDecoder().decode(unb64u(body))) as GuestClaims;
+    if (typeof c.id !== 'string' || typeof c.name !== 'string' || typeof c.exp !== 'number' || c.exp <= Date.now()) return null;
+    return c;
+  } catch { return null; }
+}
 
 function lobbyView(row: GameRow, userId: string, now: number): PlayerView {
   const snap = row.snapshot as LobbySnapshot;
@@ -55,20 +81,38 @@ export default async function handler(req: Request): Promise<Response> {
   const apiKey = Deno.env.get('API_KEY');
   if (!baseUrl || !apiKey) return json({ ok: false, error: 'server_misconfigured' }, 500);
 
-  const token = (req.headers.get('Authorization') ?? '').replace(/^Bearer\s+/i, '');
-  if (!token) return json({ ok: false, error: 'unauthorized' }, 401);
-  const userClient = createClient({ baseUrl, accessToken: token });
-  const { data: userData } = await userClient.auth.getCurrentUser();
-  const user = userData?.user as { id: string; email?: string; name?: string; profile?: { name?: string } } | undefined;
-  if (!user?.id) return json({ ok: false, error: 'unauthorized' }, 401);
-  const userId = user.id;
-  const defaultName = cleanName(user.profile?.name ?? user.name, (user.email ?? 'villager').split('@')[0].slice(0, 20));
-
-  const admin = createAdminClient({ baseUrl, apiKey });
   let body: Record<string, unknown>;
   try { body = await req.json(); } catch { return json({ ok: false, error: 'bad_json' }, 400); }
   const op = String(body.op ?? '');
   const now = Date.now();
+
+  // Guests: no account, just a vetted nickname. Hand back a signed token the client sends with every later call.
+  if (op === 'guest') {
+    const check = checkNickname(String(body.name ?? ''));
+    if (!check.ok) return json({ ok: false, error: 'bad_name', message: check.reason }, 400);
+    const claims: GuestClaims = { id: crypto.randomUUID(), name: check.name, exp: now + GUEST_TTL_MS };
+    return json({ ok: true, state: null, guest: { token: await signGuest(apiKey, claims), ...claims } });
+  }
+
+  // Identity: a signed-in user's JWT, or a guest token in the body (the SDK sends the anon key as the bearer for guests)
+  const token = (req.headers.get('Authorization') ?? '').replace(/^Bearer\s+/i, '');
+  let user: { id: string; email?: string; name?: string; profile?: { name?: string } } | undefined;
+  if (token) {
+    const userClient = createClient({ baseUrl, accessToken: token });
+    const { data: userData } = await userClient.auth.getCurrentUser();
+    user = userData?.user as typeof user;
+  }
+  let userId: string; let defaultName: string;
+  if (user?.id) {
+    userId = user.id;
+    defaultName = cleanName(user.profile?.name ?? user.name, safeName((user.email ?? '').split('@')[0].slice(0, 16), 'Villager'));
+  } else {
+    const guest = await verifyGuest(apiKey, body.guest);
+    if (!guest) return json({ ok: false, error: 'unauthorized' }, 401);
+    userId = guest.id; defaultName = guest.name;
+  }
+
+  const admin = createAdminClient({ baseUrl, apiKey });
 
   const loadById = async (id: string): Promise<GameRow | null> => {
     const { data, error } = await admin.database.from('games').select('*').eq('id', id).maybeSingle();
@@ -196,6 +240,7 @@ export default async function handler(req: Request): Promise<Response> {
             extraTownsfolk: clamp(incoming.extraTownsfolk, 0, 2, snap.settings.extraTownsfolk),
             revealPlacementsAtEnd: !!(incoming.revealPlacementsAtEnd ?? snap.settings.revealPlacementsAtEnd),
             seasonRules: !!(incoming.seasonRules ?? snap.settings.seasonRules ?? false),
+            huntSeat: incoming.huntSeat === null ? null : typeof incoming.huntSeat === 'number' ? clamp(incoming.huntSeat, 0, MAX_SEATS - 1, 0) : (snap.settings.huntSeat ?? null),
           } };
         } else if (op === 'start') {
           if (row.host_user_id !== userId) return json({ ok: false, error: 'not_host' }, 403);

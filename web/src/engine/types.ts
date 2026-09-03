@@ -58,6 +58,7 @@ export interface Settings {
   seasonRules: boolean;          // optional variant: Market Fair, Reeve's Tax, Hungry Winter (off = every round plays the same)
   leaderRules: boolean;          // optional variant: the Reeve's tithe every round + the Reckoning in the final round (off by default)
   revealPlacementsAtEnd: boolean;
+  huntSeat?: number | null;      // test mode: every bot puts an attack in front of this seat each round (null = off)
 }
 
 export type LogEvent =

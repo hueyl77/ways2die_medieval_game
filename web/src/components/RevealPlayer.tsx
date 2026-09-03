@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { motion } from 'framer-motion';
 import type { PlayerView, RoundLog } from '../engine/types.ts';
-import { buildScenes, cardName, sceneGold, type Scene } from '../engine/scenes.ts';
+import { buildScenes, cardName, sceneGold, type Scene, sceneWounds } from '../engine/scenes.ts';
 import type { GoldFlash } from './GoldBoard';
 import { TRADE_INFO } from '../lib/cards';
 import { CardFace } from './Card';
@@ -13,6 +13,10 @@ const tradeName = (t: string) => TRADE_INFO[t as keyof typeof TRADE_INFO]?.name 
 /** The reveal, one scene at a time. The scene index comes from the server (view.revealStep);
  *  the table advances when every player has clicked Next, skipped, or the scene timer runs out. */
 export interface GoldAnim { gold: Record<string, number>; flash: GoldFlash | null }
+/** The table's wound counts and graves as the reveal has shown them so far, plus the latest change to flash on a seat. */
+export interface WoundAnim { wounds: Record<number, number>; alive: Record<number, boolean>; flash: { seat: number; delta: 1 | -1 | 0; id: number } | null }
+const WOUND_START_MS = 500;                   // after the last card of a pile has flipped, the first wound lands
+const WOUND_STAGGER = { fast: 0.15, normal: 0.55 };   // seconds between wound steps
 export const PILE_STAGGER = { fast: 0.05, normal: 0.14 };
 export const LINE_STAGGER = { fast: 0.05, normal: 0.25 };
 const FLIGHT_MS = 750;            // a coin's trip from the card to the gold board
@@ -38,8 +42,8 @@ function CoinFlights({ flights }: { flights: Flight[] }) {
 const centerTop = (el: Element | null) => { if (!el) return null; const r = el.getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + 8 }; };
 const rowPoint = (trade: string) => { const el = document.querySelector(`[data-gold-trade="${trade}"]`); if (!el) return null; const r = el.getBoundingClientRect(); return { x: r.right - 22, y: r.top + r.height / 2 }; };
 
-export function RevealPlayer({ log, view, secondsLeft, busy, onNext, onSkip, onGold, onFocusSeat }:
-  { log: RoundLog; view: PlayerView; secondsLeft: number | null; busy: boolean; onNext: () => void; onSkip: () => void; onGold?: (g: GoldAnim | null) => void; onFocusSeat?: (seat: number | null) => void }) {
+export function RevealPlayer({ log, view, secondsLeft, busy, onNext, onSkip, onGold, onFocusSeat, onWounds }:
+  { log: RoundLog; view: PlayerView; secondsLeft: number | null; busy: boolean; onNext: () => void; onSkip: () => void; onGold?: (g: GoldAnim | null) => void; onFocusSeat?: (seat: number | null) => void; onWounds?: (w: WoundAnim | null) => void }) {
   const scenes = useMemo(() => buildScenes(log, (i) => view.seats[i]?.name ?? `Seat ${i}`), [log, view]);
   const step = Math.min(view.revealStep, Math.max(0, scenes.length - 1));
   const s = scenes[step];
@@ -52,6 +56,7 @@ export function RevealPlayer({ log, view, secondsLeft, busy, onNext, onSkip, onG
   }, [log, view.gold]);
   const onGoldRef = useRef(onGold); onGoldRef.current = onGold;
   const [coinLabels, setCoinLabels] = useState<Record<string, number>>({});
+  const [hits, setHits] = useState<Record<string, number>>({});   // pile card id -> how many times it has struck, to replay its shake
   const [flights, setFlights] = useState<Flight[]>([]);
   const flightId = useRef(0);
   useEffect(() => {
@@ -59,7 +64,7 @@ export function RevealPlayer({ log, view, secondsLeft, busy, onNext, onSkip, onG
     const base: Record<string, number> = { ...preGold };
     for (let i = 0; i < step; i++) for (const d of sceneGold(scenes[i])) base[d.trade] = (base[d.trade] ?? 0) + d.delta;
     cb?.({ gold: { ...base }, flash: null });
-    setCoinLabels({}); setFlights([]);
+    setCoinLabels({}); setFlights([]); setHits({});
     const timers: number[] = [];
     const scene = scenes[step];
     let id = 0;
@@ -85,6 +90,46 @@ export function RevealPlayer({ log, view, secondsLeft, busy, onNext, onSkip, onG
     return () => { for (const t of timers) window.clearTimeout(t); };
   }, [step, scenes, preGold, fast]);
   useEffect(() => () => onGoldRef.current?.(null), []);
+  // wounds: start every seat where it stood before the round, then let each scene's wounds land one at a time
+  const preWounds = useMemo(() => {
+    const w: Record<number, number> = {}; const alive: Record<number, boolean> = {};
+    for (const st of view.seats) { w[st.index] = st.wounds; alive[st.index] = st.alive; }
+    const first = new Set<number>();
+    for (const e of log.events) {
+      if ((e.t === 'wound' || e.t === 'heal') && !first.has(e.seat)) { first.add(e.seat); w[e.seat] = e.t === 'wound' ? e.total - e.amount : e.total + e.amount; }
+      if (e.t === 'death') alive[e.seat] = true;
+    }
+    return { w, alive };
+  }, [log, view.seats]);
+  const onWoundsRef = useRef(onWounds); onWoundsRef.current = onWounds;
+  useEffect(() => {
+    const cb = onWoundsRef.current; if (!cb) return;
+    const wounds = { ...preWounds.w }; const alive = { ...preWounds.alive };
+    for (let i = 0; i < step; i++) { for (const d of sceneWounds(scenes[i])) wounds[d.seat] = Math.max(0, (wounds[d.seat] ?? 0) + d.delta); const sc = scenes[i]; if (sc.kind === 'death') alive[sc.seat] = false; }
+    cb({ wounds: { ...wounds }, alive: { ...alive }, flash: null });
+    const timers: number[] = []; let id = step * 1000;
+    const scene = scenes[step];
+    // a flash fades on its own unless a newer one has replaced it
+    const fade = (flashId: number) => timers.push(window.setTimeout(() => { if (id === flashId) cb({ wounds: { ...wounds }, alive: { ...alive }, flash: null }); }, 900));
+    const land = (d: { seat: number; delta: 1 | -1; cardKey: string }) => {
+      wounds[d.seat] = Math.max(0, (wounds[d.seat] ?? 0) + d.delta);
+      cb({ wounds: { ...wounds }, alive: { ...alive }, flash: { seat: d.seat, delta: d.delta, id: ++id } }); fade(id);
+      // the card that did the damage rattles in the pile as the wound lands
+      if (d.delta === 1 && scene?.kind === 'pile') { const card = scene.cards.find((c) => c.key === d.cardKey && !scene.voided.has(c.id) && !scene.discarded.has(c.id)); if (card) setHits((h) => ({ ...h, [card.id]: (h[card.id] ?? 0) + 1 })); }
+    };
+    const stagger = WOUND_STAGGER[fast ? 'fast' : 'normal'] * 1000;
+    if (scene?.kind === 'pile') {
+      const flipsDone = (fast ? 0.05 : 0.14) * 1000 * Math.max(0, scene.cards.length - 1) + 300;
+      scene.wounds.forEach((d, k) => timers.push(window.setTimeout(() => land(d), flipsDone + WOUND_START_MS + k * stagger)));
+    } else if (scene?.kind === 'list') {
+      const lineStagger = LINE_STAGGER[fast ? 'fast' : 'normal'] * 1000; let k = 0;
+      scene.lines.forEach((l, idx) => { for (const d of l.wounds ?? []) { const at = 250 + idx * lineStagger + k * stagger; k += 1; timers.push(window.setTimeout(() => land(d), at)); } });
+    } else if (scene?.kind === 'death') {
+      timers.push(window.setTimeout(() => { alive[scene.seat] = false; cb({ wounds: { ...wounds }, alive: { ...alive }, flash: { seat: scene.seat, delta: 0, id: ++id } }); fade(id); }, 400));
+    }
+    return () => { for (const t of timers) window.clearTimeout(t); };
+  }, [step, scenes, preWounds, fast]);
+  useEffect(() => () => onWoundsRef.current?.(null), []);
   // tell the table whose pile is on show, so it can highlight and point at that seat
   const onFocusRef = useRef(onFocusSeat); onFocusRef.current = onFocusSeat;
   useEffect(() => { onFocusRef.current?.(s.kind === 'pile' ? s.pileSeat : null); }, [s]);
@@ -105,7 +150,7 @@ export function RevealPlayer({ log, view, secondsLeft, busy, onNext, onSkip, onG
       </div>
       <CoinFlights flights={flights} />
       {s && <motion.div key={step} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.25 }} className="w-full max-w-4xl">
-        {s.kind === 'pile' && <PileScene s={s} view={view} fast={fast} coinLabels={coinLabels} />}
+        {s.kind === 'pile' && <PileScene s={s} view={view} fast={fast} coinLabels={coinLabels} hits={hits} />}
         {s.kind === 'list' && <ListScene s={s} fast={fast} />}
         {s.kind === 'death' && <DeathScene s={s} />}
         {s.kind === 'hand' && <HandScene s={s} view={view} />}
@@ -123,17 +168,20 @@ export function RevealPlayer({ log, view, secondsLeft, busy, onNext, onSkip, onG
   );
 }
 
-function PileScene({ s, view, fast, coinLabels }: { s: Extract<Scene, { kind: 'pile' }>; view: PlayerView; fast: boolean; coinLabels: Record<string, number> }) {
+function PileScene({ s, view, fast, coinLabels, hits }: { s: Extract<Scene, { kind: 'pile' }>; view: PlayerView; fast: boolean; coinLabels: Record<string, number>; hits: Record<string, number> }) {
   const owner = view.seats[s.pileSeat];
   return (
     <div className="text-center px-12 py-6 rounded-[40px]" style={{ background: 'radial-gradient(ellipse at center, rgba(20,22,28,.88) 0%, rgba(20,22,28,.6) 60%, rgba(20,22,28,0) 100%)' }}>
       <h2 className="font-display text-3xl text-parchment mb-1">{s.grave ? `${owner.name}'s grave` : `In front of ${owner.name}`}</h2>
-      <p className="text-ink-2 text-sm mb-4">{s.grave ? 'Cards left on a grave have no effect.' : `${s.cards.length} cards, shuffled — nobody knows who placed what.`}{s.taxed && <span className="text-blood"> The Tax Collector is here: nothing in this pile earns gold.</span>}</p>
+      <p className="text-ink-2 text-sm mb-4">{s.grave ? 'Cards left on a grave have no effect.' : `${s.cards.length} cards, shuffled, so nobody knows who placed what.`}{s.taxed && <span className="text-blood"> The Tax Collector is here: nothing in this pile earns gold.</span>}</p>
       <div className="flex flex-wrap justify-center gap-3">
         {s.cards.map((c, idx) => (
           <motion.div key={c.id} data-reveal-card={c.id} className="relative pt-7" initial={{ rotateY: 90, opacity: 0 }} animate={{ rotateY: 0, opacity: 1 }} transition={{ delay: (fast ? 0.05 : 0.14) * idx, duration: 0.3 }}>
             {coinLabels[c.id] && <motion.div initial={{ opacity: 0, y: 10, scale: 0.7 }} animate={{ opacity: 1, y: 0, scale: 1 }} transition={{ type: 'spring', stiffness: 300, damping: 18 }} className="absolute top-0 inset-x-0 text-center font-display text-gold text-lg font-bold drop-shadow">+{coinLabels[c.id]} {coinLabels[c.id] > 1 ? 'coins' : 'coin'}</motion.div>}
-            <CardFace cardKey={c.key} width={110} voided={s.voided.has(c.id) || s.discarded.has(c.id)} />
+            {/* keyed by hit count so every strike replays the shake; the flip above stays untouched */}
+            <motion.div key={hits[c.id] ?? 0} animate={hits[c.id] ? { x: [0, -9, 9, -7, 7, -3, 3, 0], rotate: [0, -3, 3, -2, 2, 0] } : { x: 0, rotate: 0 }} transition={{ duration: 0.5 }} className={hits[c.id] ? 'rounded-md shadow-[0_0_26px_rgba(239,68,68,.85)] ring-2 ring-red-500' : ''}>
+              <CardFace cardKey={c.key} width={110} voided={s.voided.has(c.id) || s.discarded.has(c.id)} />
+            </motion.div>
             {(s.voided.get(c.id) || s.discarded.get(c.id)) && <div className="text-[11px] text-blood font-ui mt-1">{s.voided.has(c.id) ? 'voided' : 'discarded'} by {cardName(s.voided.get(c.id) ?? s.discarded.get(c.id)!)}</div>}
             {coinLabels[c.id] && s.cardGold.has(c.id) && <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-[11px] text-gold font-ui mt-1">→ {tradeName(s.cardGold.get(c.id)!.trade)} track</motion.div>}
           </motion.div>
