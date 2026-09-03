@@ -44,8 +44,9 @@ export default function Game() {
   const [goldAnim, setGoldAnim] = useState<GoldAnim | null>(null);
   const [woundAnim, setWoundAnim] = useState<WoundAnim | null>(null);   // the reveal's running wound counts per seat
   const [tab, setTab] = useState<'gossip' | 'log'>('gossip');
+  const [willAside, setWillAside] = useState(false);   // the funeral dialogue set aside so the ghost can read the table
 
-  useEffect(() => { if (view?.phase !== 'placement') { setAssignments({}); setSelected(null); setHaunt(null); } }, [view?.phase, view?.round]);
+  useEffect(() => { if (view?.phase !== 'placement') { setAssignments({}); setSelected(null); setHaunt(null); } setWillAside(false); }, [view?.phase, view?.round]);
 
   // narrate truth answers and deaths into the chat as they happen
   useEffect(() => {
@@ -124,11 +125,11 @@ export default function Game() {
             <span className="font-display text-base">⚖ The Reckoning.</span> {reckoning.seats.map((x) => `${view.seats[x.seat].name} holds the richest trade: ${TRADE_INFO[x.trade].name} (${x.gold} gold)`).join('; ')}. The envelope is open for the final round.
           </div>
         )}
-        <Table view={view} assignments={effective} hauntTarget={haunt?.pileSeat ?? null} onSeatClick={onSeatClick} selectable={view.phase === 'placement' && !locked} dropSeat={dnd.hoverSeat} focusSeat={focusSeat} woundAnim={showReveal ? woundAnim : null} />
+        <Table view={view} assignments={isGhost ? (haunt ? { [haunt.pileSeat]: haunt.cardId } : {}) : effective} hauntTarget={haunt?.pileSeat ?? null} onSeatClick={onSeatClick} selectable={view.phase === 'placement' && !locked} dropSeat={dnd.hoverSeat} focusSeat={focusSeat} woundAnim={showReveal ? woundAnim : null} />
         {dnd.drag && createPortal(<div className="fixed z-[95] pointer-events-none" style={{ left: dnd.drag.x - 55, top: dnd.drag.y - 75, transform: 'rotate(-4deg)' }}><CardArt cardKey={(view.me.hand.find((c) => c.id === dnd.drag!.cardId) ?? view.me.gravePool.find((c) => c.id === dnd.drag!.cardId))?.key ?? 'protect'} width={110} /></div>, document.body)}
         {showReveal && view.roundLog && <RevealPlayer log={view.roundLog} view={view} onFocusSeat={setFocusSeat} onWounds={setWoundAnim} secondsLeft={secondsLeft} busy={busy} onNext={() => void act(() => api.acknowledge(view.id))} onSkip={() => void act(() => api.skip(view.id))} onGold={setGoldAnim} />}
         {view.phase === 'choice' && view.me.choices.length > 0 && <ChoiceModal view={view} busy={busy} onChoose={(cid, t) => void act(() => api.choose(view.id, cid, t))} />}
-        {view.phase === 'funeral' && isGhost && !me?.willSealed && view.succession.length > 0 && <FuneralModal view={view} busy={busy} onSeal={(h) => void act(() => api.will(view.id, h))} />}
+        {view.phase === 'funeral' && isGhost && !me?.willSealed && view.succession.length > 0 && !willAside && <FuneralModal view={view} busy={busy} onSeal={(h) => void act(() => api.will(view.id, h))} onHide={() => setWillAside(true)} />}
         {view.phase === 'ended' && <EndScreen view={view} onHome={() => nav('/')} />}
       </main>
 
@@ -162,7 +163,8 @@ export default function Game() {
           </>)}
           {view.phase === 'reveal' && <span className="text-sm text-ink-2">The reveal: scene {Math.min(view.revealStep + 1, view.revealSteps)} of {view.revealSteps}. The table moves on when everyone has clicked Next.</span>}
           {view.phase === 'choice' && <span className="text-sm text-ink-2">{view.me.choices.length ? 'Your choice is needed.' : 'Waiting for a choice…'}</span>}
-          {view.phase === 'funeral' && <span className="text-sm text-ink-2">{isGhost && !me?.willSealed ? 'Seal your will.' : 'The dead are sealing their wills…'}</span>}
+          {view.phase === 'funeral' && isGhost && !me?.willSealed && willAside && <Button disabled={busy} onClick={() => setWillAside(false)}>Seal your will</Button>}
+          {view.phase === 'funeral' && <span className="text-sm text-ink-2">{isGhost && !me?.willSealed ? (willAside ? 'Study the table, then name your heir.' : 'Seal your will.') : 'The dead are sealing their wills…'}</span>}
           {error && <span className="text-sm text-blood ml-auto">{error}</span>}
         </div>
         <Hand view={view} cards={isGhost ? view.me.gravePool : view.me.hand} selected={selected ?? haunt?.cardId ?? null} assignments={effective} onSelect={(cid) => { if (canDrag && !dnd.justDropped()) setSelected((s) => (s === cid ? null : cid)); }} onDragStart={canDrag ? dnd.startDrag : undefined} />
