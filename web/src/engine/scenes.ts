@@ -4,9 +4,11 @@ import type { LogEvent, RoundLog } from './types.ts';
 import { CARDS, TRADE_INFO } from './cards.ts';
 
 export interface GoldDelta { trade: string; delta: number }
-export interface SceneLine { text: string; gold?: GoldDelta[] }
+/** One step of a seat's wound count (+1 hurt, -1 healed), animated one at a time on the seat tile. */
+export interface WoundStep { seat: number; delta: 1 | -1; cardKey: string }
+export interface SceneLine { text: string; gold?: GoldDelta[]; wounds?: WoundStep[] }
 export type Scene =
-  | { kind: 'pile'; pileSeat: number; grave: boolean; cards: { id: string; key: string }[]; voided: Map<string, string>; discarded: Map<string, string>; cardGold: Map<string, GoldDelta>; taxed: boolean }
+  | { kind: 'pile'; pileSeat: number; grave: boolean; cards: { id: string; key: string }[]; voided: Map<string, string>; discarded: Map<string, string>; cardGold: Map<string, GoldDelta>; taxed: boolean; wounds: WoundStep[] }
   | { kind: 'list'; title: string; lines: SceneLine[]; tone: 'blood' | 'heal' | 'gold' | 'moon' | 'parchment' }
   | { kind: 'death'; seat: number; trade: string; name: string }
   | { kind: 'hand'; seat: number; cards: string[] };
@@ -18,6 +20,15 @@ export function sceneGold(s: Scene): GoldDelta[] {
   return [];
 }
 
+/** Every wound step a scene applies, in the order it should be animated. */
+export function sceneWounds(s: Scene): WoundStep[] {
+  if (s.kind === 'pile') return s.wounds;
+  if (s.kind === 'list') return s.lines.flatMap((l) => l.wounds ?? []);
+  return [];
+}
+const steps = (e: { t: 'wound' | 'heal'; seat: number; amount: number; cardKey: string }): WoundStep[] =>
+  Array.from({ length: e.amount }, () => ({ seat: e.seat, delta: e.t === 'wound' ? 1 : -1, cardKey: e.cardKey }));
+
 const tradeName = (t: string) => TRADE_INFO[t as keyof typeof TRADE_INFO]?.name ?? t;
 export const cardName = (k: string) => CARDS[k]?.name ?? k;
 
@@ -28,15 +39,29 @@ export function buildScenes(log: RoundLog, name: (seat: number) => string): Scen
   const season = (ev.find((e) => e.t === 'round_start') as Extract<LogEvent, { t: 'round_start' }> | undefined)?.season;
   const goldEv = ev.filter((e): e is Extract<LogEvent, { t: 'gold' }> => e.t === 'gold');
   // wares bank as their pile flips: attach each wares card's coins to the card
+  // Every wound or heal is attributed to the pile holding the live card that caused it: the victim's own pile for attacks
+  // (attacks only ever wound the pile's owner), or whichever pile revealed a heal-all card. A card that is in no pile
+  // this round (a Slow Poison biting) plays in the Wounds & remedies scene instead.
+  const reveals = ev.filter((e): e is Extract<LogEvent, { t: 'reveal' }> => e.t === 'reveal');
+  const liveKeys = (p: number) => { const r = reveals.find((x) => x.pileSeat === p); const v = voidsFor(p); const d = discFor(p); return new Set((r?.cards ?? []).filter((c) => !v.has(c.id) && !d.has(c.id)).map((c) => c.key)); };
+  const pileOf = new Map<LogEvent, number>();
+  for (const e of ev) {
+    if (e.t !== 'wound' && e.t !== 'heal') continue;
+    if (liveKeys(e.seat).has(e.cardKey)) { pileOf.set(e, e.seat); continue; }
+    const host = reveals.find((r) => liveKeys(r.pileSeat).has(e.cardKey));
+    if (host) pileOf.set(e, host.pileSeat);
+  }
   for (const e of ev) if (e.t === 'reveal') {
     const cardGold = new Map<string, GoldDelta>();
     for (const g of goldEv) if (g.cardId && g.pileSeat === e.pileSeat && g.by.startsWith('job:') && g.delta) cardGold.set(g.cardId, { trade: g.trade, delta: g.delta });
-    scenes.push({ kind: 'pile', pileSeat: e.pileSeat, grave: e.grave, cards: e.cards, voided: voidsFor(e.pileSeat), discarded: discFor(e.pileSeat), cardGold, taxed: ev.some((x) => x.t === 'tax' && x.pileSeat === e.pileSeat) });
+    const wounds = ev.filter((x): x is Extract<LogEvent, { t: 'wound' | 'heal' }> => (x.t === 'wound' || x.t === 'heal') && pileOf.get(x) === e.pileSeat).flatMap(steps);
+    scenes.push({ kind: 'pile', pileSeat: e.pileSeat, grave: e.grave, cards: e.cards, voided: voidsFor(e.pileSeat), discarded: discFor(e.pileSeat), cardGold, taxed: ev.some((x) => x.t === 'tax' && x.pileSeat === e.pileSeat), wounds });
   }
   const wounds: SceneLine[] = ev.filter((e) => e.t === 'wound' || e.t === 'heal' || e.t === 'poison_set').map((e) => ({ text:
     e.t === 'wound' ? `${name(e.seat)} takes ${e.amount} wound${e.amount > 1 ? 's' : ''}: ${cardName(e.cardKey)} (${e.total} total)`
     : e.t === 'heal' ? `${name(e.seat)} heals ${e.amount}: ${cardName(e.cardKey)} (${e.total} left)`
-    : `${name(e.seat)} has been poisoned. It bites at the end of next round.` }));
+    : `${name(e.seat)} has been poisoned. It bites at the end of next round.`,
+    wounds: (e.t === 'wound' || e.t === 'heal') && !pileOf.has(e) ? steps(e) : undefined }));
   if (wounds.length) scenes.push({ kind: 'list', title: 'Wounds & remedies', lines: wounds, tone: 'blood' });
   for (const e of ev) if (e.t === 'death') scenes.push({ kind: 'death', seat: e.seat, trade: e.trade, name: e.name });
   // the ledger: wares totals (already animated on the piles), then every other gold effect

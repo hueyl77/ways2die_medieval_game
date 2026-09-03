@@ -11,7 +11,7 @@ import { Table } from '../components/Table';
 import { Hand } from '../components/Hand';
 import { GoldBoard, Calendar } from '../components/GoldBoard';
 import { Chat } from '../components/Chat';
-import { RevealPlayer, type GoldAnim } from '../components/RevealPlayer';
+import { RevealPlayer, type GoldAnim, type WoundAnim } from '../components/RevealPlayer';
 import { GameLog } from '../components/GameLog';
 import { ChoiceModal, FuneralModal, EndScreen } from '../components/Modals';
 import { Button, Eyebrow } from '../components/ui';
@@ -42,6 +42,7 @@ export default function Game() {
   const [focusSeat, setFocusSeat] = useState<number | null>(null);   // whose pile the reveal is showing
   const [seenLogs, setSeenLogs] = useState(0);
   const [goldAnim, setGoldAnim] = useState<GoldAnim | null>(null);
+  const [woundAnim, setWoundAnim] = useState<WoundAnim | null>(null);   // the reveal's running wound counts per seat
   const [tab, setTab] = useState<'gossip' | 'log'>('gossip');
 
   useEffect(() => { if (view?.phase !== 'placement') { setAssignments({}); setSelected(null); setHaunt(null); } }, [view?.phase, view?.round]);
@@ -119,9 +120,9 @@ export default function Game() {
             <span className="font-display text-base">⚖ The Reckoning.</span> {reckoning.seats.map((x) => `${view.seats[x.seat].name} holds the richest trade: ${TRADE_INFO[x.trade].name} (${x.gold} gold)`).join('; ')}. The envelope is open for the final round.
           </div>
         )}
-        <Table view={view} assignments={effective} hauntTarget={haunt?.pileSeat ?? null} onSeatClick={onSeatClick} selectable={view.phase === 'placement' && !locked} dropSeat={dnd.hoverSeat} focusSeat={focusSeat} />
+        <Table view={view} assignments={effective} hauntTarget={haunt?.pileSeat ?? null} onSeatClick={onSeatClick} selectable={view.phase === 'placement' && !locked} dropSeat={dnd.hoverSeat} focusSeat={focusSeat} woundAnim={showReveal ? woundAnim : null} />
         {dnd.drag && createPortal(<div className="fixed z-[95] pointer-events-none" style={{ left: dnd.drag.x - 55, top: dnd.drag.y - 75, transform: 'rotate(-4deg)' }}><CardArt cardKey={(view.me.hand.find((c) => c.id === dnd.drag!.cardId) ?? view.me.gravePool.find((c) => c.id === dnd.drag!.cardId))?.key ?? 'protect'} width={110} /></div>, document.body)}
-        {showReveal && view.roundLog && <RevealPlayer log={view.roundLog} view={view} onFocusSeat={setFocusSeat} secondsLeft={secondsLeft} busy={busy} onNext={() => void act(() => api.acknowledge(view.id))} onSkip={() => void act(() => api.skip(view.id))} onGold={setGoldAnim} />}
+        {showReveal && view.roundLog && <RevealPlayer log={view.roundLog} view={view} onFocusSeat={setFocusSeat} onWounds={setWoundAnim} secondsLeft={secondsLeft} busy={busy} onNext={() => void act(() => api.acknowledge(view.id))} onSkip={() => void act(() => api.skip(view.id))} onGold={setGoldAnim} />}
         {view.phase === 'choice' && view.me.choices.length > 0 && <ChoiceModal view={view} busy={busy} onChoose={(cid, t) => void act(() => api.choose(view.id, cid, t))} />}
         {view.phase === 'funeral' && isGhost && !me?.willSealed && view.succession.length > 0 && <FuneralModal view={view} busy={busy} onSeal={(h) => void act(() => api.will(view.id, h))} />}
         {view.phase === 'ended' && <EndScreen view={view} onHome={() => nav('/')} />}
