@@ -56,6 +56,7 @@ export function RevealPlayer({ log, view, secondsLeft, busy, onNext, onSkip, onG
   }, [log, view.gold]);
   const onGoldRef = useRef(onGold); onGoldRef.current = onGold;
   const [coinLabels, setCoinLabels] = useState<Record<string, number>>({});
+  const [hits, setHits] = useState<Record<string, number>>({});   // pile card id -> how many times it has struck, to replay its shake
   const [flights, setFlights] = useState<Flight[]>([]);
   const flightId = useRef(0);
   useEffect(() => {
@@ -63,7 +64,7 @@ export function RevealPlayer({ log, view, secondsLeft, busy, onNext, onSkip, onG
     const base: Record<string, number> = { ...preGold };
     for (let i = 0; i < step; i++) for (const d of sceneGold(scenes[i])) base[d.trade] = (base[d.trade] ?? 0) + d.delta;
     cb?.({ gold: { ...base }, flash: null });
-    setCoinLabels({}); setFlights([]);
+    setCoinLabels({}); setFlights([]); setHits({});
     const timers: number[] = [];
     const scene = scenes[step];
     let id = 0;
@@ -110,7 +111,12 @@ export function RevealPlayer({ log, view, secondsLeft, busy, onNext, onSkip, onG
     const scene = scenes[step];
     // a flash fades on its own unless a newer one has replaced it
     const fade = (flashId: number) => timers.push(window.setTimeout(() => { if (id === flashId) cb({ wounds: { ...wounds }, alive: { ...alive }, flash: null }); }, 900));
-    const land = (d: { seat: number; delta: 1 | -1 }) => { wounds[d.seat] = Math.max(0, (wounds[d.seat] ?? 0) + d.delta); cb({ wounds: { ...wounds }, alive: { ...alive }, flash: { seat: d.seat, delta: d.delta, id: ++id } }); fade(id); };
+    const land = (d: { seat: number; delta: 1 | -1; cardKey: string }) => {
+      wounds[d.seat] = Math.max(0, (wounds[d.seat] ?? 0) + d.delta);
+      cb({ wounds: { ...wounds }, alive: { ...alive }, flash: { seat: d.seat, delta: d.delta, id: ++id } }); fade(id);
+      // the card that did the damage rattles in the pile as the wound lands
+      if (d.delta === 1 && scene?.kind === 'pile') { const card = scene.cards.find((c) => c.key === d.cardKey && !scene.voided.has(c.id) && !scene.discarded.has(c.id)); if (card) setHits((h) => ({ ...h, [card.id]: (h[card.id] ?? 0) + 1 })); }
+    };
     const stagger = WOUND_STAGGER[fast ? 'fast' : 'normal'] * 1000;
     if (scene?.kind === 'pile') {
       const flipsDone = (fast ? 0.05 : 0.14) * 1000 * Math.max(0, scene.cards.length - 1) + 300;
@@ -144,7 +150,7 @@ export function RevealPlayer({ log, view, secondsLeft, busy, onNext, onSkip, onG
       </div>
       <CoinFlights flights={flights} />
       {s && <motion.div key={step} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.25 }} className="w-full max-w-4xl">
-        {s.kind === 'pile' && <PileScene s={s} view={view} fast={fast} coinLabels={coinLabels} />}
+        {s.kind === 'pile' && <PileScene s={s} view={view} fast={fast} coinLabels={coinLabels} hits={hits} />}
         {s.kind === 'list' && <ListScene s={s} fast={fast} />}
         {s.kind === 'death' && <DeathScene s={s} />}
         {s.kind === 'hand' && <HandScene s={s} view={view} />}
@@ -162,7 +168,7 @@ export function RevealPlayer({ log, view, secondsLeft, busy, onNext, onSkip, onG
   );
 }
 
-function PileScene({ s, view, fast, coinLabels }: { s: Extract<Scene, { kind: 'pile' }>; view: PlayerView; fast: boolean; coinLabels: Record<string, number> }) {
+function PileScene({ s, view, fast, coinLabels, hits }: { s: Extract<Scene, { kind: 'pile' }>; view: PlayerView; fast: boolean; coinLabels: Record<string, number>; hits: Record<string, number> }) {
   const owner = view.seats[s.pileSeat];
   return (
     <div className="text-center px-12 py-6 rounded-[40px]" style={{ background: 'radial-gradient(ellipse at center, rgba(20,22,28,.88) 0%, rgba(20,22,28,.6) 60%, rgba(20,22,28,0) 100%)' }}>
@@ -172,7 +178,10 @@ function PileScene({ s, view, fast, coinLabels }: { s: Extract<Scene, { kind: 'p
         {s.cards.map((c, idx) => (
           <motion.div key={c.id} data-reveal-card={c.id} className="relative pt-7" initial={{ rotateY: 90, opacity: 0 }} animate={{ rotateY: 0, opacity: 1 }} transition={{ delay: (fast ? 0.05 : 0.14) * idx, duration: 0.3 }}>
             {coinLabels[c.id] && <motion.div initial={{ opacity: 0, y: 10, scale: 0.7 }} animate={{ opacity: 1, y: 0, scale: 1 }} transition={{ type: 'spring', stiffness: 300, damping: 18 }} className="absolute top-0 inset-x-0 text-center font-display text-gold text-lg font-bold drop-shadow">+{coinLabels[c.id]} {coinLabels[c.id] > 1 ? 'coins' : 'coin'}</motion.div>}
-            <CardFace cardKey={c.key} width={110} voided={s.voided.has(c.id) || s.discarded.has(c.id)} />
+            {/* keyed by hit count so every strike replays the shake; the flip above stays untouched */}
+            <motion.div key={hits[c.id] ?? 0} animate={hits[c.id] ? { x: [0, -9, 9, -7, 7, -3, 3, 0], rotate: [0, -3, 3, -2, 2, 0] } : { x: 0, rotate: 0 }} transition={{ duration: 0.5 }} className={hits[c.id] ? 'rounded-md shadow-[0_0_26px_rgba(239,68,68,.85)] ring-2 ring-red-500' : ''}>
+              <CardFace cardKey={c.key} width={110} voided={s.voided.has(c.id) || s.discarded.has(c.id)} />
+            </motion.div>
             {(s.voided.get(c.id) || s.discarded.get(c.id)) && <div className="text-[11px] text-blood font-ui mt-1">{s.voided.has(c.id) ? 'voided' : 'discarded'} by {cardName(s.voided.get(c.id) ?? s.discarded.get(c.id)!)}</div>}
             {coinLabels[c.id] && s.cardGold.has(c.id) && <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-[11px] text-gold font-ui mt-1">→ {tradeName(s.cardGold.get(c.id)!.trade)} track</motion.div>}
           </motion.div>
