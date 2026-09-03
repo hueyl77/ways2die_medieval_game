@@ -95,7 +95,7 @@ const SIGNATURES: Record<Trade, SigSpec[]> = {
   farmer: [
     { name: 'Hearty Stew', text: "The pile's owner heals 2." },
     { name: 'Bumper Crop', text: "The Farmer track gains 1; the pile's owner heals 1." },
-    { name: 'Gleaning', text: 'The poorest track gains 2.' },
+    { name: 'Gleaning', text: 'The poorest track that holds any gold gains 2. Ties: the pile\'s owner picks.' },
   ],
   thief: [
     { name: 'Cutpurse', text: 'Move 2 gold from the richest track other than the Thief track to the Thief track.' },

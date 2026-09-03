@@ -1,4 +1,5 @@
-import { AnimatePresence, motion } from 'framer-motion';
+import { useEffect } from 'react';
+import { AnimatePresence, motion, useAnimationControls } from 'framer-motion';
 import type { PlayerView, SeatView } from '../engine/types.ts';
 import type { WoundAnim } from './RevealPlayer';
 import { TRADE_INFO } from '../lib/cards';
@@ -39,11 +40,16 @@ function SeatTile({ seat, view, assignedKey, isCrier, hauntTarget, dropTarget, f
   const alive = anim ? (anim.alive[seat.index] ?? seat.alive) : seat.alive;
   const wounds = anim ? (anim.wounds[seat.index] ?? seat.wounds) : seat.wounds;
   const flash = anim?.flash && anim.flash.seat === seat.index ? anim.flash : null;
+  const hit = flash?.delta === 1;
+  // a landing wound rattles the tile: the shake runs on an inner wrapper so framer's transform never fights the ring/scale classes outside
+  const shake = useAnimationControls();
+  useEffect(() => { if (hit) void shake.start({ x: [0, -8, 8, -7, 7, -4, 4, 0], transition: { duration: 0.5 } }); }, [flash?.id, hit, shake]);
   const dead = !alive;
   const shownTrade = anim && alive && !seat.alive ? null : seat.revealedTrade;   // the envelope stays shut until the death scene
   const status = view.phase === 'gossip' ? (seat.ready ? 'ready' : '') : view.phase === 'placement' ? (seat.locked ? 'locked' : dead ? '' : 'placing') : view.phase === 'reveal' ? (seat.ack ? 'done' : 'watching') : '';
   return (
-    <div onClick={onClick} data-seat={seat.index} className={`relative w-[132px] rounded-md border p-1.5 text-center transition ${onClick ? 'cursor-pointer hover:border-gold' : ''} ${seat.isMe ? 'border-gold/70 bg-night-2' : 'border-night-3 bg-night-2/90'} ${hauntTarget ? 'ring-2 ring-moon' : ''} ${focus ? 'ring-4 ring-gold scale-110 shadow-[0_0_36px_rgba(216,168,79,.55)] bg-night-2' : ''} ${dropTarget ? 'ring-4 ring-gold scale-105 bg-night-3' : ''} ${dead ? 'opacity-90' : ''}`}>
+    <div onClick={onClick} data-seat={seat.index} className={`relative w-[132px] rounded-md border p-1.5 text-center transition ${onClick ? 'cursor-pointer hover:border-gold' : ''} ${seat.isMe ? 'border-gold/70 bg-night-2' : 'border-night-3 bg-night-2/90'} ${hauntTarget ? 'ring-2 ring-moon' : ''} ${focus ? 'ring-4 ring-gold scale-110 shadow-[0_0_36px_rgba(216,168,79,.55)] bg-night-2' : ''} ${dropTarget ? 'ring-4 ring-gold scale-105 bg-night-3' : ''} ${hit ? '!border-red-500 !shadow-[0_0_28px_rgba(239,68,68,.7)]' : ''} ${dead ? 'opacity-90' : ''}`}>
+      <motion.div animate={shake}>
       <div className="flex items-center justify-center gap-1.5">
         <Crest color={seat.crest} size={14} />
         <span className={`font-ui text-xs font-bold truncate ${seat.isMe ? 'text-gold' : ''}`}>{seat.name}</span>
@@ -56,7 +62,7 @@ function SeatTile({ seat, view, assignedKey, isCrier, hauntTarget, dropTarget, f
         {dead ? (
           <div className="text-center"><div className="text-2xl">🪦</div><div className="text-[10px] text-ink-2">grave pool {seat.gravePoolCount}</div></div>
         ) : assignedKey ? (
-          <CardFace cardKey={assignedKey} width={52} tag="you" />
+          <CardFace cardKey={assignedKey} width={52} tag={view.me.isGhost ? 'haunt' : 'you'} />
         ) : seat.pileCount > 0 ? (
           <CardBack width={48} count={seat.pileCount} />
         ) : (
@@ -64,10 +70,11 @@ function SeatTile({ seat, view, assignedKey, isCrier, hauntTarget, dropTarget, f
         )}
       </div>
       <Wounds wounds={wounds} alive={alive} deathAt={view.calendar.deathAt} />
+      </motion.div>
       <AnimatePresence>
         {flash && (
           <motion.div key={flash.id} initial={{ opacity: 0, y: 6, scale: 0.6 }} animate={{ opacity: 1, y: -8, scale: 1 }} exit={{ opacity: 0, y: -22 }} transition={{ type: 'spring', stiffness: 320, damping: 16 }}
-            className={`absolute -top-3 inset-x-0 text-center font-display text-lg drop-shadow-[0_0_8px_rgba(0,0,0,.9)] pointer-events-none ${flash.delta > 0 ? 'text-blood' : flash.delta < 0 ? 'text-heal' : 'text-parchment'}`}>
+            className={`absolute -top-3 inset-x-0 text-center font-display text-lg drop-shadow-[0_0_8px_rgba(0,0,0,.9)] pointer-events-none ${flash.delta > 0 ? 'text-red-500 font-bold text-xl' : flash.delta < 0 ? 'text-heal' : 'text-parchment'}`}>
             {flash.delta > 0 ? '+1 wound' : flash.delta < 0 ? 'healed' : '☠ dead'}
           </motion.div>
         )}

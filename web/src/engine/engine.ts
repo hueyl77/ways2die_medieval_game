@@ -179,6 +179,13 @@ function richest(s: GameState, exclude: Trade[] = []): Trade[] {
   const max = Math.max(...cands.map((t) => s.gold[t]));
   return cands.filter((t) => s.gold[t] === max);
 }
+/** Gleaning's candidates: the poorest open track(s) that hold at least 1 gold. Absent trades sitting at 0 never qualify. */
+export function poorestWithGold(s: GameState): Trade[] {
+  const cands = ACTIVE_TRADES.filter((t) => unlocked(s, t) && s.gold[t] >= 1);
+  if (!cands.length) return [];
+  const min = Math.min(...cands.map((t) => s.gold[t]));
+  return cands.filter((t) => s.gold[t] === min);
+}
 function poorest(s: GameState): Trade[] {
   const cands = ACTIVE_TRADES.filter((t) => unlocked(s, t));
   const min = Math.min(...cands.map((t) => s.gold[t]));
@@ -301,11 +308,18 @@ export function beginResolve(s: GameState, now: number): void {
   for (let p = 0; p < s.seatCount; p++) {
     if (isGrave(s, p) && s.seats[p].diedRound !== s.round) continue;
     for (const c of revealedIn(s, p)) {
-      if (!live(c) || (c.key !== 'sig:iron-strongbox' && c.key !== 'sig:false-colors')) continue;
+      if (!live(c) || (c.key !== 'sig:iron-strongbox' && c.key !== 'sig:false-colors' && c.key !== 'sig:gleaning')) continue;
+      let options = ACTIVE_TRADES.filter((t) => unlocked(s, t));
+      if (c.key === 'sig:gleaning') {
+        // judged like Alms, on the board as it stood before this round's income; only a tie needs the owner's say
+        const cands = poorestWithGold(s); c.meta.gleaning = cands.join(',');   // card meta holds scalars: '' means judged with nobody to give to
+        if (cands.length < 2) continue;
+        options = cands;
+      }
       const owner = s.seats[p];
       const answerer = owner.alive && isHuman(owner) ? p : crierHuman(s);
       if (answerer === null) continue;
-      s.choices.push({ id: `${s.round}-${c.id}`, seat: answerer, cardId: c.id, cardKey: c.key, kind: 'track', options: ACTIVE_TRADES.filter((t) => unlocked(s, t)), answer: null });
+      s.choices.push({ id: `${s.round}-${c.id}`, seat: answerer, cardId: c.id, cardKey: c.key, kind: 'track', options, answer: null });
       log(s, { t: 'choice_wait', seat: answerer, cardKey: c.key });
     }
   }
@@ -332,7 +346,7 @@ const pendingTrestle = (s: GameState) => s.cards.some((c) => c.zone === 'pending
 export function finishResolve(s: GameState, now: number, flags: { curfew: boolean; trestle: boolean }): void {
   const season = seasonOf(s);
   for (const ch of s.choices) {
-    if (!ch.answer) { ch.answer = ch.cardKey === 'sig:iron-strongbox' ? richest(s)[0] : poorest(s)[0]; log(s, { t: 'chosen', seat: ch.seat, cardKey: ch.cardKey, trade: ch.answer, auto: true }); }
+    if (!ch.answer) { ch.answer = ch.cardKey === 'sig:iron-strongbox' ? richest(s)[0] : ch.cardKey === 'sig:gleaning' ? ch.options[0] : poorest(s)[0]; log(s, { t: 'chosen', seat: ch.seat, cardKey: ch.cardKey, trade: ch.answer, auto: true }); }
     else log(s, { t: 'chosen', seat: ch.seat, cardKey: ch.cardKey, trade: ch.answer, auto: false });
   }
   // 7. gold — Alms first, judged on the board as it stood before this round's income.
@@ -375,7 +389,12 @@ export function finishResolve(s: GameState, now: number, flags: { curfew: boolea
       if (s.taxedPiles.includes(p) && GAINS.has(c.key)) continue;   // gains from a taxed pile go to the crown
       switch (c.key) {
         case 'sig:bumper-crop': addGold(s, 'farmer', 1, c.key); break;
-        case 'sig:gleaning': addGold(s, poorest(s)[0], 2, c.key); break;
+        case 'sig:gleaning': {
+          const cands = typeof c.meta.gleaning === 'string' ? (c.meta.gleaning.split(',').filter(Boolean) as Trade[]) : poorestWithGold(s);
+          const target = s.choices.find((ch) => ch.cardId === c.id)?.answer ?? cands[0];
+          if (target && unlocked(s, target)) addGold(s, target, 2, c.key);   // no track holding gold yet: the gleaners go home empty-handed
+          break;
+        }
         case 'sig:cutpurse': { const r = richest(s, ['thief'])[0]; if (r && unlocked(s, 'thief')) { const amt = Math.min(2, s.gold[r]); if (amt > 0 && addGold(s, r, -amt, c.key)) addGold(s, 'thief', amt, c.key, r); } break; }
         case 'sig:paste-gems': addGold(s, richest(s)[0], -2, c.key); break;
         case 'sig:king-s-commission': addGold(s, 'jeweler', 2, c.key); break;

@@ -21,7 +21,8 @@ export function ChoiceModal({ view, onChoose, busy }: { view: PlayerView; onChoo
   );
 }
 
-export function FuneralModal({ view, onSeal, busy }: { view: PlayerView; onSeal: (heir: number) => void; busy: boolean }) {
+// onHide sets the dialogue aside so the ghost can study the table (wounds, gold) before naming an heir; the footer brings it back.
+export function FuneralModal({ view, onSeal, onHide, busy }: { view: PlayerView; onSeal: (heir: number) => void; onHide: () => void; busy: boolean }) {
   return (
     <Overlay>
       <div className="text-center text-4xl mb-2">🪦</div>
@@ -32,6 +33,7 @@ export function FuneralModal({ view, onSeal, busy }: { view: PlayerView; onSeal:
           <Button key={i} variant="ghost" disabled={busy} onClick={() => onSeal(i)}><Crest color={s.crest} size={14} /> <span className="ml-2">{s.name}</span></Button>
         ); })}
       </div>
+      <div className="text-center mt-4"><Button variant="ghost" onClick={onHide}>Look at the table first</Button></div>
     </Overlay>
   );
 }
