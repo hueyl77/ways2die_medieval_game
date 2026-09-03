@@ -17,14 +17,15 @@ export function Table({ view, assignments, hauntTarget, onSeatClick, selectable,
       <div className="absolute inset-[12%] rounded-[50%] border border-parchment/15 bg-night/25 shadow-[inset_0_0_80px_rgba(0,0,0,.45)]" />
       {view.seats.map((s) => {
         const angle = Math.PI / 2 + ((s.index - myIndex) * 2 * Math.PI) / n;
-        const x = 50 + 42 * Math.cos(angle); const y = 50 + 33 * Math.sin(angle);
+        const x = 50 + 42 * Math.cos(angle); const y = 50 + 31 * Math.sin(angle);
         const assigned = assignments[s.index];
         const isCrier = view.crierSeat === s.index;
         const focus = focusSeat === s.index;
+        // centred with an inline transform: a framer `layout` animation used to overwrite the Tailwind translate and shove tiles off their seats
         return (
-          <motion.div key={s.index} layout className="absolute -translate-x-1/2 -translate-y-1/2" style={{ left: `${x}%`, top: `${y}%` }}>
+          <div key={s.index} className="absolute transition-[left,top] duration-500" style={{ left: `${x}%`, top: `${y}%`, transform: 'translate(-50%, -50%)' }}>
             <SeatTile seat={s} view={view} assignedKey={assigned ? keyOf(assigned) : undefined} isCrier={isCrier} hauntTarget={hauntTarget === s.index} dropTarget={dropSeat === s.index} focus={focus} onClick={selectable ? () => onSeatClick(s.index) : undefined} />
-          </motion.div>
+          </div>
         );
       })}
     </div>
