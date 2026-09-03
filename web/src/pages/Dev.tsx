@@ -15,17 +15,23 @@ import { CardArt } from '../components/Card';
 import { TRADE_INFO, def } from '../lib/cards';
 
 const ME = 'u0';
+const QS = new URLSearchParams(window.location.search);
+const SEED_PARAM = QS.get('seed');
+const SEATS_PARAM = Number(QS.get('seats') ?? 0);
+const CLEAN = QS.has('clean'); // hide harness-only controls, e.g. when recording video
 function makeGame(seatCount: number): GameState {
-  const seats = Array.from({ length: seatCount }, (_, i) => ({ userId: i < seatCount - 1 ? `u${i}` : null, name: i === 0 ? 'You' : i < seatCount - 1 ? ['Marta', 'Bram', 'Odo', 'Ysolde', 'Piers', 'Agnes', 'Wat', 'Hild', 'Cedric', 'Rowan', 'Edith'][i - 1] : 'Stranger', crest: ['gold', 'crimson', 'azure', 'emerald', 'violet', 'umber', 'ivory', 'teal', 'rose', 'slate', 'amber', 'moss'][i], isTownsfolk: i === seatCount - 1 }));
-  return createGame({ id: 'dev', code: 'DEVDEV', hostUserId: ME, seats, seed: Math.floor(Math.random() * 1e9), now: Date.now(), settings: { gossipSeconds: 999, placementSeconds: 999, revealSeconds: 999, funeralSeconds: 999, choiceSeconds: 999 } });
+  const seats = Array.from({ length: seatCount }, (_, i) => ({ userId: i < seatCount - 1 ? `u${i}` : null, name: i === 0 ? (CLEAN ? 'Wat' : 'You') : i < seatCount - 1 ? ['Marta', 'Bram', 'Odo', 'Ysolde', 'Piers', 'Agnes', 'Wat', 'Hild', 'Cedric', 'Rowan', 'Edith'][i - 1] : 'Stranger', crest: ['gold', 'crimson', 'azure', 'emerald', 'violet', 'umber', 'ivory', 'teal', 'rose', 'slate', 'amber', 'moss'][i], isTownsfolk: i === seatCount - 1 }));
+  const seed = SEED_PARAM ? Number(SEED_PARAM) >>> 0 : Math.floor(Math.random() * 1e9);
+  return createGame({ id: 'dev', code: 'DEVDEV', hostUserId: ME, seats, seed, now: Date.now(), settings: { gossipSeconds: 999, placementSeconds: 999, revealSeconds: 999, revealStepSeconds: 999, funeralSeconds: 999, choiceSeconds: 999 } });
 }
 
 export default function Dev() {
-  const stateRef = useRef<GameState>(makeGame(5));
+  const stateRef = useRef<GameState>(makeGame(SEATS_PARAM >= 4 && SEATS_PARAM <= 8 ? SEATS_PARAM : 5));
   const [version, setVersion] = useState(1);
   const [selected, setSelected] = useState<string | null>(null);
   const [assignments, setAssignments] = useState<Record<number, string>>({});
   const [haunt, setHaunt] = useState<{ cardId: string; pileSeat: number } | null>(null);
+  const [focusSeat, setFocusSeat] = useState<number | null>(null);   // whose pile the reveal is showing
   const [goldAnim, setGoldAnim] = useState<GoldAnim | null>(null);
   const bump = useCallback(() => setVersion((v) => v + 1), []);
   const s = stateRef.current;
@@ -86,19 +92,19 @@ export default function Dev() {
   return (
     <div className="h-full grid grid-rows-[auto_1fr_auto] lg:grid-cols-[minmax(0,1fr)_320px] relative overflow-hidden">
       <header className="lg:col-span-2 flex flex-wrap items-center gap-4 px-4 py-2 border-b border-night-3 bg-night-2/60">
-        <div><Eyebrow>Dev harness</Eyebrow><div className="font-display text-lg">{view.phase === 'ended' ? 'The year is over' : <>Round {view.round}/{view.calendar.rounds} · <span className="capitalize">{view.season}</span> · {view.phase}</>}</div></div>
+        <div><Eyebrow>{CLEAN ? 'A Million Ways to Die in Medieval' : 'Dev harness'}</Eyebrow><div className="font-display text-lg">{view.phase === 'ended' ? 'The year is over' : <>Round {view.round}/{view.calendar.rounds} · <span className="capitalize">{view.season}</span> · {view.phase}</>}</div></div>
         <div className="text-sm">{isGhost ? '👻 ghost' : view.me.trade && <>You are the <span className="text-gold">{TRADE_INFO[view.me.trade].emoji} {TRADE_INFO[view.me.trade].name}</span></>}</div>
-        <div className="ml-auto flex gap-2">
+        {!CLEAN && <div className="ml-auto flex gap-2">
           <Button variant="ghost" onClick={() => { stateRef.current = makeGame(5); setAssignments({}); bump(); }}>New 5-seat game</Button>
-          <Button variant="ghost" onClick={() => { stateRef.current = makeGame(9); setAssignments({}); bump(); }}>New 9-seat game</Button>
+          <Button variant="ghost" onClick={() => { stateRef.current = makeGame(8); setAssignments({}); bump(); }}>New 8-seat game</Button>
           <Button variant="ghost" onClick={() => { tick(stateRef.current, now + 1e9); bump(); }}>Force deadline</Button>
-        </div>
+        </div>}
       </header>
       <main className="relative min-h-0 min-w-0 p-2">
         {(() => { const r = view.roundLog?.events.find((e) => e.t === 'reckoning'); return r && r.t === 'reckoning' && view.phase !== 'reveal' && view.phase !== 'ended' ? <div className="absolute top-2 inset-x-2 z-10 mx-auto max-w-2xl bg-blood-deep/90 border border-blood rounded-md px-4 py-2 text-center text-sm shadow-card"><span className="font-display text-base">⚖ The Reckoning.</span> {r.seats.map((x) => `${view.seats[x.seat].name} holds the richest trade — ${TRADE_INFO[x.trade].name} (${x.gold} gold)`).join('; ')}.</div> : null; })()}
-        <Table view={view} assignments={me.locked ? view.me.placements : assignments} hauntTarget={haunt?.pileSeat ?? null} onSeatClick={onSeatClick} selectable={view.phase === 'placement' && !me.locked} dropSeat={dnd.hoverSeat} />
+        <Table view={view} assignments={me.locked ? view.me.placements : assignments} hauntTarget={haunt?.pileSeat ?? null} onSeatClick={onSeatClick} selectable={view.phase === 'placement' && !me.locked} dropSeat={dnd.hoverSeat} focusSeat={focusSeat} />
         {dnd.drag && createPortal(<div className="fixed z-[95] pointer-events-none" style={{ left: dnd.drag.x - 55, top: dnd.drag.y - 75, transform: 'rotate(-4deg)' }}><CardArt cardKey={(view.me.hand.find((c) => c.id === dnd.drag!.cardId) ?? view.me.gravePool.find((c) => c.id === dnd.drag!.cardId))?.key ?? 'protect'} width={110} /></div>, document.body)}
-        {showReveal && view.roundLog && <RevealPlayer log={view.roundLog} view={view} secondsLeft={secondsLeft} busy={false} onNext={() => { acknowledge(stateRef.current, me.index, now); settle(); }} onSkip={() => { revealSkip(stateRef.current, me.index, now); settle(); }} onGold={setGoldAnim} />}
+        {showReveal && view.roundLog && <RevealPlayer log={view.roundLog} view={view} onFocusSeat={setFocusSeat} secondsLeft={secondsLeft} busy={false} onNext={() => { acknowledge(stateRef.current, me.index, now); settle(); }} onSkip={() => { revealSkip(stateRef.current, me.index, now); settle(); }} onGold={setGoldAnim} />}
         {view.phase === 'choice' && view.me.choices.length > 0 && <ChoiceModal view={view} busy={false} onChoose={(cid, t) => { answerChoice(stateRef.current, me.index, cid, t as never, now); settle(); }} />}
         {view.phase === 'funeral' && isGhost && !me.willSealed && view.succession.length > 0 && <FuneralModal view={view} busy={false} onSeal={(h) => { sealWill(stateRef.current, me.index, h, now); settle(); }} />}
         {view.phase === 'ended' && <EndScreen view={view} onHome={() => { stateRef.current = makeGame(5); bump(); }} />}

@@ -227,6 +227,8 @@ After the last round of Winter:
 3. **Crown the winner.** The living seat — player or bot — whose trade's track is highest wins. Ties go to the fewest wounds; if still tied, the winners share it.
 4. **Open the wills.** A ghost whose crest names the winner rises to share the win.
 
+**Last one standing.** If a round ends with only one villager still alive, the year ends at once: the survivor wins outright, and a ghost whose will names them shares the win.
+
 If everyone dies, the village stands empty and nobody wins.
 
 ---

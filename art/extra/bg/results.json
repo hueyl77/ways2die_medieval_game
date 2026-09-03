@@ -1,0 +1,92 @@
+{
+ "square-evening": {
+  "request_id": "atwd-bg-square-evening-v1",
+  "job_id": "1ad56900-1e98-44e3-a2f8-9b15b70a60d6",
+  "status": "succeeded",
+  "credits": 0.5,
+  "error": null,
+  "url": "https://storage.googleapis.com/ludo-assets/api/de9ef82266ba3135c78ac87452e4cdcd.webp",
+  "file": "extra/bg/square-evening.webp"
+ },
+ "square-day": {
+  "request_id": "atwd-bg-square-day-v1",
+  "job_id": "f58254d1-b555-4b8b-932c-a5e8feb9de7b",
+  "status": "succeeded",
+  "credits": 0.5,
+  "error": null,
+  "url": "https://storage.googleapis.com/ludo-assets/api/e2379b29f2f8ff8237e7a6d60ea0f947.webp",
+  "file": "extra/bg/square-day.webp"
+ },
+ "square-dusk": {
+  "request_id": "atwd-bg-square-dusk-v1",
+  "job_id": "bf76c3ea-f191-4d9f-8f01-5979c6c47d52",
+  "status": "succeeded",
+  "credits": 0.5,
+  "error": null,
+  "url": "https://storage.googleapis.com/ludo-assets/api/36fd47e8c1c16c9173165475cc313b28.webp",
+  "file": "extra/bg/square-dusk.webp"
+ },
+ "square-map": {
+  "request_id": "atwd-bg-square-map-v1",
+  "job_id": "f833e2b9-bd4d-475b-9010-706794255deb",
+  "status": "succeeded",
+  "credits": 0.5,
+  "error": null,
+  "url": "https://storage.googleapis.com/ludo-assets/api/5b68f2367099d4dae7b6acf1f257b26e.webp",
+  "file": "extra/bg/square-map.webp"
+ },
+ "square-map2": {
+  "request_id": "atwd-bg-square-map2-v1",
+  "job_id": "02ea50b6-7a6e-4a0a-9bb9-43dca0ea960b",
+  "status": "succeeded",
+  "credits": 0.5,
+  "error": null,
+  "url": "https://storage.googleapis.com/ludo-assets/api/841dc9c62ae4a62ac198dea0cbcfbcda.webp",
+  "file": "extra/bg/square-map2.webp"
+ },
+ "square-map3": {
+  "request_id": "atwd-bg-square-map3-v1",
+  "job_id": "45ee3335-11f1-4424-855a-896234f8f063",
+  "status": "succeeded",
+  "credits": 0.5,
+  "error": null,
+  "url": "https://storage.googleapis.com/ludo-assets/api/0369bc958b5f36d1eea020f21e2dd6d8.webp",
+  "file": "extra/bg/square-map3.webp"
+ },
+ "scene-evening": {
+  "request_id": "atwd-bg-scene-evening-v1",
+  "job_id": "1d88a613-de99-4e25-88e0-0eb53600e431",
+  "status": "succeeded",
+  "credits": 0.5,
+  "error": null,
+  "url": "https://storage.googleapis.com/ludo-assets/api/5cefadd545839f4ecbb78930cd89eee8.webp",
+  "file": "extra/bg/scene-evening.webp"
+ },
+ "scene-day": {
+  "request_id": "atwd-bg-scene-day-v1",
+  "job_id": "30df39ef-ab6a-4047-8a03-9e3d133344ab",
+  "status": "succeeded",
+  "credits": 0.5,
+  "error": null,
+  "url": "https://storage.googleapis.com/ludo-assets/api/625deb911aeaf7c369287495d630b070.webp",
+  "file": "extra/bg/scene-day.webp"
+ },
+ "scene-dusk": {
+  "request_id": "atwd-bg-scene-dusk-v1",
+  "job_id": "5471c283-acbe-48cf-b3c9-83d14ef896a5",
+  "status": "succeeded",
+  "credits": 0.5,
+  "error": null,
+  "url": "https://storage.googleapis.com/ludo-assets/api/7521c647e4b8589b9006271ff665bd4d.webp",
+  "file": "extra/bg/scene-dusk.webp"
+ },
+ "scene-golden": {
+  "request_id": "atwd-bg-scene-golden-v1",
+  "job_id": "a6e1251c-8b66-4fdf-b7b4-8dcbb615f179",
+  "status": "succeeded",
+  "credits": 0.5,
+  "error": null,
+  "url": "https://storage.googleapis.com/ludo-assets/api/99f7abceb6b7912dd90a96f79fb0e345.webp",
+  "file": "extra/bg/scene-golden.webp"
+ }
+}

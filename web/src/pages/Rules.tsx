@@ -146,6 +146,7 @@ export default function Rules() {
 
         <Section id="winning" eyebrow="Winning" title="The final reveal">
           <p className="max-w-2xl text-sm">After the last round every envelope opens at once. Apply scoring cards, then subtract a coin per wound. <b className="text-gold">The living seat — player or bot — with the richest trade wins.</b> Ties go to the fewest wounds; if still tied, the winners share it. Then the wills are opened: a ghost whose heir won rises with them. If everyone dies, the village stands empty and nobody wins.</p>
+          <p className="max-w-2xl text-sm mt-3"><b className="text-gold">Last one standing.</b> If a round ends with only one villager still alive, the year ends at once: the survivor wins outright, and a ghost whose will names them shares the win. If everyone dies, the village stands empty and nobody wins.</p>
         </Section>
 
         <Section id="manners" eyebrow="Table manners" title="The laws of the village">

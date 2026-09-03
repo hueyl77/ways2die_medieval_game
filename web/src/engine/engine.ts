@@ -490,8 +490,13 @@ export function sealWill(s: GameState, seat: number, heir: number, now: number):
   if (deadHumans(s).every((x) => x.willSealed)) nextRoundOrEnd(s, now);
 }
 
+/** The year ends early once at most one villager is left alive (a sole survivor wins outright), or when no humans remain. */
+export function yearIsOver(s: GameState): boolean {
+  return s.seats.filter((x) => x.alive).length <= 1 || livingHumans(s).length === 0;
+}
+
 function nextRoundOrEnd(s: GameState, now: number): void {
-  if (s.round >= s.calendar.rounds || livingHumans(s).length === 0) { finalScoring(s); return; }
+  if (s.round >= s.calendar.rounds || yearIsOver(s)) { finalScoring(s); return; }
   s.round += 1;
   s.crierSeat = (s.crierSeat + 1) % s.seatCount;
   for (const st of s.seats) { st.ready = false; st.ack = false; st.skipReveal = false; }
@@ -547,6 +552,8 @@ export function finalScoring(s: GameState): void {
 
 // ---------------------------------------------------------------- deadlines
 export function tick(s: GameState, now: number): boolean {
+  // A round that started with at most one villager alive has nobody to play against: end the year at once.
+  if ((s.phase === 'placement' || s.phase === 'gossip') && yearIsOver(s)) { finalScoring(s); return true; }
   if (s.phaseDeadline === null || now < s.phaseDeadline) return false;
   switch (s.phase) {
     case 'gossip': startPlacement(s, now); return true;

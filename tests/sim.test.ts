@@ -88,6 +88,19 @@ for (let n = 0; n < 60; n++) {
   games++; seatsTotal += seatCount; deaths += s.seats.filter((x) => !x.alive).length; if (!s.winners?.length) noWinner++;
   for (const l of s.logs) for (const e of l.events) { if (e.t === 'void') attacksVoided++; if (e.t === 'reveal') attacksPlayed += e.cards.filter((c) => isAttack(c.key)).length; }
 }
+// last one standing: a round that begins with a single villager alive ends the year at once, and the survivor wins
+{
+  const seats = Array.from({ length: 5 }, (_, i) => ({ userId: i < 4 ? `u${i}` : null, name: `P${i}`, crest: `c${i}`, isTownsfolk: i === 4 }));
+  const s = createGame({ id: 'solo', code: 'SOLO', hostUserId: 'u0', seats, seed: 7, now: 0 });
+  for (const st of s.seats) if (st.index !== 0) { st.alive = false; st.diedRound = 1; st.revealedTrade = st.trade; st.willSealed = true; }
+  s.seats[1].heir = 0; s.succession = s.succession.filter((i) => i !== 0);
+  assert(s.phase === 'placement', 'expected placement', s);
+  assert(tick(s, 1000), 'tick should end the year for a lone survivor', s);
+  assert(s.phase === 'ended' && s.status === 'finished', 'lone survivor did not end the year', s);
+  assert(JSON.stringify(s.winners) === '[0]', 'lone survivor should win: ' + JSON.stringify(s.winners), s);
+  assert(s.sharedBy.includes(1), 'the ghost whose will named the survivor should share the win', s);
+  assert(s.scoreRows?.length === 1, 'only the survivor is scored', s);
+}
 // determinism
 const a = JSON.stringify(playGame(5, 5, 4242)); const b = JSON.stringify(playGame(5, 5, 4242));
 assert(a === b, 'engine is not deterministic');

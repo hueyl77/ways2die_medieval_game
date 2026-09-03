@@ -38,8 +38,8 @@ function CoinFlights({ flights }: { flights: Flight[] }) {
 const centerTop = (el: Element | null) => { if (!el) return null; const r = el.getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + 8 }; };
 const rowPoint = (trade: string) => { const el = document.querySelector(`[data-gold-trade="${trade}"]`); if (!el) return null; const r = el.getBoundingClientRect(); return { x: r.right - 22, y: r.top + r.height / 2 }; };
 
-export function RevealPlayer({ log, view, secondsLeft, busy, onNext, onSkip, onGold }:
-  { log: RoundLog; view: PlayerView; secondsLeft: number | null; busy: boolean; onNext: () => void; onSkip: () => void; onGold?: (g: GoldAnim | null) => void }) {
+export function RevealPlayer({ log, view, secondsLeft, busy, onNext, onSkip, onGold, onFocusSeat }:
+  { log: RoundLog; view: PlayerView; secondsLeft: number | null; busy: boolean; onNext: () => void; onSkip: () => void; onGold?: (g: GoldAnim | null) => void; onFocusSeat?: (seat: number | null) => void }) {
   const scenes = useMemo(() => buildScenes(log, (i) => view.seats[i]?.name ?? `Seat ${i}`), [log, view]);
   const step = Math.min(view.revealStep, Math.max(0, scenes.length - 1));
   const s = scenes[step];
@@ -85,12 +85,16 @@ export function RevealPlayer({ log, view, secondsLeft, busy, onNext, onSkip, onG
     return () => { for (const t of timers) window.clearTimeout(t); };
   }, [step, scenes, preGold, fast]);
   useEffect(() => () => onGoldRef.current?.(null), []);
+  // tell the table whose pile is on show, so it can highlight and point at that seat
+  const onFocusRef = useRef(onFocusSeat); onFocusRef.current = onFocusSeat;
+  useEffect(() => { onFocusRef.current?.(s.kind === 'pile' ? s.pileSeat : null); }, [s]);
+  useEffect(() => () => onFocusRef.current?.(null), []);
   const me = view.me.seat !== null ? view.seats[view.me.seat] : null;
   const acked = !!me?.ack;
   const waiting = view.revealWaitingOn.filter((i) => i !== view.me.seat);
   const last = step >= scenes.length - 1;
   return (
-    <div className="absolute inset-0 z-30 bg-night/85 backdrop-blur-sm flex flex-col items-center justify-center p-4">
+    <div className="absolute inset-0 z-30 bg-night/20 flex flex-col items-center justify-center p-4">
       <div className="absolute top-3 left-3 flex items-center gap-3">
         <div className="font-ui text-[11px] tracking-[0.2em] uppercase text-ink-2">Round {log.round} · scene {step + 1} / {scenes.length}</div>
         {secondsLeft !== null && <div className={`font-ui tabular-nums text-sm ${secondsLeft <= 5 ? 'text-blood' : 'text-gold'}`} title="The scene moves on by itself when this runs out">{secondsLeft}s</div>}
@@ -122,7 +126,7 @@ export function RevealPlayer({ log, view, secondsLeft, busy, onNext, onSkip, onG
 function PileScene({ s, view, fast, coinLabels }: { s: Extract<Scene, { kind: 'pile' }>; view: PlayerView; fast: boolean; coinLabels: Record<string, number> }) {
   const owner = view.seats[s.pileSeat];
   return (
-    <div className="text-center">
+    <div className="text-center px-12 py-6 rounded-[40px]" style={{ background: 'radial-gradient(ellipse at center, rgba(20,22,28,.88) 0%, rgba(20,22,28,.6) 60%, rgba(20,22,28,0) 100%)' }}>
       <h2 className="font-display text-3xl text-parchment mb-1">{s.grave ? `${owner.name}'s grave` : `In front of ${owner.name}`}</h2>
       <p className="text-ink-2 text-sm mb-4">{s.grave ? 'Cards left on a grave have no effect.' : `${s.cards.length} cards, shuffled — nobody knows who placed what.`}{s.taxed && <span className="text-blood"> The Tax Collector is here: nothing in this pile earns gold.</span>}</p>
       <div className="flex flex-wrap justify-center gap-3">
