@@ -1,3 +1,4 @@
+import { calendarFor } from '../engine/engine.ts';
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../auth/AuthProvider';
@@ -24,6 +25,7 @@ export default function Room() {
   if (!view) return <div className="grid h-full place-items-center text-ink-2">Finding the table…</div>;
   const isHost = view.hostUserId === user?.id;
   const hunted = view.settings.huntSeat !== null && view.settings.huntSeat !== undefined;
+  const drawing = view.settings.drawMode ?? true;   // standard play; lobbies made before the setting existed follow the default
   const me = view.seats.find((s) => s.isMe);
   const humans = view.seats.filter((s) => !s.isTownsfolk).length;
   const bots = view.seats.filter((s) => s.isTownsfolk).length;
@@ -76,6 +78,7 @@ export default function Room() {
           <Panel title="This year">
             <p className="text-sm"><span className="text-gold">{seatsTotal} seats</span> · {cal.rounds} rounds{view.settings.seasonRules ? ` · ${cal.seasons}` : ''}</p>
             <p className="text-xs text-ink-2 mt-1">Death at {cal.deathAt} wounds · {cal.jobs} wares cards each</p>
+            <p className="text-xs text-ink-2 mt-1">{drawing ? `Each round you shuffle your deck of ${seatsTotal * cal.rounds} and draw ${seatsTotal} cards, one for every seat. You place them all.` : `You hold your whole envelope, ${seatsTotal * cal.rounds} cards, and choose what to play each round.`}</p>
           </Panel>
           <Panel title="Settings">
             <SettingRow label="Table size" value={seatsTotal} unit=" seats" host={isHost} onChange={(v) => act(() => api.settings(view.id, { tableSize: v }))} step={1} />
@@ -84,6 +87,10 @@ export default function Room() {
             <div className="flex items-center justify-between py-1 text-sm">
               <span className="text-ink-2" title="Market Fair (+1 per wares in Harvest), the Reeve's Tax, and the Hungry Winter">Season rules (variant)</span>
               {isHost ? <button className={`px-2 rounded-sm font-ui text-xs uppercase ${view.settings.seasonRules ? 'bg-gold text-night' : 'bg-night-3'}`} onClick={() => act(() => api.settings(view.id, { seasonRules: !view.settings.seasonRules }))}>{view.settings.seasonRules ? 'On' : 'Off'}</button> : <span className="font-ui">{view.settings.seasonRules ? 'On' : 'Off'}</span>}
+            </div>
+            <div className="flex items-center justify-between py-1 text-sm">
+              <span className="text-ink-2" title="On (standard): your envelope is a face-down deck. Each round you shuffle it, draw one card per seat and place them all. Off: the Open Envelope variant, where you hold every card from the start and choose what to play.">Draw from your deck</span>
+              {isHost ? <button className={`px-2 rounded-sm font-ui text-xs uppercase ${drawing ? 'bg-gold text-night' : 'bg-night-3'}`} onClick={() => act(() => api.settings(view.id, { drawMode: !drawing }))}>{drawing ? 'On' : 'Off'}</button> : <span className="font-ui">{drawing ? 'On' : 'Off'}</span>}
             </div>
             <div className="flex items-center justify-between py-1 text-sm">
               <span className="text-ink-2" title="Every bot puts its heaviest attack in front of you each round, so you can see what dying is like">Test: bots attack me</span>
@@ -111,7 +118,7 @@ function SettingRow({ label, value, unit, host, onChange, step }: { label: strin
 }
 
 export function calendarPreview(seats: number) {
-  if (seats <= 5) return { rounds: 6, seasons: 'Spring · Harvest · Winter (2 rounds each)', deathAt: 3, jobs: seats * 6 - 12 };
-  return { rounds: 4, seasons: 'Harvest · Winter (2 rounds each)', deathAt: 4, jobs: seats * 4 - 12 };
+  const c = calendarFor(seats);   // every year is five rounds; the seat count sets the death threshold and the wares kept
+  return { rounds: c.rounds, seasons: 'Spring · Harvest · Harvest · Winter · Winter', deathAt: c.deathAt, jobs: c.jobsKept };
 }
 export type { PlayerView };

@@ -6,6 +6,7 @@ import { Table } from '../components/Table';
 import { Hand } from '../components/Hand';
 import { GoldBoard, Calendar } from '../components/GoldBoard';
 import { RevealPlayer, type GoldAnim, type WoundAnim } from '../components/RevealPlayer';
+import { fillRest, fillRestLabel } from '../lib/placement';
 import { GameLog } from '../components/GameLog';
 import { ChoiceModal, FuneralModal, EndScreen } from '../components/Modals';
 import { Button, Eyebrow } from '../components/ui';
@@ -19,10 +20,11 @@ const QS = new URLSearchParams(window.location.search);
 const SEED_PARAM = QS.get('seed');
 const SEATS_PARAM = Number(QS.get('seats') ?? 0);
 const CLEAN = QS.has('clean'); // hide harness-only controls, e.g. when recording video
+const DRAW = !QS.has('full');   // standard: draw one card per seat from your deck each round; ?full = the Open Envelope variant
 function makeGame(seatCount: number): GameState {
   const seats = Array.from({ length: seatCount }, (_, i) => ({ userId: i < seatCount - 1 ? `u${i}` : null, name: i === 0 ? (CLEAN ? 'Wat' : 'You') : i < seatCount - 1 ? ['Marta', 'Bram', 'Odo', 'Ysolde', 'Piers', 'Agnes', 'Wat', 'Hild', 'Cedric', 'Rowan', 'Edith'][i - 1] : 'Stranger', crest: ['gold', 'crimson', 'azure', 'emerald', 'violet', 'umber', 'ivory', 'teal', 'rose', 'slate', 'amber', 'moss'][i], isTownsfolk: i === seatCount - 1 }));
   const seed = SEED_PARAM ? Number(SEED_PARAM) >>> 0 : Math.floor(Math.random() * 1e9);
-  return createGame({ id: 'dev', code: 'DEVDEV', hostUserId: ME, seats, seed, now: Date.now(), settings: { gossipSeconds: 999, placementSeconds: 999, revealSeconds: 999, revealStepSeconds: 999, funeralSeconds: 999, choiceSeconds: 999 } });
+  return createGame({ id: 'dev', code: 'DEVDEV', hostUserId: ME, seats, seed, now: Date.now(), settings: { gossipSeconds: 999, placementSeconds: 999, revealSeconds: 999, revealStepSeconds: 999, funeralSeconds: 999, choiceSeconds: 999, drawMode: DRAW } });
 }
 
 export default function Dev() {
@@ -92,7 +94,7 @@ export default function Dev() {
   const onSeatClick = (seat: number) => { if (!selected) return; placeCardOnSeat(selected, seat); };
   const dnd = useCardDrag((cardId, seat) => { if (seat !== null) placeCardOnSeat(cardId, seat); });
   const canDrag = view.phase === 'placement' && !me.locked;
-  const autoFill = () => { const used = new Set(Object.values(assignments)); const free = view.me.hand.filter((c) => !used.has(c.id)); const q = [...free.filter((c) => c.key.startsWith('job:')), ...free.filter((c) => !c.key.startsWith('job:'))]; const n = { ...assignments }; for (const x of view.seats) if (!n[x.index]) { const c = q.shift(); if (c) n[x.index] = c.id; } setAssignments(n); };
+  const autoFill = () => setAssignments(fillRest(view, assignments));
 
   return (
     <div className="h-full grid grid-rows-[auto_1fr_auto] lg:grid-cols-[minmax(0,1fr)_320px] relative overflow-hidden">
@@ -120,7 +122,7 @@ export default function Dev() {
           {view.phase === 'gossip' && me.alive && <Button onClick={() => { setReady(stateRef.current, me.index, now); settle(); }}>Ready</Button>}
           {view.phase === 'placement' && !isGhost && me.alive && (<>
             <Button disabled={me.locked || !allAssigned} onClick={() => { submitPlacement(stateRef.current, me.index, Object.fromEntries(Object.entries(assignments).map(([k, v]) => [String(k), v])), null, now); setAssignments({}); settle(); }}>{me.locked ? 'Locked ✓' : 'Lock in'}</Button>
-            <Button variant="ghost" onClick={autoFill}>Fill the rest with wares</Button>
+            <Button variant="ghost" onClick={autoFill}>{fillRestLabel(view)}</Button>
             <span className="text-sm text-ink-2">{Object.keys(assignments).length}/{view.seatCount} placed</span>
             {selected && <span className="text-sm text-gold">Click a seat for {def(view.me.hand.find((c) => c.id === selected)!.key).name}</span>}
           </>)}

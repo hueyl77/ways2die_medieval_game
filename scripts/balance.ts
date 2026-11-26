@@ -1,5 +1,6 @@
 // Balance harness: plays many games with simple policies and reports per-trade and per-card statistics.
-// Usage: node scripts/balance.ts [games=100] [seats=5] [policy=random|sensible|both]
+// Usage: node scripts/balance.ts [games=100] [seats=5] [policy=random|sensible|measured|all] [deathAt|0] [kit3|nokit] [full]
+// Hands are drawn from a shuffled deck, one card per seat each round (the standard game); pass `full` for the Open Envelope variant.
 import { createGame, submitPlacement, answerChoice, acknowledge, sealWill, tick, handOf, gravePoolOf, heirOptions, isAttack, ACTIVE_TRADES as TRADES, TRADE_INFO, CARDS, type GameState } from '../web/src/engine/index.ts';
 import { seedFrom, randInt, pick } from '../web/src/engine/rng.ts';
 import type { Trade } from '../web/src/engine/cards.ts';
@@ -8,6 +9,7 @@ type Policy = 'random' | 'sensible' | 'measured';
 const GAMES = Number(process.argv[2] ?? 100); const SEATS = Number(process.argv[3] ?? 5); const POLICY = (process.argv[4] ?? 'all') as Policy | 'all';
 const DEATH_AT = process.argv[5] && process.argv[5] !== '0' ? Number(process.argv[5]) : null;   // what-if override of the death threshold
 const KIT3 = process.argv[6] === 'kit3';   // what-if: 3 Mishaps + 1 Calamity (one mishap becomes a wares card)
+const DRAW = process.argv[7] !== 'full';   // standard: draw one card per seat each round; `full` = the Open Envelope variant (whole envelope in hand)
 
 function place(s: GameState, seat: number, policy: Policy, r: { rng: number }, now: number) {
   const hand = handOf(s, seat).slice();
@@ -59,7 +61,7 @@ const stats = (): Stats => ({ games: 0, wins: zero(), plays: zero(), finalGold: 
 
 function play(policy: Policy, seed: number, st: Stats) {
   const seats = Array.from({ length: SEATS }, (_, i) => ({ userId: `u${i}`, name: `P${i}`, crest: `c${i}`, isTownsfolk: false }));
-  const s = createGame({ id: `g${seed}`, code: `C${seed}`, hostUserId: 'u0', seats, seed, now: 0 });
+  const s = createGame({ id: `g${seed}`, code: `C${seed}`, hostUserId: 'u0', seats, seed, now: 0, settings: { drawMode: DRAW } });
   if (DEATH_AT) s.calendar.deathAt = DEATH_AT;
   if (KIT3) for (const x of s.seats) { const m = handOf(s, x.index).find((c) => c.key.startsWith('mishap:')); if (m) m.key = `job:${x.trade}`; }
   const r = { rng: seed ^ 0x51ed270b }; let now = 1000; let guard = 0;
@@ -91,7 +93,7 @@ function play(policy: Policy, seed: number, st: Stats) {
 
 const mean = (a: number[]) => (a.length ? a.reduce((x, y) => x + y, 0) / a.length : 0);
 function report(policy: Policy, st: Stats) {
-  console.log(`\n=== ${policy.toUpperCase()} play · ${st.games} games · ${SEATS} seats${DEATH_AT ? ` · death at ${DEATH_AT} (what-if)` : ''}${KIT3 ? ' · kit 3+1 (what-if)' : ''} ===`);
+  console.log(`\n=== ${policy.toUpperCase()} play · ${st.games} games · ${SEATS} seats${DEATH_AT ? ` · death at ${DEATH_AT} (what-if)` : ''}${KIT3 ? ' · kit 3+1 (what-if)' : ''}${DRAW ? ' · drawing from the deck' : ' · open envelope (full hand)'} ===`);
   console.log(`deaths/game ${mean(st.deathsPerGame).toFixed(2)} · mean death round ${mean(st.deathRound).toFixed(1)} · no winner ${st.noWinner} · shared wins ${st.sharedWins} · ghost shares ${st.ghostWins} · winner margin ${mean(st.winnerMargin).toFixed(1)} gold`);
   console.log(`Alms granted ${st.almsGranted}/${st.almsPlayed} (${(100 * st.almsGranted / Math.max(1, st.almsPlayed)).toFixed(0)}%) · Tax Collector seized ${(st.taxCards / Math.max(1, st.taxPlayed)).toFixed(1)} cards per play`);
   console.log('\ntrade         seated  wins  win%/seat  survive%  avg final gold');

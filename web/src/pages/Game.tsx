@@ -12,6 +12,7 @@ import { Hand } from '../components/Hand';
 import { GoldBoard, Calendar } from '../components/GoldBoard';
 import { Chat } from '../components/Chat';
 import { RevealPlayer, type GoldAnim, type WoundAnim } from '../components/RevealPlayer';
+import { fillRest, fillRestLabel } from '../lib/placement';
 import { GameLog } from '../components/GameLog';
 import { ChoiceModal, FuneralModal, EndScreen } from '../components/Modals';
 import { Button, Eyebrow } from '../components/ui';
@@ -79,16 +80,7 @@ export default function Game() {
   const dnd = useCardDrag((cardId, seat) => { if (seat !== null) placeCardOnSeat(cardId, seat); });
   const canDrag = !!view && view.phase === 'placement' && !locked;
 
-  const autoFill = () => {
-    if (!view) return;
-    const used = new Set(Object.values(assignments));
-    const free = view.me.hand.filter((c) => !used.has(c.id));
-    const jobs = free.filter((c) => c.key.startsWith('job:')); const others = free.filter((c) => !c.key.startsWith('job:'));
-    const queue = [...jobs, ...others];
-    const next = { ...assignments };
-    for (const s of view.seats) if (!next[s.index]) { const c = queue.shift(); if (c) next[s.index] = c.id; }
-    setAssignments(next);
-  };
+  const autoFill = () => { if (view) setAssignments(fillRest(view, assignments)); };
 
   if (error && !view) return <div className="p-6 text-blood">{error} <Button variant="ghost" onClick={() => nav('/')}>Home</Button></div>;
   if (!view) return <div className="grid h-full place-items-center text-ink-2">Taking your seat…</div>;
@@ -110,7 +102,7 @@ export default function Game() {
     <div className="h-full grid grid-rows-[auto_1fr_auto] lg:grid-cols-[minmax(0,1fr)_320px] lg:grid-rows-[auto_1fr_auto] relative overflow-hidden">
       <header className="lg:col-span-2 flex flex-wrap items-center gap-x-6 gap-y-1 px-4 py-2 border-b border-night-3 bg-night-2/60">
         <div><Eyebrow>Room {view.code}</Eyebrow><div className="font-display text-lg leading-tight">{view.phase === 'ended' ? 'The year is over' : <>Round {view.round} of {view.calendar.rounds} · <span className="capitalize">{view.season}</span></>}</div></div>
-        <div className="text-sm text-ink-2 flex-1 min-w-[200px]">{isGhost && view.phase === 'placement' ? "You are a ghost: pick a card from your grave pool and a living seat to haunt, or rest quietly." : PHASE_TEXT[view.phase]}</div>
+        <div className="text-sm text-ink-2 flex-1 min-w-[200px]">{isGhost && view.phase === 'placement' ? "You are a ghost: pick a card from your grave pool and a living seat to haunt, or rest quietly." : view.phase === 'placement' && view.settings.drawMode ? `Placement: you drew ${view.seatCount} cards from your deck. Talk it over, then put one in front of every seat, including yourself.` : PHASE_TEXT[view.phase]}</div>
         {secondsLeft !== null && view.phase !== 'ended' && <div className={`font-ui tabular-nums text-xl ${secondsLeft <= 10 ? 'text-blood' : 'text-gold'}`}>{Math.floor(secondsLeft / 60)}:{String(secondsLeft % 60).padStart(2, '0')}</div>}
         {myTrade && <div className="text-sm">{ghostShown ? '👻 You are a ghost' : <>You are the <span className="text-gold font-bold">{TRADE_INFO[myTrade].emoji} {TRADE_INFO[myTrade].name}</span> <span className="text-ink-2">(keep it secret)</span></>}</div>}
         <Button variant="ghost" onClick={() => window.open('/rules', '_blank', 'noopener')} title="Open the rules in a new window">📜 Rules</Button>
@@ -151,7 +143,7 @@ export default function Game() {
           {view.phase === 'gossip' && <span className="text-sm text-ink-2">{readyCount}/{needed} ready</span>}
           {view.phase === 'placement' && !isGhost && me?.alive && (<>
             <Button disabled={busy || locked || !allAssigned} onClick={() => void act(() => api.place(view.id, Object.fromEntries(Object.entries(effective).map(([k, v]) => [String(k), v])), null))}>{locked ? 'Locked in ✓' : 'Lock in'}</Button>
-            {!locked && <Button variant="ghost" onClick={autoFill}>Fill the rest with wares</Button>}
+            {!locked && <Button variant="ghost" onClick={autoFill}>{fillRestLabel(view)}</Button>}
             <span className="text-sm text-ink-2">{Object.keys(effective).length}/{view.seatCount} placed · {lockedCount}/{needed} locked</span>
             {selected && <span className="text-sm text-gold">Now click a seat for {def(view.me.hand.find((c) => c.id === selected)!.key).name}</span>}
             {!selected && Object.keys(effective).length === 0 && <span className="text-sm text-ink-2">Drag a card onto a seat, or click a card and then a seat.</span>}

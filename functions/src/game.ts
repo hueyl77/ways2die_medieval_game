@@ -58,14 +58,14 @@ async function verifyGuest(apiKey: string, token: unknown): Promise<GuestClaims 
 
 function lobbyView(row: GameRow, userId: string, now: number): PlayerView {
   const snap = row.snapshot as LobbySnapshot;
-  const blank = { alive: true, wounds: 0, woundCards: [], woundTokens: 0, diedRound: null, revealedTrade: null, locked: false, ack: false, skipReveal: false, scoringCards: [], pendingCards: [], pileCount: 0, gravePoolCount: 0, handCount: 0, willSealed: false };
+  const blank = { alive: true, wounds: 0, woundCards: [], woundTokens: 0, diedRound: null, revealedTrade: null, locked: false, ack: false, skipReveal: false, scoringCards: [], pendingCards: [], pileCount: 0, gravePoolCount: 0, handCount: 0, deckCount: 0, willSealed: false };
   const seats = [
     ...snap.seats.map((s, i) => ({ ...blank, index: i, userId: s.userId, name: s.name, crest: s.crest, isTownsfolk: false, ready: s.ready, isMe: s.userId === userId })),
     ...Array.from({ length: botCount(snap) }, (_, i) => ({ ...blank, index: snap.seats.length + i, userId: null, name: BOT_NAMES[i % BOT_NAMES.length], crest: 'stranger', isTownsfolk: true, ready: true, isMe: false })),
   ];
   const meIdx = snap.seats.findIndex((s) => s.userId === userId);
   return {
-    id: row.id, code: row.code, hostUserId: row.host_user_id, status: 'lobby', settings: snap.settings, seatCount: seats.length,
+    id: row.id, code: row.code, hostUserId: row.host_user_id, status: 'lobby', settings: { ...DEFAULT_SETTINGS, ...snap.settings }, seatCount: seats.length,
     calendar: { rounds: 0, seasons: [], jobsKept: 0, deathAt: 0 }, round: 0, season: null, phase: 'lobby', phaseDeadline: null, crierSeat: 0,
     version: row.version, seats, gold: {}, lockedTrades: [], shieldedTrades: [], succession: [], roundLog: null, logs: [],
     winners: null, sharedBy: null, scoreRows: null,
@@ -240,6 +240,7 @@ export default async function handler(req: Request): Promise<Response> {
             extraTownsfolk: clamp(incoming.extraTownsfolk, 0, 2, snap.settings.extraTownsfolk),
             revealPlacementsAtEnd: !!(incoming.revealPlacementsAtEnd ?? snap.settings.revealPlacementsAtEnd),
             seasonRules: !!(incoming.seasonRules ?? snap.settings.seasonRules ?? false),
+            drawMode: !!(incoming.drawMode ?? snap.settings.drawMode ?? DEFAULT_SETTINGS.drawMode),
             huntSeat: incoming.huntSeat === null ? null : typeof incoming.huntSeat === 'number' ? clamp(incoming.huntSeat, 0, MAX_SEATS - 1, 0) : (snap.settings.huntSeat ?? null),
           } };
         } else if (op === 'start') {
@@ -252,7 +253,7 @@ export default async function handler(req: Request): Promise<Response> {
             ...Array.from({ length: bots }, (_, i) => ({ userId: null, name: BOT_NAMES[i % BOT_NAMES.length], crest: 'stranger', isTownsfolk: true })),
           ];
           const seed = seedFrom(`${row.id}:${now}:${Math.random()}`);
-          const state = createGame({ id: row.id, code: row.code, hostUserId: row.host_user_id, seats: specs, settings: snap.settings, seed, now });
+          const state = createGame({ id: row.id, code: row.code, hostUserId: row.host_user_id, seats: specs, settings: { ...DEFAULT_SETTINGS, ...snap.settings }, seed, now });
           if (await save(row, state)) {
             await admin.database.from('game_events').insert([{ game_id: row.id, user_id: userId, kind: 'start', payload: { seed, seatCount: state.seatCount } }]);
             return respond(row, state, row.version + 1);

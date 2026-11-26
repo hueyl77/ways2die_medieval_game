@@ -5,7 +5,7 @@ import type { GameState, Seat, CardInst, Settings, Calendar, Season, LogEvent, S
 
 export const DEFAULT_SETTINGS: Settings = {
   gossipSeconds: 120, placementSeconds: 150, choiceSeconds: 30, revealSeconds: 45, revealStepSeconds: 20,
-  funeralSeconds: 60, extraTownsfolk: 0, tableSize: 4, seasonRules: false, leaderRules: false, revealPlacementsAtEnd: false, huntSeat: null };
+  funeralSeconds: 60, extraTownsfolk: 0, tableSize: 4, seasonRules: false, leaderRules: false, drawMode: true, revealPlacementsAtEnd: false, huntSeat: null };
 /** Season rules are an optional variant; off, every round plays the same and the seasons are just names on the calendar. */
 const seasonal = (s: GameState) => !!s.settings.seasonRules;
 const stepMs = (s: GameState) => (s.settings.revealStepSeconds ?? 20) * 1000;
@@ -15,12 +15,14 @@ export class RuleError extends Error {
   constructor(code: string, message?: string) { super(message ?? code); this.code = code; }
 }
 
+/** Every year is five rounds, whatever the size of the table. The seat count only sets the death threshold and how many wares each envelope keeps. */
+export const ROUNDS = 5;
+export const FIXED_CARDS = 12;   // 3 Mishaps + 1 Calamity + 2 Heals + 1 Protect + 1 Alms + 1 Tax Collector + 3 signatures
+export const WARES_PER_ENVELOPE = 8 * ROUNDS - FIXED_CARDS;   // 28: what the printed envelope holds (the 8-seat hand)
 export function calendarFor(seatCount: number): Calendar {
-  let rounds: number; let seasons: Season[]; let deathAt: number;
-  if (seatCount <= 5) { rounds = 6; seasons = ['spring', 'spring', 'harvest', 'harvest', 'winter', 'winter']; deathAt = 3; }
-  else { rounds = 4; seasons = ['harvest', 'harvest', 'winter', 'winter']; deathAt = 4; }   // 6–8 seats
-  // fixed cards per envelope: 3 Mishaps + 1 Calamity + 2 Heals + 1 Protect + 1 Alms + 1 Tax Collector + 3 signatures = 12
-  return { rounds, seasons, jobsKept: seatCount * rounds - 12, deathAt };
+  const seasons: Season[] = ['spring', 'harvest', 'harvest', 'winter', 'winter'];
+  const deathAt = seatCount <= 5 ? 3 : 4;
+  return { rounds: ROUNDS, seasons, jobsKept: seatCount * ROUNDS - FIXED_CARDS, deathAt };
 }
 
 export interface SeatSpec { userId: string | null; name: string; crest: string; isTownsfolk: boolean }
@@ -32,6 +34,7 @@ export const isHuman = (seat: Seat): boolean => !seat.isTownsfolk;
 export const livingHumans = (s: GameState): Seat[] => s.seats.filter((x) => x.alive && isHuman(x));
 export const deadHumans = (s: GameState): Seat[] => s.seats.filter((x) => !x.alive && isHuman(x));
 export const handOf = (s: GameState, seat: number): CardInst[] => s.cards.filter((c) => c.zone === 'hand' && c.ownerSeat === seat);
+export const deckOf = (s: GameState, seat: number): CardInst[] => s.cards.filter((c) => c.zone === 'deck' && c.ownerSeat === seat);
 export const gravePoolOf = (s: GameState, seat: number): CardInst[] => s.cards.filter((c) => c.zone === 'grave_pool' && c.pileSeat === seat);
 export const woundsOf = (s: GameState, seat: number): number =>
   s.cards.filter((c) => c.zone === 'wound' && c.pileSeat === seat).length + s.seats[seat].woundTokens;
@@ -72,7 +75,7 @@ export function createGame(o: { id: string; code: string; hostUserId: string; se
   const mishaps = shuffle(s, [...MISHAP_KEYS]);   // 24 mishaps, one copy each — exactly enough for 8 seats × 3
   const calamities = shuffle(s, [...CALAMITY_KEYS]);
   for (const seat of s.seats) {
-    const jobs = seat.isTownsfolk ? 27 : calendar.jobsKept;
+    const jobs = seat.isTownsfolk ? WARES_PER_ENVELOPE : calendar.jobsKept;   // the stranger's envelope is not trimmed
     for (let j = 0; j < jobs; j++) newCard(s, `job:${seat.trade}`, seat.index);
     newCard(s, 'heal', seat.index); newCard(s, 'heal', seat.index); newCard(s, 'protect', seat.index); newCard(s, `alms:${seat.trade}`, seat.index); newCard(s, 'tax-collector', seat.index);
     for (const k of signatureKeys(seat.trade)) newCard(s, k, seat.index);
@@ -80,6 +83,9 @@ export function createGame(o: { id: string; code: string; hostUserId: string; se
     newCard(s, calamities.pop()!, seat.index);
     s.succession.push(seat.index);   // every seat's crest joins the succession: a ghost may name a bot as heir
   }
+  // Standard play: a player's envelope is a face-down deck, shuffled and drawn from each round, one card per seat.
+  // (drawMode off is the Open Envelope variant: the whole envelope is held in hand from the start.)
+  if (settings.drawMode) { for (const c of s.cards) if (!s.seats[c.ownerSeat].isTownsfolk) c.zone = 'deck'; drawHands(s); }
   s.roundLog = { round: 1, events: [{ t: 'round_start', round: 1, season: seasonOf(s) }], complete: false };
   return s;
 }
@@ -98,6 +104,19 @@ export function startPlacement(s: GameState, now: number): void {
   s.phaseDeadline = now + s.settings.placementSeconds * 1000;
   for (const st of s.seats) { st.locked = false; st.ready = false; }
   s.placementsThisRound = {};
+  if (s.settings.drawMode) drawHands(s);
+}
+
+/** Every living seat that still has a deck shuffles it and draws its hand for the round: one card per seat at the table. */
+export function drawHands(s: GameState): void {
+  for (const st of s.seats) if (st.alive) drawFor(s, st.index);
+}
+/** Shuffle one seat's deck and draw up to a full hand. Cards already in hand are kept (a drunk draws early), so a hand never exceeds one card per seat. */
+function drawFor(s: GameState, seat: number): void {
+  const deck = deckOf(s, seat);
+  const need = s.seatCount - handOf(s, seat).length;
+  if (need <= 0 || !deck.length) return;
+  for (const c of shuffle(s, deck).slice(0, need)) c.zone = 'hand';
 }
 
 export function submitPlacement(s: GameState, seat: number, placements: Record<string, string>, haunt: { cardId: string; pileSeat: number } | null, now: number): void {
@@ -299,7 +318,7 @@ export function beginResolve(s: GameState, now: number): void {
   for (const st of s.seats) {
     if (!st.alive || woundsOf(s, st.index) < s.calendar.deathAt) continue;
     st.alive = false; st.diedRound = s.round; st.revealedTrade = st.trade; s.lockedTrades.push(st.trade);
-    for (const c of handOf(s, st.index)) { c.zone = 'grave_pool'; c.pileSeat = st.index; }
+    for (const c of [...handOf(s, st.index), ...deckOf(s, st.index)]) { c.zone = 'grave_pool'; c.pileSeat = st.index; }   // hand and, in draw mode, the rest of the deck
     st.willSealed = !isHuman(st);
     log(s, { t: 'death', seat: st.index, trade: st.trade, name: st.name });
   }
@@ -418,9 +437,13 @@ export function finishResolve(s: GameState, now: number, flags: { curfew: boolea
     for (const c of revealedIn(s, p)) {
       if (!live(c) || owner.isTownsfolk) continue;
       if (c.key === 'sig:inquest') { const keys = Object.values(s.placementsThisRound[p] ?? {}).map((id) => cardById(s, id)!.key); log(s, { t: 'truth', seat: p, cardKey: c.key, answer: keys.some(isAttack) ? 'Yes' : 'No' }); }
-      else if (c.key === 'sig:appraisal') log(s, { t: 'truth', seat: p, cardKey: c.key, answer: String(handOf(s, p).filter((x) => isJob(x.key)).length) });
+      else if (c.key === 'sig:appraisal') log(s, { t: 'truth', seat: p, cardKey: c.key, answer: String([...handOf(s, p), ...deckOf(s, p)].filter((x) => isJob(x.key)).length) });   // wares left in hand and (draw mode) deck
       else if (c.key === 'sig:tracks-in-the-snow') log(s, { t: 'truth', seat: p, cardKey: c.key, answer: String(owner.attacksPlaced) });
-      else if (c.key === 'sig:strong-ale') log(s, { t: 'reveal_hand', seat: p, cardKey: c.key, cards: handOf(s, p).map((x) => x.key) });
+      else if (c.key === 'sig:strong-ale') {
+        // Drawing from a deck, this round's hand has already been placed: the drunk draws next round's hand now, in front of everyone
+        if (s.settings.drawMode && owner.alive) drawFor(s, p);
+        log(s, { t: 'reveal_hand', seat: p, cardKey: c.key, cards: handOf(s, p).map((x) => x.key) });
+      }
     }
   }
   // 9. pending: cards whose effect happens later stay on the pile

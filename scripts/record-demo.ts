@@ -53,13 +53,13 @@ async function main() {
     await page.mouse.move(cb.x + cb.width / 2, cb.y + cb.height / 2); await page.mouse.down();
     const steps = 30; for (let i = 1; i <= steps; i++) { await page.mouse.move(cb.x + (sb.x + sb.width / 2 - cb.x) * i / steps, cb.y + (sb.y + sb.height / 2 - cb.y) * i / steps); await sleep(25); }
     await page.mouse.up(); await sleep(900);
-    await clickText(page, /fill the rest/); await sleep(1200);
+    await clickText(page, /(fill|place) the rest/); await sleep(1200);
     await clickText(page, /^lock in$/); await sleep(1500);
   });
   // 3. the reveal: step through every scene with Next, letting the coin flights play
   await shot(browser, '03-reveal', async (page) => {
     await harness(page); await sleep(800);
-    await clickText(page, /fill the rest/); await sleep(400); await clickText(page, /^lock in$/); await sleep(2600);
+    await clickText(page, /(fill|place) the rest/); await sleep(400); await clickText(page, /^lock in$/); await sleep(2600);
     for (let i = 0; i < 20; i++) {
       const t = await page.evaluate(() => document.querySelector('.z-30')?.textContent ?? '');
       const last = /Finish/i.test(await page.evaluate(() => [...document.querySelectorAll('.z-30 button')].map((b) => b.textContent).join('|')));
@@ -93,7 +93,7 @@ async function main() {
         const header = document.querySelector('header')?.textContent ?? '';
         if (/The year is over/i.test(header)) break;
         if (document.querySelector('.z-40 button')) { (document.querySelector('.z-40 button') as HTMLButtonElement).click(); await sleep(200); continue; }
-        if (/placement/i.test(header)) { if (click(/fill the rest/)) { await sleep(150); click(/^lock in$/); } else if (!click(/^haunt$/)) click(/rest quietly/); }
+        if (/placement/i.test(header)) { if (click(/(fill|place) the rest/)) { await sleep(150); click(/^lock in$/); } else if (!click(/^haunt$/)) click(/rest quietly/); }
         else if (/reveal/i.test(header)) { if (!click(/skip to the end/)) click(/^(next|finish)$/); }
         await sleep(250);
       }

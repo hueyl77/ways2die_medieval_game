@@ -1,5 +1,5 @@
 // Random-play simulation: plays many games end to end and checks invariants.
-import { createGame, setReady, submitPlacement, answerChoice, acknowledge, revealSkip, sealWill, tick, handOf, gravePoolOf, heirOptions, projectFor, isAttack, convertToBot, poorestWithGold, TRADES, type GameState } from '../web/src/engine/index.ts';
+import { createGame, setReady, submitPlacement, answerChoice, acknowledge, revealSkip, sealWill, tick, handOf, deckOf, gravePoolOf, heirOptions, projectFor, isAttack, convertToBot, poorestWithGold, TRADES, type GameState } from '../web/src/engine/index.ts';
 import { seedFrom, randInt, pick } from '../web/src/engine/rng.ts';
 import type { Trade } from '../web/src/engine/cards.ts';
 
@@ -14,10 +14,12 @@ function checkInvariants(s: GameState) {
   for (const st of s.seats) {
     assert(st.woundTokens >= 0, 'negative tokens', s);
     if (st.alive && !st.isTownsfolk && s.phase === 'placement' && !st.locked) {
-      const expected = s.seatCount * (s.calendar.rounds - s.round + 1);
-      assert(handOf(s, st.index).length === expected, `hand size ${handOf(s, st.index).length} != ${expected} for seat ${st.index}`, s);
+      const remaining = s.seatCount * (s.calendar.rounds - s.round + 1);
+      const hand = handOf(s, st.index).length, deck = deckOf(s, st.index).length;
+      if (s.settings.drawMode) { assert(hand === s.seatCount, `drawn hand ${hand} != ${s.seatCount} for seat ${st.index}`, s); assert(hand + deck === remaining, `hand+deck ${hand + deck} != ${remaining} for seat ${st.index}`, s); }
+      else assert(hand === remaining && deck === 0, `hand size ${hand} != ${remaining} for seat ${st.index}`, s);
     }
-    if (!st.alive) assert(handOf(s, st.index).length === 0, 'dead seat holds cards', s);
+    if (!st.alive) assert(handOf(s, st.index).length === 0 && deckOf(s, st.index).length === 0, 'dead seat holds cards', s);
   }
   // projection leaks
   for (const st of s.seats) {
@@ -33,10 +35,11 @@ function checkInvariants(s: GameState) {
   }
 }
 
-function playGame(seatCount: number, humans: number, seed: number, verbose = false): GameState {
+function playGame(seatCount: number, humans: number, seed: number, verbose = false, drawMode = false): GameState {
   const seats = Array.from({ length: seatCount }, (_, i) => ({ userId: i < humans ? `u${i}` : null, name: i < humans ? `P${i}` : `Townsfolk ${i}`, crest: `c${i}`, isTownsfolk: i >= humans }));
-  const s = createGame({ id: `g${seed}`, code: `C${seed}`, hostUserId: 'u0', seats, seed, now: 0 });
-  for (const st of s.seats) { const h = handOf(s, st.index); assert(h.filter((c) => c.key.startsWith('mishap:')).length === 3 && h.filter((c) => c.key.startsWith('calamity:')).length === 1 && h.filter((c) => c.key === `alms:${st.trade}`).length === 1 && h.filter((c) => c.key === 'tax-collector').length === 1, 'kit is not 3 mishaps + 1 calamity + 1 alms + 1 tax collector', s); }
+  const s = createGame({ id: `g${seed}`, code: `C${seed}`, hostUserId: 'u0', seats, seed, now: 0, settings: { drawMode } });
+  assert(s.calendar.rounds === 5, 'every year is five rounds', s);
+  for (const st of s.seats) { const h = [...handOf(s, st.index), ...deckOf(s, st.index)]; assert(h.filter((c) => c.key.startsWith('mishap:')).length === 3 && h.filter((c) => c.key.startsWith('calamity:')).length === 1 && h.filter((c) => c.key === `alms:${st.trade}`).length === 1 && h.filter((c) => c.key === 'tax-collector').length === 1, 'kit is not 3 mishaps + 1 calamity + 1 alms + 1 tax collector', s); }
   const r = { rng: seed ^ 0x9e3779b9 };
   let now = 1000; let guard = 0;
   while (s.phase !== 'ended') {
@@ -84,7 +87,7 @@ let games = 0, deaths = 0, seatsTotal = 0, noWinner = 0, attacksVoided = 0, atta
 const sizes = [[4, 3], [4, 4], [5, 5], [6, 6], [8, 8], [7, 5], [8, 4], [4, 3], [5, 5]];
 for (let n = 0; n < 60; n++) {
   const [seatCount, humans] = sizes[n % sizes.length];
-  const s = playGame(seatCount, humans, seedFrom(`sim-${n}`), n < 3);
+  const s = playGame(seatCount, humans, seedFrom(`sim-${n}`), n < 3, n % 2 === 1);   // odd games draw from the deck (standard), even games play the Open Envelope variant
   games++; seatsTotal += seatCount; deaths += s.seats.filter((x) => !x.alive).length; if (!s.winners?.length) noWinner++;
   for (const l of s.logs) for (const e of l.events) { if (e.t === 'void') attacksVoided++; if (e.t === 'reveal') attacksPlayed += e.cards.filter((c) => isAttack(c.key)).length; }
 }
@@ -111,7 +114,36 @@ for (let n = 0; n < 60; n++) {
   s.gold.thief = 2;
   assert(JSON.stringify(poorestWithGold(s)) === JSON.stringify(['jeweler']), 'single poorest track with gold', s);
 }
+// Drawing from the deck is the standard game: a hand of one card per seat, and the whole envelope is played by the year's end
+{
+  const seats = Array.from({ length: 5 }, (_, i) => ({ userId: `u${i}`, name: `P${i}`, crest: `c${i}`, isTownsfolk: false }));
+  const s = createGame({ id: 'ale', code: 'ALE000', hostUserId: 'u0', seats, seed: 11, now: 0 });
+  assert(s.settings.drawMode === true, 'drawing from the deck should be the default', s);
+  for (const st of s.seats) assert(handOf(s, st.index).length === 5 && deckOf(s, st.index).length === 20, `seat ${st.index} should hold 5 and keep 20 in the deck`, s);
+  // Strong Ale: this round's hand is already on the table, so the drunk draws next round's hand early and shows it
+  for (const st of s.seats) for (const c of handOf(s, st.index)) c.key = `job:${st.trade}`;   // a quiet round: wares only
+  const ale = handOf(s, 0)[0]; ale.key = 'sig:strong-ale';
+  for (const st of s.seats) {
+    const hand = handOf(s, st.index).slice(); const pl: Record<string, string> = {};
+    if (st.index === 0) { pl['1'] = ale.id; const rest = hand.filter((c) => c.id !== ale.id); for (const p of [0, 2, 3, 4]) pl[String(p)] = rest.pop()!.id; }
+    else for (let p = 0; p < 5; p++) pl[String(p)] = hand[p].id;
+    submitPlacement(s, st.index, pl, null, 1000);
+  }
+  assert(s.phase === 'reveal', 'expected the reveal after every seat locked in, got ' + s.phase, s);
+  const shown = s.roundLog!.events.find((e) => e.t === 'reveal_hand');
+  assert(shown && shown.t === 'reveal_hand' && shown.seat === 1 && shown.cards.length === 5, 'the drunk should show a freshly drawn hand of 5', s);
+  const drunkHand = handOf(s, 1).map((c) => c.id).sort().join(',');
+  assert(handOf(s, 1).length === 5 && deckOf(s, 1).length === 15, 'the drunk drew early: 5 in hand, 15 in the deck', s);
+  for (const i of [0, 2, 3, 4]) assert(handOf(s, i).length === 0 && deckOf(s, i).length === 20, `seat ${i} should not have drawn yet`, s);
+  let guard = 0;
+  while (s.phase === 'reveal') { assert(guard++ < 200, 'reveal did not finish', s); for (const st of s.seats) if (s.phase === 'reveal' && !st.ack) acknowledge(s, st.index, 2000); }
+  assert(s.phase === 'placement' && s.round === 2, 'expected round 2 placement, got ' + s.phase + ' round ' + s.round, s);
+  assert(handOf(s, 1).map((c) => c.id).sort().join(',') === drunkHand, 'the drunk plays exactly the hand everyone saw', s);
+  for (const st of s.seats) assert(handOf(s, st.index).length === 5 && deckOf(s, st.index).length === 15, `round 2: seat ${st.index} should hold 5 and keep 15`, s);
+}
 // determinism
 const a = JSON.stringify(playGame(5, 5, 4242)); const b = JSON.stringify(playGame(5, 5, 4242));
 assert(a === b, 'engine is not deterministic');
+const da = JSON.stringify(playGame(6, 5, 4243, false, true)); const db = JSON.stringify(playGame(6, 5, 4243, false, true));
+assert(da === db, 'engine is not deterministic in draw mode');
 console.log(`OK: ${games} games, ${(deaths / games).toFixed(2)} deaths/game, ${(deaths / seatsTotal * 100).toFixed(0)}% of seats died, ${noWinner} games with nobody winning, ${attacksVoided} voids / ${attacksPlayed} attacks revealed, ${Date.now() - t0} ms`);

@@ -214,7 +214,7 @@ function HandScene({ s, view }: { s: Extract<Scene, { kind: 'hand' }>; view: Pla
   return (
     <div className="text-center">
       <h2 className="font-display text-3xl text-moon mb-1">Strong Ale</h2>
-      <p className="text-ink-2 text-sm mb-3">{view.seats[s.seat]?.name} is drunk and shows the whole hand.</p>
+      <p className="text-ink-2 text-sm mb-3">{view.seats[s.seat]?.name} is drunk{view.settings.drawMode ? (s.cards.length ? ' and draws next round\'s hand face-up.' : ', but has no cards left to draw.') : ' and shows the whole hand.'}</p>
       <div className="flex flex-wrap justify-center gap-1.5">{s.cards.map((k, idx) => <CardFace key={idx} cardKey={k} width={64} />)}</div>
     </div>
   );
