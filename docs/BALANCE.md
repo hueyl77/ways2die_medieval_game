@@ -71,3 +71,63 @@ The measured policy now also plays one signature card a round from round 2 (the 
 Trades, measured play, 300 games: City Guard 32%, Thief 30%, Woodsman 28%, Innkeeper 24%, Apothecary 22%, Tailor 22%, Blacksmith 21%, Farmer 21%, Miller 21%, Jeweler 20%, Hunter 19%, Carpenter 18%. Each trade is seated ~125 times, so ±8% is noise; the City Guard's lead is the one number worth watching (its three cards now pay ~5 gold a game between them) — if it holds up in real play, drop Curfew's fine to max 2.
 
 Open items for human playtests: ghosts still share the win in ~59% of games (a ghost's heir is often the winner simply because few players survive) — if that feels cheap, a printable alternative is to let only the first ghost of the year seal a will; the tighter scoring (2.3-gold margins, 13% ties) may want a third tie-break; Tax Collector still seizes only ~2 cards a play; the Thief remains the only trade that can kill alone.
+
+---
+
+## Five rounds for every table, and the Shuffled Envelope (2026-09-03)
+
+Changes: every year is 5 rounds at every table size (wares kept = seats × 5 − 12, so the printed envelope holds 28 wares and the 8-seat hand is 40 cards); crests are the envelope colours, with 8 crest cards for the succession; a new host setting, `drawMode` (the Shuffled Envelope), turns the envelope into a face-down deck and deals one card per seat into the hand each round.
+
+Measured play, 200 games per cell (at the time: `node scripts/balance.ts 200 <seats> measured 0 nokit [draw]`; drawing is now the default and `full` selects the old hand).
+
+| | 5 seats, full hand | 5 seats, draw | 8 seats, full hand | 8 seats, draw |
+|---|---:|---:|---:|---:|
+| deaths per game | 1.70 | 2.17 | 0.97 | 1.51 |
+| mean death round (of 5) | 3.2 | 3.3 | 3.5 | 3.3 |
+| games with nobody alive | 0 | 1 | 0 | 0 |
+| shared (tied) wins | 17% | 5% | 32% | 18% |
+| ghost shared the win | 56% | 67% | 18% | 26% |
+| winner margin (gold) | 1.6 | 2.4 | 0.9 | 1.0 |
+| Alms hit rate | 34% | 22% | 17% | 9% |
+| Tax Collector, cards seized per play | 1.5 | 2.2 | 4.3 | 4.7 |
+| win% per seat, best to worst trade | 37–13% | 36–11% | 36–4% | 30–5% |
+
+For comparison, the six-round 5-seat game after the balance pass: 1.89 deaths, 59% ghost shares, 2.1-gold margin, 14% ties, 39% Alms.
+
+### Findings
+
+1. **Eight seats over five rounds is a gentle year.** Under one death a game, a 0.9-gold winner margin and a third of games tied: 8 players each hold 5 wounds of attacks against 8 × 4 health, spread over 8 piles. The 8-seat table wants either death at 3 or a fourth attack before it is decisive (what-if: `node scripts/balance.ts 200 8 measured 3`).
+2. **The Shuffled Envelope is bloodier at every size** (about half a death more per game) because Protects and Heals arrive by luck instead of when they are needed. It also cuts ties sharply and halves the Alms hit rate, since the card is drawn late as often as early. Under measured play it is the more decisive game; whether the luck feels fair is a question for humans.
+3. **City Guard and Thief lead every cell** (30–37% of their seats) and Blacksmith and Farmer trail badly at 8 seats (4–8%). Curfew is the largest gold engine at 8 seats (447 gold over 200 games). If the Guard's lead holds in human play, cap Curfew at 2.
+4. **Tax Collector finally bites at 8 seats** (4.3–4.7 cards seized per play) because piles are deep in wares.
+5. Cutpurse and Blackmail show as zero in the card table because they move gold between tracks; the table sums net deltas.
+
+Open items for human playtests: the 8-seat death threshold; whether the Shuffled Envelope's luck is welcome or resented; the Guard; and the size of the physical envelope (28 wares is the price of five rounds at eight seats).
+
+---
+
+## Drawing from the deck becomes the standard game (2026-09-28)
+
+Changes: `drawMode` is on by default, so every player shuffles their deck each round and draws one card per seat; holding the whole envelope is now the optional Open Envelope variant. Strong Ale used to show an empty hand when drawing (the round's cards were already on the table), so it now makes its victim draw next round's hand at once, face-up.
+
+Measured play, 300 games per cell: `node scripts/balance.ts 300 <seats> measured 0 nokit [full]`.
+
+| | 4 draw | 4 full | 5 draw | 5 full | 6 draw | 6 full | 8 draw | 8 full |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| deaths per game | 1.75 | 1.44 | 2.16 | 1.77 | 1.33 | 0.98 | 1.38 | 1.04 |
+| mean death round (of 5) | 3.1 | 3.4 | 3.2 | 3.1 | 3.4 | 3.7 | 3.5 | 3.5 |
+| games with nobody alive | 5 | 1 | 2 | 0 | 0 | 0 | 0 | 0 |
+| shared (tied) wins | 3% | 7% | 6% | 15% | 10% | 22% | 18% | 30% |
+| ghost shared the win | 65% | 55% | 65% | 56% | 33% | 21% | 23% | 20% |
+| winner margin (gold) | 2.6 | 2.6 | 2.3 | 1.7 | 1.5 | 1.1 | 1.1 | 0.9 |
+| Alms hit rate | 32% | 40% | 22% | 33% | 16% | 25% | 8% | 17% |
+| Tax Collector, cards seized per play | 1.5 | 0.9 | 2.2 | 1.5 | 3.1 | 2.6 | 4.7 | 4.2 |
+
+### Findings
+
+1. **Drawing adds about a third of a death per game at every size**, because every Attack in every deck is played by the year's end and Protects and Heals arrive by luck. At 4 seats a game now ends with nobody alive about once in 60.
+2. **Ties roughly halve.** The draw breaks the symmetry between players who would otherwise pace their wares the same way.
+3. **Alms and the Tax Collector are no longer timed.** Alms lands when it is drawn, so it pays less often (8% at 8 seats); the Tax Collector seizes more because it falls on full piles as often as thin ones.
+4. **The choice that remains is where, never whether.** Until the first death there is no grave to dump on, so an Attack drawn in rounds 1 and 2 must hit a living seat, the drawer included. This is the thing to watch in human play: whether being forced to hurt someone feels like drama or like being robbed of a decision.
+
+Open items for human playtests: whether ghosts should also draw (today a ghost picks its haunt from its whole grave pool, so the dead have more choice than the living); whether a player may look through their deck during the year; the 8-seat death threshold from the section above.

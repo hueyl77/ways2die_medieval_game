@@ -132,7 +132,8 @@ Concurrency: ops carry the client's `version`; if it doesn't match, respond `409
 
 ### 5.1 Setup (`createGame`)
 Inputs: seats (`{ seatIndex, userId|null, name, isTownsfolk }`), settings, seed.
-- Seat count → calendar row (rounds, seasons, jobs kept, death threshold) from the rulebook table.
+- Every year is 5 rounds (`ROUNDS`); the seat count sets the death threshold (3 up to 5 seats, 4 above) and the wares kept = seats × 5 − 12. The printed envelope holds 28 wares (`WARES_PER_ENVELOPE`, the 8-seat hand); a Townsfolk seat plays the untrimmed envelope.
+- `settings.drawMode` (on by default, the standard game): a human seat's cards start in zone `deck`, and `drawHands` shuffles each living seat's deck and moves one card per seat into `hand` at the start of every round (`startPlacement`). Every card drawn is placed, so the whole deck is played by the end of round 5. Death moves hand and deck to the grave pool; Appraisal counts wares in hand and deck; Strong Ale makes its victim draw next round's hand at once (`drawFor`) and shows it, and `drawHands` never tops a hand up past one card per seat. Off is the Open Envelope variant: every card starts in `hand`.
 - Shuffle the 12 trades; deal one per seat; the rest are `absent` (secret).
 - Per seat: `jobsKept` job cards of its trade, 2 heals, 1 protect, 3 signatures; from the shared mishap deck 4 Mishaps + 1 Calamity; unused mishaps → `box`.
 - Townsfolk: same cards, `zone: hand`, played by `randomPlacement()` each round.
@@ -208,7 +209,7 @@ cd web && npm run build && npx -y @insforge/cli deployments deploy .   # env: VI
 npm run test:engine           # node: 2,000 random games, invariants + snapshot determinism
 ```
 
-Invariants checked by the simulation: hand sizes = piles × remaining rounds; every seat holds exactly 4 mishaps + 1 calamity at setup; no card duplicated across zones; gold never negative; wounds ≥ 0; dead seats never place; game always terminates; projection never contains another seat's hand or `placed_by_seat`.
+Invariants checked by the simulation: hand sizes = piles × remaining rounds (draw mode: hand = piles and hand + deck = piles × remaining rounds); every seat holds exactly 3 mishaps + 1 calamity at setup; no card duplicated across zones; gold never negative; wounds ≥ 0; dead seats never place; game always terminates; projection never contains another seat's hand or `placed_by_seat`.
 
 ## 10. Art pipeline
 Ludo.ai batch (Western Cartoon, `card-art`, 3:4) → `art/full/*.webp` → `sips` downscale to 420 px → `web/public/cards/`. `engine/cards.ts` maps each card key to its art id; missing art falls back to a typed placeholder card.

@@ -20,9 +20,9 @@ The game is played in rounds. Each round, every player places one card face-down
 
 ## 2. Components
 
-- **8 trade envelopes**, each containing 36 cards:
-  - 1 role card (role cards have a distinct back)
-  - 27 job cards (that trade's wares)
+- **8 trade envelopes**, each printed in its own crest colour and containing 37 cards:
+  - 1 role card (role cards have a distinct back): your proof of identity at the funeral and the final reveal, and your portrait for the year
+  - 28 job cards (that trade's wares)
   - 2 Heal cards
   - 1 Protect card
   - 1 Alms card for that trade (poor relief, see §8)
@@ -30,11 +30,13 @@ The game is played in rounds. Each round, every player places one card face-down
   - 3 signature cards unique to the trade (see §8)
 - **The Mishap deck**: 36 Attack cards, 24 **Mishaps** (1 wound, every one a different accident) and 12 **Calamities** (2 wounds). See §15.
 - **Gold board** with 8 trade tracks and 8 gold markers
-- **12 crest cards** (player identities, used for wills)
+- **8 crest cards**, one in each envelope colour (the succession, used for wills, see §9)
 - **Townsfolk marker** (for an automated seat, §10)
 - **20 wound tokens** (for wounds beyond a card's first)
 - **Crier token** (first player)
 - **Round marker** and calendar strip
+
+*340 cards in all.*
 
 The eight trades: **Blacksmith, Farmer, Thief, Innkeeper, City Guard, Jeweler, Apothecary, Miller.**
 
@@ -46,42 +48,45 @@ The eight trades: **Blacksmith, Farmer, Thief, Innkeeper, City Guard, Jeweler, A
 
 1. Place the gold board in the center; set all 8 gold markers to 0.
 2. **Fill the table to at least four seats.** With three players, add one Townsfolk seat (§10): an empty chair with the Townsfolk marker. Seats = players + Townsfolk.
-3. Consult the table below for your seat count. Place the round marker on the calendar.
+3. Every year is **five rounds**, whatever the size of the table. Consult the table below for your seat count. Place the round marker on the calendar.
 
-   | Seats | Rounds | Seasons | Job cards kept | Hand size | You die at |
-   |:-:|:-:|:--|:-:|:-:|:-:|
-   | 4 | 6 | Spring · Harvest · Winter, 2 rounds each | 12 | 24 | 3 wounds |
-   | 5 | 6 | Spring · Harvest · Winter, 2 rounds each | 18 | 30 | 3 wounds |
-   | 6 | 4 | Harvest · Winter, 2 rounds each | 12 | 24 | 4 wounds |
-   | 7 | 4 | Harvest · Winter, 2 rounds each | 16 | 28 | 4 wounds |
-   | 8 | 4 | Harvest · Winter, 2 rounds each | 20 | 32 | 4 wounds |
+   | Seats | Job cards kept | Deck size | You draw each round | You die at |
+   |:-:|:-:|:-:|:-:|:-:|
+   | 4 | 8 | 20 | 4 | 3 wounds |
+   | 5 | 13 | 25 | 5 | 3 wounds |
+   | 6 | 18 | 30 | 6 | 4 wounds |
+   | 7 | 23 | 35 | 7 | 4 wounds |
+   | 8 | 28 | 40 | 8 | 4 wounds |
 
 4. Shuffle all 8 envelopes and deal one to every seat, players and Townsfolk alike. **Return the rest to the box unopened**: nobody knows which trades are absent.
-5. Privately open your envelope. Memorize your role card and **return it to the envelope**; keep the envelope face-down in front of you for the whole game. Set aside job cards above your "job cards kept" number and return them to the box face-down. Take everything else into your hand. Then shuffle the Mishaps and deal three face-down to every seat, shuffle the Calamities and deal one to every seat, and return the rest to the box unseen; add yours to your hand. Prepare any Townsfolk seat as described in §10.
-6. Each player takes a crest marker. Place the **matching crest cards** face-down in a stack in the center, this is the **succession**. It is touched only when someone dies. Townsfolk take a crest too, so a ghost may name one as heir.
+5. Privately open your envelope. Memorize your role card and **return it to the envelope**; keep the envelope face-down in front of you for the whole game. Set aside job cards above your "job cards kept" number and return them to the box face-down. Keep everything else. Then shuffle the Mishaps and deal three face-down to every seat, shuffle the Calamities and deal one to every seat, and return the rest to the box unseen. Look through your cards if you like, then shuffle them all together, your four Attacks included, into a face-down **deck** at your seat. Prepare any Townsfolk seat as described in §10.
+6. **Your crest is the colour of your envelope.** Take the crest card of every envelope that was dealt, players and Townsfolk alike, and place them face-down in a stack in the center: this is the **succession**. It is touched only when someone dies. Crest cards of undealt envelopes go back to the box.
 7. Give the Crier token to the player who most recently sold something.
 
-*Tip: hands are large. Keep yours sorted in a face-down spread, you're hiding it from the table, not from yourself.*
+*Your deck is exactly one card per seat for each of the five rounds, so by the end of the year you will have played all of it. Prefer to plan the whole year with every card in hand? See the Open Envelope variant (§7).*
 
 ---
 
 ## 4. Playing a round
 
-Each round has five phases:
+Each round has six phases:
 
-### 4.1 Gossip
+### 4.1 Draw
+Every living player shuffles their deck and draws **one card for every seat at the table**, their own seat and every grave included. That is your whole hand for the round, and you will place all of it: you choose where each card goes, never whether to play it. A Calamity may turn up in round one, and a Protect may arrive the round after you needed it. (A drunk who drew early already holds their hand: see Strong Ale, §8.)
+
+### 4.2 Gossip
 Talk while you place. Accuse, deny, promise, and lie as much as you like. Nothing said is binding, and you may **never** show cards or your role. There is no separate discussion step: the round is open for placement from the start, and it ends when everyone has placed.
 
-### 4.2 Placement
-Each player places **exactly one card face-down in front of every seat, including their own** (and one on each grave, see §9). Placements are made openly, people see *where* you place, but never *what*. Ghosts may haunt now (§9.3), and each Townsfolk's tender deals its cards (§10).
+### 4.3 Placement
+Each player places **exactly one card face-down in front of every seat, including their own** (and one on each grave, see §9): the hand you drew is exactly enough. Placements are made openly, people see *where* you place, but never *what*. Ghosts may haunt now (§9.3), and each Townsfolk's tender deals its cards (§10).
 
-### 4.3 Shuffle
+### 4.4 Shuffle
 Each player picks up the pile in front of them and shuffles it **without looking at the faces**; a Townsfolk's tender shuffles its pile. From this moment, no card can be traced to its placer.
 
-### 4.4 Reveal & resolve
+### 4.5 Reveal & resolve
 Starting with the Crier and going clockwise, each pile is flipped face-up and fully resolved (§5) before the next pile is flipped. Grave piles flip last; their cards have no effect (§9.2).
 
-### 4.5 Cleanup
+### 4.6 Cleanup
 Resolved cards go face-up to a shared discard in the center, the **town square**. Wounds, scoring cards, and pending cards stay where they are (§5.4). Advance the round marker, apply any season-end event if the Turning Year variant is on (§7), and pass the Crier token left.
 
 ---
@@ -115,15 +120,17 @@ Resolve each flipped pile in this order:
 
 ## 7. The calendar (and the optional variants)
 
-**In the standard game every round plays the same.** The seasons are names on the calendar and nothing more. The rules below are an optional variant, *The Turning Year*, for tables that want the year to escalate; when it's on, season rules apply to every round of that season. Six-round games (4–5 seats) play the full year; four-round games (6–8 seats) start at Harvest.
+**In the standard game every round plays the same.** The seasons are names on the calendar and nothing more. The rules below are an optional variant, *The Turning Year*, for tables that want the year to escalate; when it's on, season rules apply to every round of that season. The year is five rounds: Spring is round 1, Harvest rounds 2–3, Winter rounds 4–5.
 
-| Season | Full year | Four rounds | Rule |
-|:--|:-:|:-:|:--|
-| **Spring** | 1–2 | none | No special rule. Learn faces. Tell your first lies. |
-| **Harvest** | 3–4 | 1–2 | **Market Fair:** every job card banks +1 gold. At the season's end, the **Reeve's Tax**: every track tied for richest loses 2. |
-| **Winter** | 5–6 | 3–4 | **The Hungry Winter:** each Protect voids only one Attack. |
+| Season | Rounds | Rule |
+|:--|:-:|:--|
+| **Spring** | 1 | No special rule. Learn faces. Tell your first lies. |
+| **Harvest** | 2–3 | **Market Fair:** every job card banks +1 gold. At the season's end, the **Reeve's Tax**: every track tied for richest loses 2. |
+| **Winter** | 4–5 | **The Hungry Winter:** each Protect voids only one Attack. |
 
 **Two more optional leader rules**, also off by default, for tables that find the leader runs away: *the Reeve's tithe*, after every round each track pays 1 gold per 8 it holds (a strongboxed track pays nothing); and *the Reckoning*, at the start of the final round, every living seat holding the richest trade opens its envelope and plays the last round unmasked.
+
+**The Open Envelope** (optional), for tables that would rather plan than draw. After setup, take your whole envelope into your hand instead of shuffling it into a deck, and skip the Draw phase. Each round you choose which cards to play and which to hold back, so a Protect is there when you need it and an Attack can wait all year. Hands are large (one card per seat for every round still to play), so keep yours sorted in a face-down spread: you're hiding it from the table, not from yourself. Strong Ale shows the drunk's entire hand, and when you die your hand becomes your grave pool. Nothing else changes.
 
 ---
 
@@ -151,7 +158,7 @@ Every envelope holds three signature cards, the only copies in the game. Playing
 - **Sneak Attack**: Attack dealing 2 wounds. Cannot be voided by a Protect.
 
 **🍺 Innkeeper**
-- **Strong Ale**: The pile's owner is drunk: they must spread their entire hand face-up on the table for everyone to see while the Crier counts slowly to five, then gather it up.
+- **Strong Ale**: The pile's owner is drunk: they shuffle their deck and draw next round's hand at once, face-up on the table for everyone to see while the Crier counts slowly to five, then pick it up. That is the hand they play next round.
 - **A Round on the House**: Every wounded player heals 1; the Innkeeper track gains 1 per player served (max 3).
 - **Bad Batch**: All Heals revealed in this pile this round are voided.
 
@@ -162,7 +169,7 @@ Every envelope holds three signature cards, the only copies in the game. Playing
 
 **💎 Jeweler**
 - **King's Commission**: The Jeweler track gains 2.
-- **Appraisal**: The pile's owner must truthfully announce how many job cards remain in their hand.
+- **Appraisal**: The pile's owner must truthfully announce how many job cards they have left to play, hand and deck together.
 - **Paste Gems**: The richest track loses 2 *(ties: the pile's owner picks)*.
 
 **⚗ Apothecary**
@@ -185,8 +192,8 @@ Every envelope holds three signature cards, the only copies in the game. Playing
 When you take your final wound:
 
 1. Open your envelope and reveal your role card. Your trade's track **locks** (§6).
-2. Your remaining hand is shuffled **face-down onto your seat**: this starts your **grave pool**.
-3. **Seal your will.** Take the succession stack, browse it privately, and choose the crest of one **living** seat, player or Townsfolk, your secret heir. Seal exactly one crest inside your envelope: choose in secret, seal in view, so the table sees one card go in without seeing its face. Return the stack to the center. Keep your envelope in front of you; it can never be changed. Your heir is not told. If no living player's crest remains, you die without a will.
+2. Your remaining cards, hand and deck together, are shuffled **face-down onto your seat**: this starts your **grave pool**.
+3. **Seal your will.** Take the succession stack, browse it privately, and choose the crest card of one **living** seat, player or Townsfolk, your secret heir. Seal exactly one crest inside your envelope: choose in secret, seal in view, so the table sees one card go in without seeing its face. Return the stack to the center. Keep your envelope in front of you; it can never be changed. Your heir is not told. If no living player's crest remains, you die without a will.
 
 ### 9.2 The grave
 Your seat stays in the game. Every living player must still place one card on each grave every round, the grave is the village's only dump, and what people throw away there is public information. Grave piles are shuffled (by the ghost) and revealed like any other, but **their cards have no effect**. After the reveal, they join that grave's pool face-down.
@@ -220,7 +227,7 @@ A Townsfolk is a seat run by chance instead of a player, a stranger at the table
 
 ## 11. Game end & scoring
 
-After the last round of Winter:
+After the fifth round:
 
 1. **The final reveal.** All living players open their envelopes and show their roles at once.
 2. **Settle accounts.** Apply each player's scoring cards (+/−) and −1 per wound to their own trade's track.
@@ -236,7 +243,7 @@ If everyone dies, the village stands empty and nobody wins.
 ## 12. Table rules
 
 - **Never show cards.** Not your hand, not your role, not "just one." The only reveals are funerals, the final reveal, and a Strong Ale.
-- **Truth cards are binding.** Answers to Inquest and Appraisal must be honest, and a drunk shows their whole hand. Everything else may be a lie.
+- **Truth cards are binding.** Answers to Inquest and Appraisal must be honest, and a drunk shows the hand they draw. Everything else may be a lie.
 - **No binding deals.** Promise anything; deliver whatever you like.
 - **Shuffle blind.** Never look at faces while shuffling a pile, and anyone may ask for a pile's card count before it's flipped.
 
@@ -252,7 +259,8 @@ If everyone dies, the village stands empty and nobody wins.
 - **Can a ghost skip haunting?** Yes.
 - **How do I heal a Calamity?** A Heal removes its wound token first; the card stays as one wound until healed again.
 - **What does "cannot be voided by a Protect" cover?** Protect cards. Night Patrol and Curfew still stop a Silver Dagger or Sneak Attack.
-- **What does a drunk have to show?** Every card in their hand, face-up, for a slow count of five. The role card stays in the envelope; wounds and scoring cards are already public.
+- **What does a drunk have to show?** The hand they will play next round. The drunk shuffles their deck, draws one card per seat and lays the cards face-up for a slow count of five. In the final round the deck is empty and there is nothing to show. The role card stays in the envelope; wounds and scoring cards are already public. In the Open Envelope variant, every card in their hand.
+- **Which crest is mine?** The colour of your envelope. Its crest card waits in the succession until a ghost seals it into a will.
 - **What if a pile's count looks wrong before the flip?** Count it openly; a haunted pile legitimately runs one card heavy.
 - **Do the Townsfolk's cards count when I'm counting Attacks still at large?** Yes. Treat the stranger's deck as unknown: everything in it is possible until it's revealed.
 - **Can a Townsfolk's trade end up the richest track?** Yes, and until it dies, nobody can prove which track is the stranger's. If it is still the richest at the final count, the stranger wins.
@@ -262,7 +270,8 @@ If everyone dies, the village stands empty and nobody wins.
 ## 14. Advice for your first year
 
 - **Your own pile is a decoder ring.** You know the one card you placed in front of yourself. Subtract it from your pile's reveal, and what's left is exactly what the table did to you.
-- **Count everything.** The envelope contents are public. Every Attack that hasn't appeared is still in someone's hand.
+- **Count everything.** The envelope contents are public, and five rounds of one card per seat is the whole deck: every Attack that hasn't appeared is still in someone's deck, and it will land somewhere before the year is out.
+- **Every card gets played.** You place every card you draw, so an Attack in your hand has to go in front of someone, even if that someone is you. Once the village has a grave, it is the one pile where a card does nothing at all.
 - **Nobody can kill alone, but every hit pays.** Five wounds of attacks against a defended player will not be enough on their own; murders take partners, and partners take gossip. Meanwhile every wound you leave on a rival is a coin off their score, so aim your attacks at the trade you suspect is winning rather than dumping them on a grave.
 - **Earning is confessing.** Every coin on your track sharpens the table's guess. The winner is usually the player who got rich slowest.
 

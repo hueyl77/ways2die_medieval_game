@@ -4,7 +4,8 @@ export type Season = 'spring' | 'harvest' | 'winter';
 export type Phase = 'lobby' | 'gossip' | 'placement' | 'choice' | 'reveal' | 'funeral' | 'ended';
 export type Zone =
   | 'hand' | 'placed' | 'revealed' | 'wound' | 'scoring' | 'pending'
-  | 'town_square' | 'grave_pool' | 'box' | 'shield';
+  | 'town_square' | 'grave_pool' | 'box' | 'shield'
+  | 'deck';                   // cards not yet drawn into the hand
 
 export interface CardInst {
   id: string;
@@ -57,6 +58,7 @@ export interface Settings {
   tableSize: number;             // 4–12 seats; empty seats become bots
   seasonRules: boolean;          // optional variant: Market Fair, Reeve's Tax, Hungry Winter (off = every round plays the same)
   leaderRules: boolean;          // optional variant: the Reeve's tithe every round + the Reckoning in the final round (off by default)
+  drawMode: boolean;             // standard play (on): the envelope is a face-down deck, shuffled each round to draw one card per seat. Off = the Open Envelope variant, the whole envelope held in hand
   revealPlacementsAtEnd: boolean;
   huntSeat?: number | null;      // test mode: every bot puts an attack in front of this seat each round (null = off)
 }
@@ -145,7 +147,7 @@ export interface SeatView {
   wounds: number; woundCards: CardView[]; woundTokens: number; diedRound: number | null;
   revealedTrade: Trade | null; locked: boolean; ready: boolean; ack: boolean; skipReveal: boolean;
   scoringCards: CardView[]; pendingCards: CardView[]; pileCount: number; gravePoolCount: number;
-  handCount: number; willSealed: boolean; isMe: boolean;
+  handCount: number; deckCount: number; willSealed: boolean; isMe: boolean;
 }
 
 export interface PlayerView {

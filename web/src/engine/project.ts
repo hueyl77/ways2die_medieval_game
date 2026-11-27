@@ -1,5 +1,5 @@
 import type { GameState, PlayerView, SeatView, CardView, Seat } from './types.ts';
-import { handOf, gravePoolOf, woundsOf, pileCount, heirOptions, seasonOf, revealWaitingOn } from './engine.ts';
+import { handOf, deckOf, gravePoolOf, woundsOf, pileCount, heirOptions, seasonOf, revealWaitingOn } from './engine.ts';
 
 const view = (c: { id: string; key: string; meta: Record<string, number | string | boolean | null> }): CardView => ({ id: c.id, key: c.key, meta: { ...c.meta } });
 
@@ -14,7 +14,7 @@ export function projectFor(s: GameState, userId: string | null, version: number,
     scoringCards: s.cards.filter((c) => c.zone === 'scoring' && c.pileSeat === st.index).map(view),
     pendingCards: s.cards.filter((c) => c.zone === 'pending' && c.pileSeat === st.index).map(view),
     pileCount: pileCount(s, st.index), gravePoolCount: gravePoolOf(s, st.index).length,
-    handCount: handOf(s, st.index).length, willSealed: st.willSealed, isMe: !!me && me.index === st.index,
+    handCount: handOf(s, st.index).length, deckCount: deckOf(s, st.index).length, willSealed: st.willSealed, isMe: !!me && me.index === st.index,
   }));
   const isGhost = !!me && !me.alive && !me.isTownsfolk;
   return {

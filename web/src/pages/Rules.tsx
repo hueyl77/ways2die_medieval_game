@@ -65,9 +65,9 @@ export default function Rules() {
         </Section>
 
         <Section id="envelope" eyebrow="Your envelope" title="What you hold">
-          <p className="max-w-2xl mb-4">Every seat holds the same shape of hand: enough cards to place one in front of every seat, every round.</p>
+          <p className="max-w-2xl mb-4">Every envelope holds the same shape of deck: enough cards to place one in front of every seat, every round. You never hold it all at once. Your envelope sits face-down as a deck, and each round you shuffle it and draw one card for every seat at the table.</p>
           <div className="flex flex-wrap gap-3 items-end">
-            <div className="text-center"><CardFace cardKey="job:miller" width={104} /><div className="text-xs mt-1 font-ui">Wares · most of your hand</div></div>
+            <div className="text-center"><CardFace cardKey="job:miller" width={104} /><div className="text-xs mt-1 font-ui">Wares · most of your deck</div></div>
             <div className="text-center"><CardFace cardKey="heal" width={104} /><div className="text-xs mt-1 font-ui">Heal × 2</div></div>
             <div className="text-center"><CardFace cardKey="protect" width={104} /><div className="text-xs mt-1 font-ui">Protect × 1</div></div>
             <div className="text-center"><CardFace cardKey="alms:miller" width={104} /><div className="text-xs mt-1 font-ui">Alms × 1 · printed for your trade</div></div>
@@ -87,12 +87,14 @@ export default function Rules() {
           </ul>
         </Section>
 
-        <Section id="round" eyebrow="A round" title="Place, lock in, reveal">
-          <div className="grid md:grid-cols-3 gap-4">
-            <Step n={1} title="Place one card per seat" art={<CardFace cardKey="job:farmer" width={72} preview={false} />}>Drag a card from your hand onto every seat, including your own. Talk while you do it: accuse, deny, promise, lie. Nothing said is binding.</Step>
-            <Step n={2} title="Lock in" art={<CardArt cardKey="protect" width={72} />}>When every seat has a card, lock in. The round ends when everyone has, or when the timer runs out (a late player's cards are placed at random).</Step>
-            <Step n={3} title="Shuffle and reveal" art={<img src="/cards/basic-card-back.jpg" alt="card back" className="rounded-md shadow-card" style={{ width: 72 }} />}>Each pile is shuffled before it flips, so no card can ever be traced back to the person who placed it. The reveal plays one scene at a time (each pile, then wounds, deaths, and the ledger) and moves on when everyone clicks Next.</Step>
+        <Section id="round" eyebrow="A round" title="Draw, place, lock in, reveal">
+          <div className="grid md:grid-cols-2 gap-4">
+            <Step n={1} title="Shuffle and draw" art={<img src="/cards/basic-card-back.jpg" alt="your deck" className="rounded-md shadow-card" style={{ width: 72 }} />}>Shuffle your deck and draw one card for every seat at the table, your own included. That is your whole hand for the round.</Step>
+            <Step n={2} title="Place one card per seat" art={<CardFace cardKey="job:farmer" width={72} preview={false} />}>Drag a card from your hand onto every seat, including your own. Every card you drew has to go somewhere: you choose where, never whether. Talk while you do it: accuse, deny, promise, lie. Nothing said is binding.</Step>
+            <Step n={3} title="Lock in" art={<CardArt cardKey="protect" width={72} />}>When every seat has a card, lock in. The round ends when everyone has, or when the timer runs out (a late player's cards are placed at random).</Step>
+            <Step n={4} title="Shuffle and reveal" art={<img src="/cards/basic-card-back.jpg" alt="card back" className="rounded-md shadow-card" style={{ width: 72 }} />}>Each pile is shuffled before it flips, so no card can ever be traced back to the person who placed it. The reveal plays one scene at a time (each pile, then wounds, deaths, and the ledger) and moves on when everyone clicks Next.</Step>
           </div>
+          <Callout title="Luck of the draw">You place everything you draw. A Protect may turn up the round after you needed it, and an Attack in your hand has to land in front of someone, even if that someone is you. Once the village has a grave, it is the one pile where a card does nothing at all.</Callout>
           <Callout title="The one card that's yours to know">You know exactly one card in exactly one pile: the one you placed in front of yourself. Subtract it, and what's left is the table's true intent toward you.</Callout>
         </Section>
 
@@ -139,7 +141,7 @@ export default function Rules() {
 
         <Section id="death" eyebrow="Death & ghosts" title="The village keeps its ghosts">
           <div className="grid md:grid-cols-3 gap-4">
-            <Step n={1} title="The funeral">Your envelope opens: your trade is announced and its track locks. Your remaining hand becomes your <b>grave pool</b>, and your seat stays at the table as a grave that the living must still place a card on every round.</Step>
+            <Step n={1} title="The funeral">Your envelope opens: your trade is announced and its track locks. Your remaining cards, hand and deck together, become your <b>grave pool</b>, and your seat stays at the table as a grave that the living must still place a card on every round.</Step>
             <Step n={2} title="Seal your will">Secretly choose a living villager, player or bot, as your heir. If they win the year, you rise to share it. They will never know, and each player can be someone's heir only once.</Step>
             <Step n={3} title="Haunt">You're a ghost now: keep talking, and each round you may slip one card from your grave pool into any living pile. The table sees which pile the grave visited, never what it sent.</Step>
           </div>
@@ -159,11 +161,12 @@ export default function Rules() {
         </Section>
 
         <Section id="seats" eyebrow="Seats & rounds" title="How long is a year?">
-          <p className="max-w-2xl text-sm mb-3">The host sets the table size (4 to 8). Seats without a player are filled by bots, who play random cards and can win if they out-earn you.</p>
+          <p className="max-w-2xl text-sm mb-3">Every year is five rounds, whatever the size of the table. The host sets the table size (4 to 8). Seats without a player are filled by bots, who play random cards and can win if they out-earn you.</p>
           <div className="overflow-x-auto"><table className="text-sm font-ui border-collapse">
-            <thead><tr className="text-[11px] uppercase tracking-wider text-ink-2"><th className="text-left pr-6 pb-1">Seats</th><th className="text-left pr-6 pb-1">Rounds</th><th className="text-left pr-6 pb-1">Wares kept</th><th className="text-left pr-6 pb-1">You die at</th></tr></thead>
-            <tbody>{[4, 5, 6, 7, 8].map((n) => { const c = calendarPreview(n); return <tr key={n} className="border-t border-night-3"><td className="pr-6 py-1">{n}</td><td className="pr-6">{c.rounds}</td><td className="pr-6">{c.jobs}</td><td className="pr-6">{c.deathAt} wounds</td></tr>; })}</tbody>
+            <thead><tr className="text-[11px] uppercase tracking-wider text-ink-2"><th className="text-left pr-6 pb-1">Seats</th><th className="text-left pr-6 pb-1">Rounds</th><th className="text-left pr-6 pb-1">Wares kept</th><th className="text-left pr-6 pb-1">Deck</th><th className="text-left pr-6 pb-1">You draw</th><th className="text-left pr-6 pb-1">You die at</th></tr></thead>
+            <tbody>{[4, 5, 6, 7, 8].map((n) => { const c = calendarPreview(n); return <tr key={n} className="border-t border-night-3"><td className="pr-6 py-1">{n}</td><td className="pr-6">{c.rounds}</td><td className="pr-6">{c.jobs}</td><td className="pr-6">{n * c.rounds} cards</td><td className="pr-6">{n} a round</td><td className="pr-6">{c.deathAt} wounds</td></tr>; })}</tbody>
           </table></div>
+          <p className="max-w-2xl text-sm mt-3">Optional variant, <b className="text-gold">the Open Envelope</b>: the host can switch drawing off. You then hold your whole envelope from the start and choose what to play each round, so planning the year replaces the luck of the draw.</p>
         </Section>
       </main>
     </div>

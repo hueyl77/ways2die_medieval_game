@@ -6,7 +6,7 @@ const page = await browser.newPage({ viewport: { width: 1600, height: 1000 } });
 await page.goto(`http://localhost:5173/dev?seed=${seed}&seats=${seats}&clean`, { waitUntil: 'networkidle' });
 await page.waitForSelector('footer [aria-label]');
 const click = (re: string) => page.evaluate((src) => { const b = [...document.querySelectorAll('button')].find((x) => new RegExp(src, 'i').test(x.innerText.trim())); if (b) { b.click(); return true; } return false; }, re);
-if (state.startsWith('reveal')) { await click('fill the rest'); await page.waitForTimeout(300); await click('^lock in$'); await page.waitForTimeout(2500); for (let i = Number(state.split(':')[1] ?? 0); i > 0; i--) { await click('^next$'); await page.waitForTimeout(2200); } }
+if (state.startsWith('reveal')) { await click('(fill|place) the rest'); await page.waitForTimeout(300); await click('^lock in$'); await page.waitForTimeout(2500); for (let i = Number(state.split(':')[1] ?? 0); i > 0; i--) { await click('^next$'); await page.waitForTimeout(2200); } }
 else await page.waitForTimeout(800);
 await page.screenshot({ path: out });
 await browser.close(); console.log('saved', out);

@@ -103,7 +103,7 @@ const SIGNATURES: Record<Trade, SigSpec[]> = {
     { name: 'Sneak Attack', text: 'Attack dealing 2 wounds. Cannot be voided by a Protect.', attack: 2, pierce: true },
   ],
   innkeeper: [
-    { name: 'Strong Ale', text: "The pile's owner is drunk: their entire hand is shown to everyone for five seconds." },
+    { name: 'Strong Ale', text: "The pile's owner is drunk: the hand they take into next round is shown to everyone for five seconds." },
     { name: 'A Round on the House', text: 'Every wounded player heals 1; the Innkeeper track gains 1 per player served (max 3).' },
     { name: 'Bad Batch', text: 'All Heals revealed in this pile this round are voided.' },
   ],
@@ -119,7 +119,7 @@ const SIGNATURES: Record<Trade, SigSpec[]> = {
   ],
   jeweler: [
     { name: "King's Commission", text: 'The Jeweler track gains 2.' },
-    { name: 'Appraisal', text: "The pile's owner must truthfully announce how many job cards remain in their hand." },
+    { name: 'Appraisal', text: "The pile's owner must truthfully announce how many wares cards they have left to play." },
     { name: 'Paste Gems', text: 'The richest track loses 2.' },
   ],
   tailor: [
